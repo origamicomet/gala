@@ -1,0 +1,184 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// This file is part of the Abstract Graphics Library.
+//
+// Copyright (c) 2012, bitbyte studios
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+// 
+////////////////////////////////////////////////////////////////////////////////
+
+#include <AGL/win_agl.h>
+
+struct aglContext {
+    HDC   hDC;
+    HGLRC hRC;
+    unsigned vsync    : 1;
+    unsigned reserved : 7;
+};
+
+static aglContext* active_context = NULL;
+
+aglContext* AGL_API waglCreateContext( HWND hWnd, const aglContextSettings* settings )
+{
+    aglContext* context = NULL;
+
+    PIXELFORMATDESCRIPTOR pfd;
+    int32_t pixel_format;
+    
+#if AGL_GL_VER > 21
+    struct {
+        HGLRC hRC;
+    } dummy_context;
+
+    int32_t major_ver, minor_ver;
+    uint32_t num_formats;
+
+    PFNWGLCHOOSEPIXELFORMATARBPROC  wglChoosePixelFormatARB;
+    PFNWGLCREATEBUFFERREGIONARBPROC wglCreateContextAttribsARB;
+#endif
+
+    assert(settings);
+
+    context = (aglContext*)aglAlloc(sizeof(aglContext));
+    context->hDC   = GetDC(hWnd);
+    context->hRC   = NULL;
+    context->vsync = settings->vsync;
+    
+    ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
+    pfd.nSize        = sizeof(PIXELFORMATDESCRIPTOR);
+    pfd.nVersion     = 1; 
+    pfd.dwFlags      = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;  
+    pfd.iPixelType   = PFD_TYPE_RGBA; 
+    pfd.cColorBits   = 24;
+    pfd.cAlphaBits   = 0;
+    pfd.cDepthBits   = 24; 
+    pfd.cStencilBits = 8;
+    pfd.iLayerType   = PFD_MAIN_PLANE;
+
+    pixel_format = ChoosePixelFormat(context->hDC, &pfd);
+    if( !pixel_format ) goto failure;
+    if( !SetPixelFormat(context->hDC, pixel_format, &pfd) ) goto failure;
+#if AGL_GL_VER <= 21
+    if( !(context->hRC = wglCreateContext(context->hDC)) ) goto failure;
+#else
+    if( !(dummy_context.hRC = wglCreateContext(context->hDC)) ) goto failure;
+
+    glGetIntegerv(GL_MAJOR_VERSION, (GLint*)&major_ver);
+    glGetIntegerv(GL_MINOR_VERSION, (GLint*)&minor_ver);
+
+    if( major_ver <= 2 ) {
+        wglMakeCurrent(NULL, NULL);
+        wglDeleteContext(dummy_context.hRC);
+        goto failure;
+    }
+
+    if( !(wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB")) ) {
+        wglMakeCurrent(NULL, NULL);
+        wglDeleteContext(dummy_context.hRC);
+        goto failure;
+    }
+
+    if( !(wglCreateContextAttribsARB = (PFNWGLCREATEBUFFERREGIONARBPROC)wglGetProcAddress("wglCreateContextAttribsARB")) ) {
+        wglMakeCurrent(NULL, NULL);
+        wglDeleteContext(dummy_context.hRC);
+        goto failure;
+    }
+
+    const int32_t pfd_attributes[] = {
+        WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+        WGL_ACCELERATION_ARB,   WGL_FULL_ACCELERATION_ARB,
+
+        WGL_COLOR_BITS_ARB,     24,
+        WGL_ALPHA_BITS_ARB,     0,
+        WGL_DEPTH_BITS_ARB,     24,
+        WGL_STENCIL_BITS_ARB,   8,
+
+        WGL_DOUBLE_BUFFER_ARB,  GL_TRUE,
+        WGL_SAMPLE_BUFFERS_ARB, settings->samples > 0 ? GL_TRUE : GL_FALSE,
+        WGL_SAMPLES_ARB,        settings->samples,
+        
+        NULL, NULL
+    };
+
+    num_formats = 0;
+    if( wglChoosePixelFormatARB(context->hDC, (const int*)&pfd_attributes[0], 0, 1, (int*)&pixel_format, (UINT*)&num_formats) || num_formats ) {
+        if( !SetPixelFormat(context->hDC, pixel_format, &pfd) ) {
+            wglMakeCurrent(NULL, NULL);
+            wglDeleteContext(dummy_context.hRC);
+            goto failure;
+        }
+    }
+
+    const int32_t context_attributes[] = {
+        WGL_CONTEXT_MAJOR_VERSION_ARB, major_ver,
+        WGL_CONTEXT_MINOR_VERSION_ARB, minor_ver, 
+        WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+        NULL, NULL
+    };
+
+    if( !(context->hRC = (HGLRC)wglCreateContextAttribsARB(context->hDC, 0, (const int*)&context_attributes[0])) ) {
+        wglMakeCurrent(NULL, NULL);
+        wglDeleteContext(dummy_context.hRC);
+        goto failure;
+    }
+#endif
+
+    if( !glewInit() != GLEW_OK ) goto failure;
+
+    if( current_context ) wglMakeCurrent(current_context->hDC, current_context->hRC);
+    else wglMakeCurrent(NULL, NULL);
+
+    return context;
+
+failure:
+    if( current_context ) wglMakeCurrent(current_context->hDC, current_context->hRC);
+    else wglMakeCurrent(NULL, NULL);
+
+    aglFree(context);
+    return NULL;
+}
+
+void AGL_API waglDestroyContext( aglContext* context )
+{
+    assert(context);
+
+    if( context == current_context ) {
+        current_context = NULL;
+        wglMakeCurrent(NULL, NULL);
+        wglDeleteContext(context->hRC);
+    }
+
+    aglFree(context);
+}
+
+static void AGL_API aglSetActiveContext( aglContext* context )
+{
+    if( context == current_context ) return;
+    current_context = context;
+    if( current_context ) wglMakeCurrent(current_context->hDC, current_context->hRC);
+    else wglMakeCurrent(NULL, NULL);
+}
+
+void AGL_API aglSwapBuffers( aglContext* context )
+{
+    aglSetActiveContext(context);
+    SwapBuffers(context->hDC);
+}

@@ -121,8 +121,8 @@
 25 SetBlendState
 
     glBlendColor(...)
-    glBlendEquationSeperate(...)
-    glBlendFunctionSeperate(...)
+    glBlendEquationSeparate(...)
+    glBlendFunctionSeparate(...)
 
 26 SetScissorRect
 
