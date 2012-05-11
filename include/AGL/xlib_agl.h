@@ -24,25 +24,21 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _WIN_AGL_H_
-#define _WIN_AGL_H_
+#ifndef _XLIB_AGL_H_
+#define _XLIB_AGL_H_
 
 #ifndef _AGL_H_
     #include <AGL/agl.h>
 #endif
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-AGL_EXPORT(aglContext* AGL_API waglCreateContext( const aglContextSettings* settings ));
-AGL_EXPORT(void AGL_API waglDestroyContext( aglContext* context ));
-AGL_EXPORT(HWND AGL_API waglGetWindowHandle( aglContext* context ));
+AGL_EXPORT(aglContext* AGL_API xaglCreateContext( const aglContextSettings* settings ));
+AGL_EXPORT(void AGL_API xaglDestroyContext( aglContext* context ));
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-#endif /* _WIN_AGL_H_ */
+#endif /* _XLIB_AGL_H_ */

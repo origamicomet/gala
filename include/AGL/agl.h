@@ -345,7 +345,7 @@ typedef struct aglDrawCommand {
     };
 } aglDrawCommand;
 
-AGL_EXPORT(void AGL_API aglExecuteCommand( aglContext* context, const aglCommand* cmd ));
+AGL_EXPORT(void AGL_API aglExecuteCommands( aglContext* context, const aglCommand* cmds, size_t num_commands ));
 
 #ifdef __cplusplus
 }
