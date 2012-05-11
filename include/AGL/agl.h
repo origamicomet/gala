@@ -109,10 +109,10 @@ typedef enum AGL_INPUT_ELEMENT_NORMALIZE {
 } AGL_INPUT_ELEMENT_NORMALIZE;
 
 typedef struct aglInputElementDesc {
-    const char* param_name;
-    AGL_INPUT_ELEMENT_TYPE element_type;
+    uint32_t attrib_index;
+    AGL_INPUT_ELEMENT_TYPE element_type : 8;
     uint32_t num_components;
-    AGL_INPUT_ELEMENT_NORMALIZE normalize;
+    AGL_INPUT_ELEMENT_NORMALIZE normalize : 8;
     uint32_t slot;
     uint32_t step_rate;
     uint32_t stride;
@@ -320,10 +320,10 @@ typedef enum AGL_DRAW_TYPE {
 
 typedef struct aglDrawCommand {
     aglCommand _cmd;
-    aglRasterizerState*     rasterizer_state;
+    aglRasterizerState*     rasterizer_state; // todo: move to context
     aglBlendState*          blend_state;
     aglDepthStencilState*   depth_stencil_state;
-    aglRenderTarget*        render_target;
+    aglRenderTarget*        render_target; // todo: move to context
     aglInputLayout*         input_layout;
     AGL_PRIMITIVE_TOPOLOGY  primitive_topology : 8;
     aglVertexShader*        vertex_shader;
