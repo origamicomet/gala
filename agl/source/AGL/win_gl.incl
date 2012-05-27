@@ -26,16 +26,21 @@
 
 #include <AGL/win_agl.h>
 
+#include <time.h>
+
 struct aglContext {
     uint32_t id;
     HWND     hWnd;
     HDC      hDC;
     HGLRC    hRC;
-    unsigned vsync    : 1;
-    unsigned reserved : 7;
+    unsigned vsync      : 1;
+    unsigned fullscreen : 1;
+    unsigned reserved   : 6;
+    CGcontext cg_context;
+    CGprofile cg_vs_profile;
+    CGprofile cg_ps_profile;
 };
 
-static uint32_t next_context_id = 1;
 static aglContext* active_context = NULL;
 
 aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
@@ -64,7 +69,7 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
     assert(settings);
 
     context = (aglContext*)aglAlloc(sizeof(aglContext));
-    context->id    = next_context_id;
+    context->id = time(NULL);
 
     sprintf(&class_name[0], "agl_%u", context->id);
 
@@ -180,6 +185,13 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
 
     if( !glewInit() != GLEW_OK ) goto failure;
 
+    context->cg_context    = cgCreateContext();
+    context->cg_vs_profile = CG_PROFILE_GLSLV;
+    context->cg_ps_profile = CG_PROFILE_GLSLF;
+
+    cgGLSetContextOptimalOptions(context->cg_context, CG_PROFILE_GLSLV);
+    cgGLSetContextOptimalOptions(context->cg_context, CG_PROFILE_GLSLF);
+
     if( current_context ) wglMakeCurrent(current_context->hDC, current_context->hRC);
     else wglMakeCurrent(NULL, NULL);
 
@@ -204,6 +216,8 @@ void AGL_API waglDestroyContext( aglContext* context )
         wglMakeCurrent(NULL, NULL);
     }
 
+    cgDestroyContext(context->cg_context);
+
     wglDeleteContext(context->hRC);
     sprintf(&class_name[0], "agl_%u", context->id);
     UnregisterClass(&class_name[0], GetModuleHandle(NULL));
@@ -217,7 +231,7 @@ HWND AGL_API waglGetWindowHandle( aglContext* context )
     return context->hWnd;
 }
 
-static void AGL_API aglSetActiveContext( aglContext* context )
+void AGL_API aglSetActiveContext( aglContext* context )
 {
     if( context == current_context ) return;
     current_context = context;
@@ -225,8 +239,12 @@ static void AGL_API aglSetActiveContext( aglContext* context )
     else wglMakeCurrent(NULL, NULL);
 }
 
-void AGL_API aglSwapBuffers( aglContext* context )
+aglContext* AGL_API aglGetActiveContext( void )
 {
-    aglSetActiveContext(context);
-    SwapBuffers(context->hDC);
+    return current_context;
+}
+
+void AGL_API aglSwapBuffers()
+{
+    SwapBuffers(current_context->hDC);
 }
