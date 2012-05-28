@@ -411,7 +411,7 @@ extern AGL_EXPORT(void AGL_API aglDestroyPixelShader( aglPixelShader* pixel_shad
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#define AGL_INIT_CMD( type, st ) { memset((void*)&(st), 0, sizeof(agl##type##Command); (st)._cmd.type = AGL_COMMAND_##type; }
+#define AGL_INIT_CMD( cmd_type, st ) { /*memset((void*)&(st), 0, sizeof(agl##cmd_type##Command));*/ (st)._cmd.type = AGL_COMMAND_##cmd_type; }
 
 typedef enum AGL_COMMAND_TYPE {
     AGL_COMMAND_Clear           = 1,
@@ -432,7 +432,7 @@ typedef enum AGL_CLEAR_BITS {
 
 typedef struct aglClearCommand {
     aglCommand      _cmd;
-    AGL_CLEAR_BITS  bits : 8;
+    unsigned        bits : 8;
     uint32_t        buffer;
     float           color[4];
     float           depth;

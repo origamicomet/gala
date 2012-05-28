@@ -81,8 +81,8 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
     };
 
     int32_t context_attributes[] = {
-        WGL_CONTEXT_MAJOR_VERSION_ARB, major_ver,
-        WGL_CONTEXT_MINOR_VERSION_ARB, minor_ver, 
+        WGL_CONTEXT_MAJOR_VERSION_ARB, 0,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 0, 
         WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
         WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
         NULL, NULL
@@ -145,6 +145,7 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
 #else
     if( !(dummy_context.hRC = wglCreateContext(context->hDC)) ) goto failure;
 
+    wglMakeCurrent(context->hDC, dummy_context.hRC);
     glGetIntegerv(GL_MAJOR_VERSION, (GLint*)&major_ver);
     glGetIntegerv(GL_MINOR_VERSION, (GLint*)&minor_ver);
 
@@ -185,7 +186,9 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
     }
 #endif
 
-    if( !glewInit() != GLEW_OK ) goto failure;
+    wglMakeCurrent(context->hDC, context->hRC);
+
+    if( glewInit() != GLEW_OK ) goto failure;
 
     context->cg_context    = cgCreateContext();
     context->cg_vs_profile = CG_PROFILE_GLSLV;
@@ -196,6 +199,8 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
 
     if( active_context ) wglMakeCurrent(active_context->hDC, active_context->hRC);
     else wglMakeCurrent(NULL, NULL);
+
+    ShowWindow(context->hWnd, SW_SHOW);
 
     return context;
 

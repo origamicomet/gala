@@ -11,10 +11,8 @@ Defines =
         {
         },
 
-        [{ "windows", "release" }] =
+        [{ "windows" }] =
         {
-            "_HAS_ITERATOR_DEBUGGING=0",
-            "_SECURE_SCL=0"
         },
 
         [{ "macosx" }] =
@@ -31,6 +29,21 @@ IncludePaths =
 {
     ["Global"] =
     {
+        [{ "" }] =
+        {
+        },
+
+        [{ "windows" }] =
+        {
+        },
+
+        [{ "macosx" }] =
+        {
+        },
+
+        [{ "linux" }] =
+        {
+        }
     }
 }
 
@@ -38,6 +51,21 @@ LibraryPaths =
 {
     ["Global"] =
     {
+        [{ "" }] =
+        {
+        },
+
+        [{ "windows" }] =
+        {
+        },
+
+        [{ "macosx" }] =
+        {
+        },
+
+        [{ "linux" }] =
+        {
+        }
     }
 }
 
@@ -45,9 +73,47 @@ Dependencies =
 {
     ["Global"] =
     {
+        [{ "" }] =
+        {
+        },
+
+        [{ "windows" }] =
+        {
+        },
+
+        [{ "macosx" }] =
+        {
+        },
+
+        [{ "linux" }] =
+        {
+        }
     }
 }
 
-include "agl"
+TargetSuffix =
+{
+    ["Global"] =
+    {
+        [{ "" }] =
+        {
+        },
+
+        [{ "windows" }] =
+        {
+        },
+
+        [{ "macosx" }] =
+        {
+        },
+
+        [{ "linux" }] =
+        {
+        }
+    }
+}
+
 include "dependencies"
+
+include "agl"
 include "samples"

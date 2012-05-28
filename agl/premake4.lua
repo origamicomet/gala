@@ -54,6 +54,12 @@ Dependencies.agl =
     }
 }
 
+TargetSuffix.agl =
+{
+    [{ "" }]       = "",
+    [{ "opengl" }] = "_opengl"
+}
+
 solution "agl"
 
     location ( "../build/" .. _ACTION )
@@ -98,12 +104,15 @@ solution "agl"
             links(v)
         end
 
+        for k,v in pairs(TargetSuffix.agl) do
+            configuration(k)
+            targetsuffix(v)
+        end
+
         configuration { "debug" }
-            targetsuffix ( "d" )
             flags { "Symbols" }
 
         configuration { "release" }
-            targetsuffix ( "" )
             flags { "Optimize", "EnableSSE", "EnableSSE2" }
 
         configuration {}
