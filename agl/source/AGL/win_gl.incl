@@ -192,13 +192,13 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
     cgGLSetContextOptimalOptions(context->cg_context, CG_PROFILE_GLSLV);
     cgGLSetContextOptimalOptions(context->cg_context, CG_PROFILE_GLSLF);
 
-    if( current_context ) wglMakeCurrent(current_context->hDC, current_context->hRC);
+    if( active_context ) wglMakeCurrent(active_context->hDC, active_context->hRC);
     else wglMakeCurrent(NULL, NULL);
 
     return context;
 
 failure:
-    if( current_context ) wglMakeCurrent(current_context->hDC, current_context->hRC);
+    if( active_context ) wglMakeCurrent(active_context->hDC, active_context->hRC);
     else wglMakeCurrent(NULL, NULL);
 
     aglFree(context);
@@ -211,8 +211,8 @@ void AGL_API waglDestroyContext( aglContext* context )
 
     assert(context);
 
-    if( context == current_context ) {
-        current_context = NULL;
+    if( context == active_context ) {
+        active_context = NULL;
         wglMakeCurrent(NULL, NULL);
     }
 
@@ -233,18 +233,18 @@ HWND AGL_API waglGetWindowHandle( aglContext* context )
 
 void AGL_API aglSetActiveContext( aglContext* context )
 {
-    if( context == current_context ) return;
-    current_context = context;
-    if( current_context ) wglMakeCurrent(current_context->hDC, current_context->hRC);
+    if( context == active_context ) return;
+    active_context = context;
+    if( active_context ) wglMakeCurrent(active_context->hDC, active_context->hRC);
     else wglMakeCurrent(NULL, NULL);
 }
 
 aglContext* AGL_API aglGetActiveContext( void )
 {
-    return current_context;
+    return active_context;
 }
 
 void AGL_API aglSwapBuffers()
 {
-    SwapBuffers(current_context->hDC);
+    SwapBuffers(active_context->hDC);
 }
