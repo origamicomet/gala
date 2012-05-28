@@ -61,7 +61,7 @@ extern "C" {
     #define AGL_PLATFORM_WIN64
 #endif
 
-#if defined(EDEN_PLATFORM_WIN32) || defined(EDEN_PLATFORM_WIN64)
+#if defined(AGL_PLATFORM_WIN32) || defined(AGL_PLATFORM_WIN64)
     #define AGL_PLATFORM_WINDOWS
 #endif
 
@@ -151,7 +151,6 @@ typedef struct aglContext aglContext;
 
 extern AGL_EXPORT(void AGL_API aglSetActiveContext( aglContext* context ));
 extern AGL_EXPORT(aglContext* AGL_API aglGetActiveContext( void ));
-extern AGL_EXPORT(void AGL_API aglSwapBuffers( aglContext* context ));
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -208,12 +207,12 @@ typedef enum AGL_FRONT_FACE {
     AGL_COUNTER_CLOCKWISE = 2
 } AGL_FRONT_FACE;
 
-typedef enum aglRasterizerDesc {
+typedef struct aglRasterizerDesc {
     AGL_FILL_MODE  fill_mode;
     AGL_CULL_MODE  cull_mode;
     AGL_FRONT_FACE front_face;
     unsigned       enable_scissor : 1;
-    unsigned       reserved : 7;
+    unsigned       reserved       : 7;
 } aglRasterizerDesc;
 
 extern AGL_EXPORT(aglRasterizerState* AGL_API aglCreateRasterizerState( const aglRasterizerDesc* desc ));
@@ -243,7 +242,7 @@ typedef enum AGL_BLEND_OP {
     AGL_BLEND_OP_MAX          = 5 
 } AGL_BLEND_OP;
 
-typedef enum aglBlendDesc {
+typedef struct aglBlendDesc {
     unsigned     enable_blend : 1;
     unsigned     reserved     : 7;
     AGL_BLEND    src_blend;
@@ -258,17 +257,6 @@ typedef struct aglBlendState aglBlendState;
 
 extern AGL_EXPORT(aglBlendState* AGL_API aglCreateBlendState( const aglBlendDesc* desc ));
 extern AGL_EXPORT(void AGL_API aglDestroyBlendState( aglBlendState* blend_state ));
-
-typedef enum AGL_COMPARISON_FUNC {
-    AGL_COMPARISON_NEVER         = 1,
-    AGL_COMPARISON_LESS          = 2,
-    AGL_COMPARISON_EQUAL         = 3,
-    AGL_COMPARISON_LESS_EQUAL    = 4,
-    AGL_COMPARISON_GREATER       = 5,
-    AGL_COMPARISON_NOT_EQUAL     = 6,
-    AGL_COMPARISON_GREATER_EQUAL = 7,
-    AGL_COMPARISON_ALWAYS        = 8 
-} AGL_COMPARISON_FUNC;
 
 typedef enum AGL_COMPARISON_FUNC {
     AGL_COMPARISON_NEVER         = 1,
@@ -328,6 +316,12 @@ typedef enum AGL_CPU_ACCESS_FLAG {
     AGL_CPU_ACCESS_READ    = (1 << 1) 
 } AGL_CPU_ACCESS_FLAG;
 
+typedef enum AGL_MAP {
+    AGL_MAP_READ               = 1,
+    AGL_MAP_WRITE              = 2,
+    AGL_MAP_READ_WRITE         = 3
+} AGL_MAP;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef struct aglVertexBuffer aglVertexBuffer;
@@ -335,15 +329,24 @@ typedef struct aglVertexBuffer aglVertexBuffer;
 extern AGL_EXPORT(aglVertexBuffer* AGL_API aglCreateVertexBuffer( AGL_USAGE usage, uint32_t access_flags, size_t num_bytes, const void* data ));
 extern AGL_EXPORT(void AGL_API aglDestroyVertexBuffer( aglVertexBuffer* vertex_buffer ));
 
+extern AGL_EXPORT(void* AGL_API aglMapVertexBuffer( aglVertexBuffer* vertex_buffer, AGL_MAP map ));
+extern AGL_EXPORT(void AGL_API aglUnmapVertexBuffer( aglVertexBuffer* vertex_buffer ));
+
 typedef struct aglIndexBuffer aglIndexBuffer;
 
 extern AGL_EXPORT(aglIndexBuffer* AGL_API aglCreateIndexBuffer( AGL_USAGE usage, uint32_t access_flags, size_t num_bytes, const void* data ));
 extern AGL_EXPORT(void AGL_API aglDestroyIndexBuffer( aglIndexBuffer* index_buffer ));
 
+extern AGL_EXPORT(void* AGL_API aglMapIndexBuffer( aglIndexBuffer* index_buffer, AGL_MAP map ));
+extern AGL_EXPORT(void AGL_API aglUnmapIndexBuffer( aglIndexBuffer* index_buffer ));
+
 typedef struct aglConstantBuffer aglConstantBuffer;
 
 extern AGL_EXPORT(aglConstantBuffer* AGL_API aglCreateConstantBuffer( AGL_USAGE usage, uint32_t access_flags, size_t num_bytes, const void* data ));
 extern AGL_EXPORT(void AGL_API aglDestroyConstantBuffer( aglConstantBuffer* constant_buffer ));
+
+extern AGL_EXPORT(void* AGL_API aglMapConstantBuffer( aglConstantBuffer* constant_buffer, AGL_MAP map ));
+extern AGL_EXPORT(void AGL_API aglUnmapConstantBuffer( aglConstantBuffer* constant_buffer ));
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -368,10 +371,20 @@ typedef struct aglTextureDesc2D {
     unsigned reserved0            : 20;
 } aglTextureDesc2D;
 
+typedef struct aglBox {
+    uint32_t left;
+    uint32_t top;
+    uint32_t front;
+    uint32_t right;
+    uint32_t bottom;
+    uint32_t back;
+} aglBox;
+
 extern AGL_EXPORT(aglTexture* AGL_API aglCreateTexture2D( const aglTextureDesc2D* desc, const void* data ));
 extern AGL_EXPORT(void AGL_API aglDestroyTexture( aglTexture* texture ));
 
 extern AGL_EXPORT(void AGL_API aglGenerateMips( aglTexture* texture ));
+extern AGL_EXPORT(void AGL_API aglUpdateTexture2D( aglTexture* texture, const aglBox* box, uint32_t mipmap, const void* data ));
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -411,7 +424,7 @@ typedef struct aglCommand {
     AGL_COMMAND_TYPE type : 8;
 } aglCommand;
 
-typedef AGL_CLEAR_BITS {
+typedef enum AGL_CLEAR_BITS {
     AGL_CLEAR_COLOR   = (1 << 0),
     AGL_CLEAR_DEPTH   = (1 << 1),
     AGL_CLEAR_STENCIL = (1 << 2)
@@ -458,7 +471,7 @@ typedef struct aglDrawCommand {
     aglRasterizerState*     rasterizer_state; // TODO: move out of command
     aglBlendState*          blend_state;
     aglDepthStencilState*   depth_stencil_state;
-    uint32                  stencil_ref;
+    uint32_t                stencil_ref;
     aglInputLayout*         input_layout;
     AGL_PRIMITIVE_TOPOLOGY  primitive_topology : 8;
     aglVertexShader*        vertex_shader;
@@ -470,17 +483,17 @@ typedef struct aglDrawCommand {
     aglConstantBuffer*      vs_constant_buffers[4];
     aglConstantBuffer*      ps_constant_buffers[4];
     AGL_DRAW_TYPE           draw_type : 8;
-    union params {
-        struct draw {
+    union {
+        struct {
             uint32_t start_vertex;
             uint32_t num_vertices;
-        };
+        } draw;
 
-        struct draw_indexed {
+        struct {
             uint32_t start_index;
             uint32_t num_indices;
-        };
-    };
+        } draw_indexed;
+    } params;
 } aglDrawCommand;
 
 typedef struct aglSetRenderTargetCommand {

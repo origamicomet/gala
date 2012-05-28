@@ -26,6 +26,8 @@
 
 #include <AGL/win_agl.h>
 
+#include <GL/wglext.h>
+
 #include <time.h>
 
 struct aglContext {
@@ -63,7 +65,28 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
     uint32_t num_formats;
 
     PFNWGLCHOOSEPIXELFORMATARBPROC  wglChoosePixelFormatARB;
-    PFNWGLCREATEBUFFERREGIONARBPROC wglCreateContextAttribsARB;
+    PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
+
+    const int32_t pfd_attributes[] = {
+        WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+        WGL_ACCELERATION_ARB,   WGL_FULL_ACCELERATION_ARB,
+        WGL_COLOR_BITS_ARB,     24,
+        WGL_ALPHA_BITS_ARB,     0,
+        WGL_DEPTH_BITS_ARB,     24,
+        WGL_STENCIL_BITS_ARB,   8,
+        WGL_DOUBLE_BUFFER_ARB,  GL_TRUE,
+        WGL_SAMPLE_BUFFERS_ARB, settings->samples > 0 ? GL_TRUE : GL_FALSE,
+        WGL_SAMPLES_ARB,        settings->samples,
+        NULL, NULL
+    };
+
+    int32_t context_attributes[] = {
+        WGL_CONTEXT_MAJOR_VERSION_ARB, major_ver,
+        WGL_CONTEXT_MINOR_VERSION_ARB, minor_ver, 
+        WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+        NULL, NULL
+    };
 #endif
 
     assert(settings);
@@ -143,22 +166,6 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
         goto failure;
     }
 
-    const int32_t pfd_attributes[] = {
-        WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-        WGL_ACCELERATION_ARB,   WGL_FULL_ACCELERATION_ARB,
-
-        WGL_COLOR_BITS_ARB,     24,
-        WGL_ALPHA_BITS_ARB,     0,
-        WGL_DEPTH_BITS_ARB,     24,
-        WGL_STENCIL_BITS_ARB,   8,
-
-        WGL_DOUBLE_BUFFER_ARB,  GL_TRUE,
-        WGL_SAMPLE_BUFFERS_ARB, settings->samples > 0 ? GL_TRUE : GL_FALSE,
-        WGL_SAMPLES_ARB,        settings->samples,
-        
-        NULL, NULL
-    };
-
     num_formats = 0;
     if( wglChoosePixelFormatARB(context->hDC, (const int*)&pfd_attributes[0], 0, 1, (int*)&pixel_format, (UINT*)&num_formats) || num_formats ) {
         if( !SetPixelFormat(context->hDC, pixel_format, &pfd) ) {
@@ -168,13 +175,8 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
         }
     }
 
-    const int32_t context_attributes[] = {
-        WGL_CONTEXT_MAJOR_VERSION_ARB, major_ver,
-        WGL_CONTEXT_MINOR_VERSION_ARB, minor_ver, 
-        WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-        NULL, NULL
-    };
+    context_attributes[1] = major_ver;
+    context_attributes[3] = minor_ver;
 
     if( !(context->hRC = (HGLRC)wglCreateContextAttribsARB(context->hDC, 0, (const int*)&context_attributes[0])) ) {
         wglMakeCurrent(NULL, NULL);
@@ -244,7 +246,7 @@ aglContext* AGL_API aglGetActiveContext( void )
     return active_context;
 }
 
-void AGL_API aglSwapBuffers()
+void AGL_API aglSwapBuffers( void )
 {
     SwapBuffers(active_context->hDC);
 }

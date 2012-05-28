@@ -15,3 +15,4 @@ Please see building.md for instructions on how to build AGL from source.
 
 AGL is available under the MIT license and was designed and developed by [bitbyte studios](http://bitbyte.ca).
 AGL uses NVIDIA Cg for shaders thus any software based on AGL falls under the licensing terms described in dependencies/Cg/license.md.
+OpenGL implementations of AGL use GLEW thus any software based on the OpenGL implementation of AGL falls under the licensing terms described in dependencies/GLEW/LICENSE.txt 
