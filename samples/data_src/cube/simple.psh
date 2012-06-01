@@ -1,0 +1,14 @@
+struct PS_INPUT {
+    float4 color : COLOR0;
+};
+
+struct PS_OUTPUT {
+    float4 color : COLOR0;
+};
+
+PS_OUTPUT ps_main( PS_INPUT IN )
+{
+    PS_OUTPUT OUT;
+    OUT.color = IN.color;
+    return OUT;
+}

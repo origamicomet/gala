@@ -23,13 +23,17 @@ TargetSuffix.samples =
 {
 }
 
+Flags.samples =
+{
+}
+
 solution "samples"
 
     location ( "../build/" .. _ACTION )
 
     configurations
     {
-        "debug", "release", "opengl"
+        "opengl", "opengl-debug"
     }
 
     platforms

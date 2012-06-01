@@ -88,10 +88,12 @@ typedef struct fwEvent {
     } data;
 } fwEvent;
 
-int32_t frameworkInitialize( uint32_t width, uint32_t height, const char* title );
-void    frameworkDeinitialize();
-aglContext* frameworkGetContext();
-int32_t frameworkGetNextEvent( fwEvent* event );
+int32_t fwInitialize( uint32_t width, uint32_t height, const char* title );
+void    fwDeinitialize();
+aglContext* fwGetContext();
+int32_t fwGetNextEvent( fwEvent* event );
+aglVertexShader* fwCreateVertexShaderFromFile( const char* file );
+aglPixelShader* fwCreatePixelShaderFromFile( const char* file );
 
 #ifdef __cplusplus
 }

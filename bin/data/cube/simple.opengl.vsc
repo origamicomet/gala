@@ -1,0 +1,37 @@
+// glslv output by Cg compiler
+// cgc version 3.1.0010, build date Feb  8 2012
+// command line args: -profile glslv -po version=140
+// source file: data_src/cube/simple.vsh
+//vendor NVIDIA Corporation
+//version 3.1.0.10
+//profile glslv
+//program vs_main
+//var float3 IN.position : $vin.ATTR0 : ATTR0 : 0 : 1
+//var float4 vs_main.position : $vout.POSITION : HPOS : -1 : 1
+//var float4 vs_main.color : $vout.COLOR0 : COLOR0 : -1 : 1
+
+#version 140
+
+struct VS_INPUT {
+    vec3 _position;
+};
+
+struct VS_OUTPUT {
+    vec4 _position1;
+    vec4 _color;
+};
+
+in vec4 ATTR0;
+out vec4 cg_FrontColor;
+
+ // main procedure, the original name was vs_main
+void main()
+{
+
+    VS_OUTPUT _OUT;
+
+    _OUT._position1 = vec4(ATTR0.x, ATTR0.y, ATTR0.z, 1.00000000E+000);
+    gl_Position = _OUT._position1;
+    cg_FrontColor = vec4( 1.00000000E+000, 1.00000000E+000, 1.00000000E+000, 1.00000000E+000);
+    return;
+} // main end

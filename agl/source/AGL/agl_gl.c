@@ -73,37 +73,37 @@ aglInputLayout* AGL_API aglCreateInputLayout( const size_t num_descs, const aglI
 {
     uint32_t i;
     aglInputLayout* input_layout = NULL;
+    aglInputLayoutAttrib* attrib = NULL;
 
     assert(num_descs);
     assert(descs);
 
-    input_layout = (aglInputLayout*)aglAlloc(sizeof(aglInputLayout) + sizeof(aglInputLayoutAttrib) * num_descs);
+    input_layout = (aglInputLayout*)aglAlloc(sizeof(aglInputLayout));
     input_layout->num_attribs = num_descs;
-    input_layout->attribs     = (aglInputLayoutAttrib*)(input_layout + sizeof(aglInputLayout));
+    input_layout->attribs     = (aglInputLayoutAttrib*)aglAlloc(sizeof(aglInputLayoutAttrib) * num_descs);
 
     for( i = 0; i < num_descs; ++i )
     {
-        aglInputLayoutAttrib* attrib = &input_layout->attribs[i];
-        attrib->index          = (GLuint)descs[i].attrib_index;
-        attrib->num_components = (GLint)descs[i].num_components;
+        input_layout->attribs[i].index          = (GLuint)descs[i].attrib_index;
+        input_layout->attribs[i].num_components = (GLint)descs[i].num_components;
 
         switch( descs[i].element_type )
         {
-            case AGL_IE_FLOAT:  attrib->type = GL_FLOAT; break;
-            case AGL_IE_DOUBLE: attrib->type = GL_DOUBLE; break;
-            case AGL_IE_INT8:   attrib->type = GL_BYTE; break;
-            case AGL_IE_UINT8:  attrib->type = GL_UNSIGNED_BYTE; break;
-            case AGL_IE_INT16:  attrib->type = GL_SHORT; break;
-            case AGL_IE_UINT16: attrib->type = GL_UNSIGNED_SHORT; break;
-            case AGL_IE_INT32:  attrib->type = GL_INT; break;
-            case AGL_IE_UINT32: attrib->type = GL_UNSIGNED_INT; break;
+            case AGL_IE_FLOAT:  input_layout->attribs[i].type = GL_FLOAT; break;
+            case AGL_IE_DOUBLE: input_layout->attribs[i].type = GL_DOUBLE; break;
+            case AGL_IE_INT8:   input_layout->attribs[i].type = GL_BYTE; break;
+            case AGL_IE_UINT8:  input_layout->attribs[i].type = GL_UNSIGNED_BYTE; break;
+            case AGL_IE_INT16:  input_layout->attribs[i].type = GL_SHORT; break;
+            case AGL_IE_UINT16: input_layout->attribs[i].type = GL_UNSIGNED_SHORT; break;
+            case AGL_IE_INT32:  input_layout->attribs[i].type = GL_INT; break;
+            case AGL_IE_UINT32: input_layout->attribs[i].type = GL_UNSIGNED_INT; break;
         }
 
-        attrib->normalized = (descs[i].normalize == AGL_IE_NORMALIZE) ? GL_TRUE : GL_FALSE;
-        attrib->stride     = descs[i].stride;
-        attrib->offset     = (const GLvoid*)descs[i].offset;
-        attrib->slot       = descs[i].slot;
-        attrib->divisor    = (GLuint)descs[i].step_rate;
+        input_layout->attribs[i].normalized = (descs[i].normalize == AGL_IE_NORMALIZE) ? GL_TRUE : GL_FALSE;
+        input_layout->attribs[i].stride     = descs[i].stride;
+        input_layout->attribs[i].offset     = (const GLvoid*)descs[i].offset;
+        input_layout->attribs[i].slot       = descs[i].slot;
+        input_layout->attribs[i].divisor    = (GLuint)descs[i].step_rate;
     }
 
     return input_layout;

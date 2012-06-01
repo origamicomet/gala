@@ -33,8 +33,22 @@ Dependencies.samples.framework =
 
 TargetSuffix.samples.framework =
 {
-    [{ "" }]       = "",
-    [{ "opengl" }] = "_opengl"
+    [{ "" }]             = "",
+    [{ "opengl" }]       = "_opengl",
+    [{ "opengl-debug" }] = "_opengl_d",
+}
+
+Flags.samples.framework =
+{
+    [{ "opengl" }] =
+    {
+        "Optimize", "EnableSSE", "EnableSSE2"
+    },
+
+    [{ "opengl-debug" }] =
+    {
+        "Symbols"
+    }
 }
 
 project "framework"
@@ -72,11 +86,10 @@ project "framework"
         targetsuffix(v)
     end
 
-    configuration { "debug" }
-        flags { "Symbols" }
-
-    configuration { "release" }
-        flags { "Optimize", "EnableSSE", "EnableSSE2" }
+    for k,v in pairs(Flags.samples.framework) do
+        configuration(k)
+        flags(v)
+    end
 
     configuration {}
         includedirs { "include" }

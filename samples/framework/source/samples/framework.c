@@ -26,6 +26,9 @@
 
 #include <samples/framework.h>
 
+#include <stdio.h>
+#include <string.h>
+
 #if   defined(AGL_PLATFORM_WINDOWS)
     #include <AGL/win_agl.h>
 #elif defined(AGL_PLATFORM_LINUX)
@@ -44,12 +47,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-static aglContext* framework_context = NULL;
+static aglContext* fw_context = NULL;
 
 static void* AGL_API aglAlloc( size_t num_bytes ) { return malloc(num_bytes); }
 static void  AGL_API aglFree( void* ptr ) { return free(ptr); }
 
-int32_t frameworkInitialize( uint32_t width, uint32_t height, const char* title )
+int32_t fwInitialize( uint32_t width, uint32_t height, const char* title )
 {
     const aglContextSettings context_settings = {
         width, height, 0, FALSE, FALSE
@@ -58,10 +61,10 @@ int32_t frameworkInitialize( uint32_t width, uint32_t height, const char* title 
     if( aglInit(&aglAlloc, &aglFree) != AGL_SUCCESS ) return FALSE;
 
 #if   defined(AGL_PLATFORM_WINDOWS)
-    framework_context = waglCreateContext(&context_settings);
-    if( !framework_context ) return FALSE;
-    aglSetActiveContext(framework_context);
-    SetWindowTextA(waglGetWindowHandle(framework_context), title);
+    fw_context = waglCreateContext(&context_settings);
+    if( !fw_context ) return FALSE;
+    aglSetActiveContext(fw_context);
+    SetWindowTextA(waglGetWindowHandle(fw_context), title);
 #elif defined(AGL_PLATFORM_LINUX)
 #elif defined(AGL_PLATFORM_OSX)
 #elif defined(AGL_PLATFORM_IOS)
@@ -72,28 +75,28 @@ int32_t frameworkInitialize( uint32_t width, uint32_t height, const char* title 
     return TRUE;
 }
 
-void frameworkDeinitialize()
-{
-    #if   defined(AGL_PLATFORM_WINDOWS)
-        waglDestroyContext(framework_context);
-        framework_context = NULL;
-    #elif defined(AGL_PLATFORM_LINUX)
-    #elif defined(AGL_PLATFORM_OSX)
-    #elif defined(AGL_PLATFORM_IOS)
-    #elif defined(AGL_PLATFORM_ANDROID)
-    #else
-    #endif
-}
-
-aglContext* frameworkGetContext()
-{
-    return framework_context;
-}
-
-int32_t frameworkGetNextEvent( fwEvent* event )
+void fwDeinitialize()
 {
 #if   defined(AGL_PLATFORM_WINDOWS)
-    HWND hWnd = waglGetWindowHandle(framework_context);
+    waglDestroyContext(fw_context);
+    fw_context = NULL;
+#elif defined(AGL_PLATFORM_LINUX)
+#elif defined(AGL_PLATFORM_OSX)
+#elif defined(AGL_PLATFORM_IOS)
+#elif defined(AGL_PLATFORM_ANDROID)
+#else
+#endif
+}
+
+aglContext* fwGetContext()
+{
+    return fw_context;
+}
+
+int32_t fwGetNextEvent( fwEvent* event )
+{
+#if   defined(AGL_PLATFORM_WINDOWS)
+    HWND hWnd = waglGetWindowHandle(fw_context);
     MSG  msg;
 
     if( PeekMessage(&msg, hWnd, 0, 0, PM_REMOVE) )
@@ -116,6 +119,64 @@ int32_t frameworkGetNextEvent( fwEvent* event )
 
 #elif defined(AGL_PLATFORM_LINUX)
 #elif defined(AGL_PLATFORM_OSX)
+#elif defined(AGL_PLATFORM_IOS)
+#elif defined(AGL_PLATFORM_ANDROID)
+#else
+#endif
+}
+
+aglVertexShader* fwCreateVertexShaderFromFile( const char* file )
+{
+#if   defined(AGL_PLATFORM_WINDOWS) || defined(AGL_PLATFORM_LINUX) || defined(AGL_PLATFORM_OSX)
+    FILE* handle;
+    long  file_len;
+    char* obj_code;
+    aglVertexShader* vertex_shader;
+
+    handle = fopen(file, "rb");
+    if( !handle ) return NULL;
+
+    fseek(handle, 0, SEEK_END);
+    if( (file_len = ftell(handle)) <= 0 ) { fclose(handle); return NULL; }
+
+    obj_code = (char*)malloc((file_len + 1) * sizeof(char));
+    memset(obj_code, 0, sizeof(obj_code));
+
+    fread((void*)obj_code, 1, file_len, handle);
+
+    vertex_shader = aglCreateVertexShader(obj_code);
+    free(obj_code);
+
+    return vertex_shader;
+#elif defined(AGL_PLATFORM_IOS)
+#elif defined(AGL_PLATFORM_ANDROID)
+#else
+#endif
+}
+
+aglPixelShader* fwCreatePixelShaderFromFile( const char* file )
+{
+#if   defined(AGL_PLATFORM_WINDOWS) || defined(AGL_PLATFORM_LINUX) || defined(AGL_PLATFORM_OSX)
+    FILE* handle;
+    long  file_len;
+    char* obj_code;
+    aglPixelShader* pixel_shader;
+
+    handle = fopen(file, "rb");
+    if( !handle ) return NULL;
+
+    fseek(handle, 0, SEEK_END);
+    if( (file_len = ftell(handle)) <= 0 ) { fclose(handle); return NULL; }
+
+    obj_code = (char*)malloc((file_len + 1) * sizeof(char));
+    memset(obj_code, 0, sizeof(obj_code));
+
+    fread((void*)obj_code, 1, file_len, handle);
+
+    pixel_shader = aglCreatePixelShader(obj_code);
+    free(obj_code);
+
+    return pixel_shader;
 #elif defined(AGL_PLATFORM_IOS)
 #elif defined(AGL_PLATFORM_ANDROID)
 #else

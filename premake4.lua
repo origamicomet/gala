@@ -113,6 +113,28 @@ TargetSuffix =
     }
 }
 
+Flags =
+{
+    ["Global"] =
+    {
+        [{ "" }] =
+        {
+        },
+
+        [{ "windows" }] =
+        {
+        },
+
+        [{ "macosx" }] =
+        {
+        },
+
+        [{ "linux" }] =
+        {
+        }
+    }
+}
+
 include "dependencies"
 
 include "agl"

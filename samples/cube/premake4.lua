@@ -30,13 +30,33 @@ Dependencies.samples.cube =
     {
         "agl_opengl",
         "framework_opengl"
+    },
+
+    [{ "opengl-debug" }] =
+    {
+        "agl_opengl_d",
+        "framework_opengl_d"
     }
 }
 
 TargetSuffix.samples.cube =
 {
-    [{ "" }]       = "",
-    [{ "opengl" }] = "_opengl"
+    [{ "" }]             = "",
+    [{ "opengl" }]       = "_opengl",
+    [{ "opengl-debug" }] = "_opengl_d"
+}
+
+Flags.samples.cube =
+{
+    [{ "opengl" }] =
+    {
+        "Optimize", "EnableSSE", "EnableSSE2"
+    },
+
+    [{ "opengl-debug" }] =
+    {
+        "Symbols"
+    }
 }
 
 project "cube"
@@ -74,11 +94,10 @@ project "cube"
         targetsuffix(v)
     end
 
-    configuration { "debug" }
-        flags { "Symbols" }
-
-    configuration { "release" }
-        flags { "Optimize", "EnableSSE", "EnableSSE2" }
+    for k,v in pairs(Flags.samples.cube) do
+        configuration(k)
+        flags(v)
+    end
 
     configuration {}
         files { "source/samples/cube.c" }

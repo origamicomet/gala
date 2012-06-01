@@ -127,6 +127,8 @@ extern "C" {
     #error No link type specified.
 #endif
 
+#define AGL_RESERVED 0
+
 typedef enum AGL_ERROR {
     AGL_SUCCESS = 1
 } AGL_ERROR;

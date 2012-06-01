@@ -36,6 +36,11 @@ LibraryPaths.agl =
     [{ "windows", "opengl" }] =
     {
         "../dependencies/GLEW/lib/" .. _ACTION
+    },
+
+    [{ "windows", "opengl-debug" }] =
+    {
+        "../dependencies/GLEW/lib/" .. _ACTION
     }
 }
 
@@ -51,13 +56,34 @@ Dependencies.agl =
         "opengl32",
         "cgGL",
         "glew32"
+    },
+
+    [{ "windows", "opengl-debug" }] =
+    {
+        "opengl32",
+        "cgGL",
+        "glew32"
     }
 }
 
 TargetSuffix.agl =
 {
-    [{ "" }]       = "",
-    [{ "opengl" }] = "_opengl"
+    [{ "" }]             = "",
+    [{ "opengl" }]       = "_opengl",
+    [{ "opengl-debug" }] = "_opengl_d",
+}
+
+Flags.agl =
+{
+    [{ "opengl" }] =
+    {
+        "Optimize", "EnableSSE", "EnableSSE2"
+    },
+
+    [{ "opengl-debug" }] =
+    {
+        "Symbols"
+    }
 }
 
 solution "agl"
@@ -66,7 +92,7 @@ solution "agl"
 
     configurations
     {
-        "debug", "release", "opengl"
+        "opengl", "opengl-debug"
     }
 
     platforms
@@ -109,11 +135,10 @@ solution "agl"
             targetsuffix(v)
         end
 
-        configuration { "debug" }
-            flags { "Symbols" }
-
-        configuration { "release" }
-            flags { "Optimize", "EnableSSE", "EnableSSE2" }
+        for k,v in pairs(Flags.agl) do
+            configuration(k)
+            flags(v)
+        end
 
         configuration {}
             includedirs
