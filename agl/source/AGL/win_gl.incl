@@ -31,13 +31,14 @@
 #include <time.h>
 
 struct aglContext {
-    uint32_t id;
-    HWND     hWnd;
-    HDC      hDC;
-    HGLRC    hRC;
-    unsigned vsync      : 1;
-    unsigned fullscreen : 1;
-    unsigned reserved   : 6;
+    int32_t   id;
+    HWND      hWnd;
+    HDC       hDC;
+    HGLRC     hRC;
+    unsigned  vsync      : 1;
+    unsigned  fullscreen : 1;
+    unsigned  reserved   : 6;
+    uint32_t  gl_version;
     CGcontext cg_context;
     CGprofile cg_vs_profile;
     CGprofile cg_ps_profile;
@@ -45,18 +46,11 @@ struct aglContext {
 
 static aglContext* active_context = NULL;
 
-aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
+static int AGL_API waglCreateHGLRC( const aglContextSettings* settings, aglContext* context )
 {
-    aglContext* context = NULL;
-
-    WNDCLASSEX win_class;
-    char class_name[33] = { 0, };
-    RECT client_area = { 0, 0, settings->width - 1, settings->height - 1 };
-
     PIXELFORMATDESCRIPTOR pfd;
     int32_t pixel_format;
-    
-#if AGL_GL_VER > 21
+
     struct {
         HGLRC hRC;
     } dummy_context;
@@ -87,44 +81,7 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
         WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
         NULL, NULL
     };
-#endif
 
-    assert(settings);
-
-    context = (aglContext*)aglAlloc(sizeof(aglContext));
-    context->id = time(NULL);
-
-    sprintf(&class_name[0], "agl_%u", context->id);
-
-    ZeroMemory(&win_class, sizeof(WNDCLASSEX));
-    win_class.cbSize        = sizeof(WNDCLASSEX);
-    win_class.style         = CS_VREDRAW | CS_HREDRAW;
-    win_class.lpfnWndProc   = DefWindowProc;
-    win_class.hInstance     = GetModuleHandle(NULL);
-    win_class.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    win_class.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-    win_class.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
-    win_class.lpszClassName = &class_name[0];
-
-    if( !RegisterClassEx(&win_class) ) {
-        aglFree(context);
-        return NULL;
-    }
-
-    AdjustWindowRectEx(&client_area, WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW, FALSE, WS_EX_APPWINDOW | WS_EX_WINDOWEDGE);
-    client_area.right = client_area.right - client_area.left + 1;
-    client_area.bottom = client_area.bottom - client_area.top + 1;
-
-    context->hWnd = CreateWindowExA(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, &class_name[0], "agl", WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW, 0, 0, client_area.right, client_area.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
-    if( !context->hWnd ) {
-        UnregisterClass(&class_name[0], GetModuleHandle(NULL));
-        aglFree(context);
-        return NULL;
-    }
-
-    context->hDC   = GetDC(context->hWnd);
-    context->hRC   = NULL;
-    context->vsync = settings->vsync;
 
     ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
     pfd.nSize        = sizeof(PIXELFORMATDESCRIPTOR);
@@ -137,22 +94,39 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
     pfd.cStencilBits = 8;
     pfd.iLayerType   = PFD_MAIN_PLANE;
 
+
+    context->hDC = GetDC(context->hWnd);
     pixel_format = ChoosePixelFormat(context->hDC, &pfd);
     if( !pixel_format ) goto failure;
     if( !SetPixelFormat(context->hDC, pixel_format, &pfd) ) goto failure;
-#if AGL_GL_VER <= 21
-    if( !(context->hRC = wglCreateContext(context->hDC)) ) goto failure;
-#else
     if( !(dummy_context.hRC = wglCreateContext(context->hDC)) ) goto failure;
 
     wglMakeCurrent(context->hDC, dummy_context.hRC);
     glGetIntegerv(GL_MAJOR_VERSION, (GLint*)&major_ver);
     glGetIntegerv(GL_MINOR_VERSION, (GLint*)&minor_ver);
 
-    if( major_ver <= 2 ) {
-        wglMakeCurrent(NULL, NULL);
-        wglDeleteContext(dummy_context.hRC);
-        goto failure;
+    // Default to OpenGL 2.1:
+
+    if( major_ver < 3 ) {
+        if( major_ver < 2 ) {
+            wglMakeCurrent(NULL, NULL);
+            wglDeleteContext(dummy_context.hRC);
+            goto failure;
+        } else if( minor_ver < 1 ) {
+            wglMakeCurrent(NULL, NULL);
+            wglDeleteContext(dummy_context.hRC);
+            goto failure;
+        }
+
+        context->hRC = dummy_context.hRC;
+        context->gl_version = 21;
+        goto success;
+    }
+
+    if( major_ver == 3 && minor_ver < 1 ) {
+        context->hRC = dummy_context.hRC;
+        context->gl_version = 21;
+        goto success;
     }
 
     if( !(wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB")) ) {
@@ -178,13 +152,18 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
 
     context_attributes[1] = major_ver;
     context_attributes[3] = minor_ver;
+    context->gl_version = major_ver * 10 + minor_ver;
 
     if( !(context->hRC = (HGLRC)wglCreateContextAttribsARB(context->hDC, 0, (const int*)&context_attributes[0])) ) {
         wglMakeCurrent(NULL, NULL);
         wglDeleteContext(dummy_context.hRC);
         goto failure;
     }
-#endif
+
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(dummy_context.hRC);
+
+success:
 
     wglMakeCurrent(context->hDC, context->hRC);
 
@@ -199,17 +178,86 @@ aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
 
     if( active_context ) wglMakeCurrent(active_context->hDC, active_context->hRC);
     else wglMakeCurrent(NULL, NULL);
-
-    ShowWindow(context->hWnd, SW_SHOW);
-
-    return context;
+    return TRUE;
 
 failure:
     if( active_context ) wglMakeCurrent(active_context->hDC, active_context->hRC);
     else wglMakeCurrent(NULL, NULL);
+    return FALSE;
+}
 
-    aglFree(context);
-    return NULL;
+aglContext* AGL_API waglCreateContext( const aglContextSettings* settings )
+{
+    aglContext* context = NULL;
+    WNDCLASSEX win_class;
+    char class_name[33] = { 0, };
+    RECT client_area = { 0, 0, settings->width - 1, settings->height - 1 };
+
+    context             = (aglContext*)malloc(sizeof(aglContext));
+    context->id         = time(NULL);
+    context->hWnd       = NULL;
+    context->hDC        = NULL;
+    context->hRC        = NULL;
+    context->vsync      = settings->vsync;
+    context->fullscreen = settings->fullscreen;
+    context->cg_context = NULL;
+
+    ZeroMemory(&win_class, sizeof(WNDCLASSEX));
+    win_class.cbSize        = sizeof(WNDCLASSEX);
+    win_class.style         = CS_VREDRAW | CS_HREDRAW;
+    win_class.lpfnWndProc   = DefWindowProc;
+    win_class.hInstance     = GetModuleHandle(NULL);
+    win_class.hCursor       = LoadCursor(NULL, IDC_ARROW);
+    win_class.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
+    win_class.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
+    win_class.lpszClassName = &class_name[0];
+    sprintf(&class_name[0], "agl_%u", context->id);
+
+    if( !RegisterClassEx(&win_class) ) {
+        aglFree(context);
+        return NULL;
+    }
+
+    AdjustWindowRectEx(&client_area, WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW, FALSE, WS_EX_APPWINDOW | WS_EX_WINDOWEDGE);
+    client_area.right = client_area.right - client_area.left + 1;
+    client_area.bottom = client_area.bottom - client_area.top + 1;
+
+    context->hWnd = CreateWindowExA(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, &class_name[0], "agl", WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW, 0, 0, client_area.right, client_area.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
+    if( !context->hWnd ) {
+        UnregisterClass(&class_name[0], GetModuleHandle(NULL));
+        aglFree(context);
+        return NULL;
+    }
+
+    if( !waglCreateHGLRC(settings, context) ) {
+        UnregisterClass(&class_name[0], GetModuleHandle(NULL));
+        DestroyWindow(context->hWnd);
+        free(context);
+        return NULL;
+    }
+
+    ShowWindow(context->hWnd, SW_SHOW);
+    return context;
+}
+
+aglContext* AGL_API waglCreateContextEx( const aglContextSettings* settings, HWND hWnd )
+{
+    aglContext* context = NULL;
+
+    context             = (aglContext*)aglAlloc(sizeof(aglContext));
+    context->id         = -1;
+    context->hWnd       = hWnd;
+    context->hDC        = NULL;
+    context->hRC        = NULL;
+    context->vsync      = settings->vsync;
+    context->fullscreen = settings->fullscreen;
+
+    if( !waglCreateHGLRC(settings, context) ) {
+        free(context);
+        return NULL;
+    }
+
+    return context;
 }
 
 void AGL_API waglDestroyContext( aglContext* context )
@@ -224,10 +272,13 @@ void AGL_API waglDestroyContext( aglContext* context )
     }
 
     cgDestroyContext(context->cg_context);
-
     wglDeleteContext(context->hRC);
-    sprintf(&class_name[0], "agl_%u", context->id);
-    UnregisterClass(&class_name[0], GetModuleHandle(NULL));
+
+    if( context->id != -1 ) {
+        sprintf(&class_name[0], "agl_%u", context->id);
+        UnregisterClass(&class_name[0], GetModuleHandle(NULL));
+        DestroyWindow(context->hWnd);
+    }
 
     aglFree(context);
 }

@@ -5,21 +5,13 @@
 
 Defines.agl =
 {
-    [{}] =
-    {
-        "AGL_BUILD"
-    },
-
-    [{ "opengl" }] =
-    {
-        "AGL_GL_VER=31"
-    }
+    [{}] = { "AGL_BUILD" }
 }
 
 IncludePaths.agl =
 {
-    [{ "windows" }] =
-    {
+    [{}] = { "include" },
+    [{ "windows" }] = { 
         "../dependencies/Cg/include",
         "../dependencies/GLEW/include",
         "../dependencies/glext/include"
@@ -28,77 +20,33 @@ IncludePaths.agl =
 
 LibraryPaths.agl =
 {
-    [{ "windows" }] =
-    {
-        "../dependencies/Cg/lib/" .. _ACTION
-    },
-
-    [{ "windows", "opengl" }] =
-    {
-        "../dependencies/GLEW/lib/" .. _ACTION
-    },
-
-    [{ "windows", "opengl-debug" }] =
-    {
-        "../dependencies/GLEW/lib/" .. _ACTION
-    }
+    [{ "windows" }]                   = { "../dependencies/Cg/lib/"   .. _ACTION },
+    [{ "windows", "opengl_debug" }]   = { "../dependencies/GLEW/lib/" .. _ACTION },
+    [{ "windows", "opengl_release" }] = { "../dependencies/GLEW/lib/" .. _ACTION }
 }
 
 Dependencies.agl =
 {
-    [{ "windows" }] =
-    {
-        "cg"
-    },
-
-    [{ "windows", "opengl" }] =
-    {
-        "opengl32",
-        "cgGL",
-        "glew32"
-    },
-
-    [{ "windows", "opengl-debug" }] =
-    {
-        "opengl32",
-        "cgGL",
-        "glew32"
-    }
-}
-
-TargetSuffix.agl =
-{
-    [{ "" }]             = "",
-    [{ "opengl" }]       = "_opengl",
-    [{ "opengl-debug" }] = "_opengl_d",
+    [{ "windows" }]                   = { "cg" },
+    [{ "windows", "opengl_debug" }]   = { "opengl32", "cgGL", "glew32" },
+    [{ "windows", "opengl_release" }] = { "opengl32", "cgGL", "glew32" }
 }
 
 Flags.agl =
 {
-    [{ "opengl" }] =
-    {
-        "Optimize", "EnableSSE", "EnableSSE2"
-    },
+    [{ "opengl_debug" }]   = { "Symbols" },
+    [{ "opengl_release" }] = { "Optimize", "EnableSSE", "EnableSSE2" }
+}
 
-    [{ "opengl-debug" }] =
-    {
-        "Symbols"
-    }
+TargetSuffix.agl =
+{
+    [{ "opengl_debug" }]   = "_gld",
+    [{ "opengl_release" }] = "_gl"
 }
 
 solution "agl"
-
-    location ( "../build/" .. _ACTION )
-
-    configurations
-    {
-        "opengl", "opengl-debug"
-    }
-
-    platforms
-    {
-        "x32", "x64"
-    }
+    location       ( "../build/" .. _ACTION .. "/agl" )
+    configurations { "opengl_debug", "opengl_release" }
 
     project "agl"
 
@@ -107,8 +55,13 @@ solution "agl"
         uuid       ( "6c0bdcd2-8e93-4864-93dc-31340b298953" )
 
         objdir     ( "../build/" .. _ACTION .. "/agl/obj" )
-        targetdir  ( "../bin/" .. _ACTION )
+        targetdir  ( "../lib/" .. _ACTION )
         targetname ( "agl" )
+
+        configuration { "windows" }
+            postbuildcommands {
+                "move \"..\\..\\..\\lib\\" .. _ACTION .. "\\*.dll\" \"..\\..\\..\\bin\\" .. _ACTION .."\\\""
+            }
 
         for k,v in pairs(Defines.agl) do
             configuration(k)
@@ -141,13 +94,7 @@ solution "agl"
         end
 
         configuration {}
-            includedirs
-            {
-                "include"
-            }
-
-            files
-            {
+            files {
                 "include/**.h",
                 "source/**.c"
             }

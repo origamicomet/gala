@@ -3,139 +3,22 @@
   See readme.md and license.md for details.
 ]]--
 
-Defines =
-{
-    ["Global"] =
-    {
-        [{ "" }] =
-        {
-        },
+Defines = {}
+Defines.Global = {}
 
-        [{ "windows" }] =
-        {
-        },
+IncludePaths = {}
+IncludePaths.Global = {}
 
-        [{ "macosx" }] =
-        {
-        },
+LibraryPaths = {}
+LibraryPaths.Global = {}
 
-        [{ "linux" }] =
-        {
-        }
-    }
-}
+Dependencies = {}
+Dependencies.Global = {}
 
-IncludePaths =
-{
-    ["Global"] =
-    {
-        [{ "" }] =
-        {
-        },
+Flags = {}
+Flags.Global = {}
 
-        [{ "windows" }] =
-        {
-        },
-
-        [{ "macosx" }] =
-        {
-        },
-
-        [{ "linux" }] =
-        {
-        }
-    }
-}
-
-LibraryPaths =
-{
-    ["Global"] =
-    {
-        [{ "" }] =
-        {
-        },
-
-        [{ "windows" }] =
-        {
-        },
-
-        [{ "macosx" }] =
-        {
-        },
-
-        [{ "linux" }] =
-        {
-        }
-    }
-}
-
-Dependencies =
-{
-    ["Global"] =
-    {
-        [{ "" }] =
-        {
-        },
-
-        [{ "windows" }] =
-        {
-        },
-
-        [{ "macosx" }] =
-        {
-        },
-
-        [{ "linux" }] =
-        {
-        }
-    }
-}
-
-TargetSuffix =
-{
-    ["Global"] =
-    {
-        [{ "" }] =
-        {
-        },
-
-        [{ "windows" }] =
-        {
-        },
-
-        [{ "macosx" }] =
-        {
-        },
-
-        [{ "linux" }] =
-        {
-        }
-    }
-}
-
-Flags =
-{
-    ["Global"] =
-    {
-        [{ "" }] =
-        {
-        },
-
-        [{ "windows" }] =
-        {
-        },
-
-        [{ "macosx" }] =
-        {
-        },
-
-        [{ "linux" }] =
-        {
-        }
-    }
-}
-
-include "dependencies"
+TargetSuffix = {}
+TargetSuffix.Global = {}
 
 include "agl"
-include "samples"

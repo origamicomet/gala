@@ -39,6 +39,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 extern AGL_EXPORT(aglContext* AGL_API waglCreateContext( const aglContextSettings* settings ));
+extern AGL_EXPORT(aglContext* AGL_API waglCreateContextEx( const aglContextSettings* settings, HWND hWnd ));
 extern AGL_EXPORT(void AGL_API waglDestroyContext( aglContext* context ));
 extern AGL_EXPORT(HWND AGL_API waglGetWindowHandle( aglContext* context ));
 
