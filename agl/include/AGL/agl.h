@@ -405,10 +405,12 @@ extern AGL_EXPORT(void aglDestroyRenderTarget( aglRenderTarget* render_target ))
 typedef struct aglVertexShader aglVertexShader;
 typedef struct aglPixelShader  aglPixelShader;
 
-extern AGL_EXPORT(aglVertexShader* AGL_API aglCreateVertexShader( const char* objcode ));
-extern AGL_EXPORT(void AGL_API AGL_API aglDestroyVertexShader( aglVertexShader* vertex_shader ));
+extern AGL_EXPORT(aglVertexShader* AGL_API aglCreateVertexShaderFromObjCode( const char* objcode ));
+extern AGL_EXPORT(aglVertexShader* AGL_API aglCreateVertexShaderFromSource( const char* source, size_t num_defines, const char** defines ));
+extern AGL_EXPORT(void AGL_API aglDestroyVertexShader( aglVertexShader* vertex_shader ));
 
-extern AGL_EXPORT(aglPixelShader* AGL_API aglCreatePixelShader( const char* objcode ));
+extern AGL_EXPORT(aglPixelShader* AGL_API aglCreatePixelShaderFromObjCode( const char* objcode ));
+extern AGL_EXPORT(aglPixelShader* AGL_API aglCreatePixelShaderFromSource( const char* source, size_t num_defines, const char** defines ));
 extern AGL_EXPORT(void AGL_API aglDestroyPixelShader( aglPixelShader* pixel_shader ));
 
 ////////////////////////////////////////////////////////////////////////////////

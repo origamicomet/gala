@@ -561,7 +561,7 @@ struct aglPixelShader {
     CGprogram cg_program;
 };
 
-aglVertexShader* AGL_API aglCreateVertexShader( const char* objcode )
+aglVertexShader* AGL_API aglCreateVertexShaderFromObjCode( const char* objcode )
 {
     aglContext* context = aglGetActiveContext();
     aglVertexShader* vertex_shader = NULL;
@@ -573,7 +573,36 @@ aglVertexShader* AGL_API aglCreateVertexShader( const char* objcode )
     cgGLLoadProgram(cg_program);
 
     vertex_shader = (aglVertexShader*)aglAlloc(sizeof(aglVertexShader));
-    vertex_shader->cg_program   = cg_program;
+    vertex_shader->cg_program = cg_program;
+    return vertex_shader;
+}
+
+aglVertexShader* AGL_API aglCreateVertexShaderFromSource( const char* source, size_t num_defines, const char** defines )
+{
+    aglContext* context = aglGetActiveContext();
+    aglVertexShader* vertex_shader = NULL;
+    CGprogram cg_program;
+    size_t i;
+    char** args;
+    assert(source);
+
+    // There must be a better way (without retard allocs)
+    args = (char**)aglAlloc(sizeof(char*) * num_defines);
+    for( i = 0; i < num_defines; ++i ) {
+        args[i] = (char*)aglAlloc(strlen(defines[i]) + 3);
+        sprintf(&args[i][0], "-D%s", defines[i]);
+    }
+
+    cg_program = cgCreateProgram(context->cg_context, CG_SOURCE, source, context->cg_vs_profile, "vs_main", args);
+
+    for( i = 0; i < num_defines; ++i ) aglFree((void*)args[i]);
+    aglFree((void*)args);
+
+    if( !cg_program ) return NULL;
+    cgGLLoadProgram(cg_program);
+
+    vertex_shader = (aglVertexShader*)aglAlloc(sizeof(aglVertexShader));
+    vertex_shader->cg_program = cg_program;
     return vertex_shader;
 }
 
@@ -583,7 +612,7 @@ void AGL_API aglDestroyVertexShader( aglVertexShader* vertex_shader )
     cgDestroyProgram(vertex_shader->cg_program);
 }
 
-aglPixelShader* AGL_API aglCreatePixelShader( const char* objcode )
+aglPixelShader* AGL_API aglCreatePixelShaderFromObjCode( const char* objcode )
 {
     aglContext* context = aglGetActiveContext();
     aglPixelShader* pixel_shader = NULL;
@@ -596,6 +625,35 @@ aglPixelShader* AGL_API aglCreatePixelShader( const char* objcode )
 
     pixel_shader = (aglPixelShader*)aglAlloc(sizeof(aglPixelShader));
     pixel_shader->cg_program   = cg_program;
+    return pixel_shader;
+}
+
+aglPixelShader* AGL_API aglCreatePixelShaderFromSource( const char* source, size_t num_defines, const char** defines )
+{
+    aglContext* context = aglGetActiveContext();
+    aglPixelShader* pixel_shader = NULL;
+    CGprogram cg_program;
+    size_t i;
+    char** args;
+    assert(source);
+
+    // There must be a better way (without retard allocs)
+    args = (char**)aglAlloc(sizeof(char*) * num_defines);
+    for( i = 0; i < num_defines; ++i ) {
+        args[i] = (char*)aglAlloc(strlen(defines[i]) + 3);
+        sprintf(&args[i][0], "-D%s", defines[i]);
+    }
+
+    cg_program = cgCreateProgram(context->cg_context, CG_SOURCE, source, context->cg_ps_profile, "ps_main", args);
+
+    for( i = 0; i < num_defines; ++i ) aglFree((void*)args[i]);
+    aglFree((void*)args);
+
+    if( !cg_program ) return NULL;
+    cgGLLoadProgram(cg_program);
+
+    pixel_shader = (aglPixelShader*)aglAlloc(sizeof(aglPixelShader));
+    pixel_shader->cg_program = cg_program;
     return pixel_shader;
 }
 
@@ -656,7 +714,7 @@ static void aglExecuteClearCommand( aglCommand* cmd )
     if( clear_cmd->bits & AGL_CLEAR_DEPTH   ) glClearDepth(clear_cmd->depth);
     if( clear_cmd->bits & AGL_CLEAR_STENCIL ) glClearStencil(clear_cmd->stencil);
 
-    glDrawBuffer(GL_COLOR_ATTACHMENT0 + clear_cmd->buffer);
+    glDrawBuffer(current_rt ? (GL_COLOR_ATTACHMENT0 + clear_cmd->buffer) : GL_BACK);
     glClear(aglClearBitsToOpenGL(clear_cmd->bits));
 }
 
