@@ -173,6 +173,7 @@ success:
     context->cg_vs_profile = CG_PROFILE_GLSLV;
     context->cg_ps_profile = CG_PROFILE_GLSLF;
 
+    cgSetContextBehavior(context->cg_context, CG_BEHAVIOR_CURRENT);
     cgGLSetContextOptimalOptions(context->cg_context, CG_PROFILE_GLSLV);
     cgGLSetContextOptimalOptions(context->cg_context, CG_PROFILE_GLSLF);
 

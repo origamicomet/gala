@@ -427,6 +427,7 @@ aglConstantBuffer* AGL_API aglCreateConstantBuffer( AGL_USAGE usage, uint32_t ac
     }
 
     constant_buffer->cg_buffer = cgGLCreateBufferFromObject(context->cg_context, constant_buffer->id, CG_FALSE);
+    return constant_buffer;
 }
 
 void AGL_API aglDestroyConstantBuffer( aglConstantBuffer* constant_buffer )
@@ -569,7 +570,14 @@ aglVertexShader* AGL_API aglCreateVertexShaderFromObjCode( const char* objcode )
     assert(objcode);
 
     cg_program = cgCreateProgram(context->cg_context, CG_OBJECT, objcode, context->cg_vs_profile, "vs_main", NULL);
-    if( !cg_program ) return NULL;
+
+    if( !cg_program ) { 
+        CGerror error;
+        printf("Shader compile failed: %s\n", cgGetLastErrorString(&error));
+        if( error == CG_COMPILER_ERROR ) printf("%s\n", cgGetLastListing(context->cg_context));
+        return NULL;
+    }
+
     cgGLLoadProgram(cg_program);
 
     vertex_shader = (aglVertexShader*)aglAlloc(sizeof(aglVertexShader));
@@ -583,22 +591,34 @@ aglVertexShader* AGL_API aglCreateVertexShaderFromSource( const char* source, si
     aglVertexShader* vertex_shader = NULL;
     CGprogram cg_program;
     size_t i;
-    char** args;
+    char** args = NULL;
     assert(source);
 
     // There must be a better way (without retard allocs)
-    args = (char**)aglAlloc(sizeof(char*) * num_defines);
-    for( i = 0; i < num_defines; ++i ) {
-        args[i] = (char*)aglAlloc(strlen(defines[i]) + 3);
-        sprintf(&args[i][0], "-D%s", defines[i]);
+    if( num_defines ) {
+        args = (char**)aglAlloc(sizeof(char*) * (num_defines + 2));
+        memset((void*)args, 0, sizeof(char*) * (num_defines + 2));
+        args[0] = "-DVERTEX_SHADER";
+        for( i = 0; i < num_defines; ++i ) {
+            args[i + 1] = (char*)aglAlloc(strlen(defines[i]) + 3);
+            sprintf(&args[i + 1][0], "-D%s", defines[i]);
+        }
     }
 
     cg_program = cgCreateProgram(context->cg_context, CG_SOURCE, source, context->cg_vs_profile, "vs_main", args);
 
-    for( i = 0; i < num_defines; ++i ) aglFree((void*)args[i]);
-    aglFree((void*)args);
+    if( num_defines ) {
+        for( i = 1; i < num_defines; ++i ) aglFree((void*)args[i]);
+        aglFree((void*)args);
+    }
 
-    if( !cg_program ) return NULL;
+    if( !cg_program ) { 
+        CGerror error;
+        printf("Shader compile failed: %s\n", cgGetLastErrorString(&error));
+        if( error == CG_COMPILER_ERROR ) printf("%s\n", cgGetLastListing(context->cg_context));
+        return NULL;
+    }
+    
     cgGLLoadProgram(cg_program);
 
     vertex_shader = (aglVertexShader*)aglAlloc(sizeof(aglVertexShader));
@@ -620,7 +640,14 @@ aglPixelShader* AGL_API aglCreatePixelShaderFromObjCode( const char* objcode )
     assert(objcode);
 
     cg_program = cgCreateProgram(context->cg_context, CG_OBJECT, objcode, context->cg_ps_profile, "ps_main", NULL);
-    if( !cg_program ) return NULL;
+    
+    if( !cg_program ) { 
+        CGerror error;
+        printf("Shader compile failed: %s\n", cgGetLastErrorString(&error));
+        if( error == CG_COMPILER_ERROR ) printf("%s\n", cgGetLastListing(context->cg_context));
+        return NULL;
+    }
+
     cgGLLoadProgram(cg_program);
 
     pixel_shader = (aglPixelShader*)aglAlloc(sizeof(aglPixelShader));
@@ -634,22 +661,34 @@ aglPixelShader* AGL_API aglCreatePixelShaderFromSource( const char* source, size
     aglPixelShader* pixel_shader = NULL;
     CGprogram cg_program;
     size_t i;
-    char** args;
+    char** args = NULL;
     assert(source);
 
     // There must be a better way (without retard allocs)
-    args = (char**)aglAlloc(sizeof(char*) * num_defines);
-    for( i = 0; i < num_defines; ++i ) {
-        args[i] = (char*)aglAlloc(strlen(defines[i]) + 3);
-        sprintf(&args[i][0], "-D%s", defines[i]);
+    if( num_defines ) {
+        args = (char**)aglAlloc(sizeof(char*) * (num_defines + 2));
+        memset((void*)args, 0, sizeof(char*) * (num_defines + 2));
+        args[0] = "-DPIXEL_SHADER";
+        for( i = 0; i < num_defines; ++i ) {
+            args[i + 1] = (char*)aglAlloc(strlen(defines[i]) + 3);
+            sprintf(&args[i + 1][0], "-D%s", defines[i]);
+        }
     }
 
     cg_program = cgCreateProgram(context->cg_context, CG_SOURCE, source, context->cg_ps_profile, "ps_main", args);
 
-    for( i = 0; i < num_defines; ++i ) aglFree((void*)args[i]);
-    aglFree((void*)args);
+    if( num_defines ) {
+        for( i = 1; i < num_defines; ++i ) aglFree((void*)args[i]);
+        aglFree((void*)args);
+    }
 
-    if( !cg_program ) return NULL;
+    if( !cg_program ) { 
+        CGerror error;
+        printf("Shader compile failed: %s\n", cgGetLastErrorString(&error));
+        if( error == CG_COMPILER_ERROR ) printf("%s\n", cgGetLastListing(context->cg_context));
+        return NULL;
+    }
+    
     cgGLLoadProgram(cg_program);
 
     pixel_shader = (aglPixelShader*)aglAlloc(sizeof(aglPixelShader));
