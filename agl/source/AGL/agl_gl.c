@@ -53,6 +53,23 @@ extern aglFreeCallback  aglFree;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void aglCgErrorHandler( CGcontext context, CGerror error, void* data )
+{
+    switch( error ) {
+        case CG_COMPILER_ERROR: {
+            fprintf(stderr, "Cg compile error - %s\n", cgGetLastListing(context));
+        } break;
+
+        case CG_PROGRAM_LOAD_ERROR: {
+            fprintf(stderr, "Cg program load error - %s\n", glGetString(GL_PROGRAM_ERROR_STRING_ARB));
+        } break;
+
+        default: {
+            fprintf(stderr, "Cg error: %s\n", cgGetErrorString(error));
+        } break;
+    }
+}
+
 typedef struct aglInputLayoutAttrib {
     GLuint        index;
     GLint         num_components;
@@ -279,6 +296,7 @@ aglDepthStencilState* AGL_API aglCreateDepthStencilState( const aglDepthStencilD
     depth_stencil_state->depth_test   = desc->enable_depth_test ? GL_TRUE : GL_FALSE;
     depth_stencil_state->depth_mask   = desc->enable_depth_write ? GL_TRUE : GL_FALSE;
     depth_stencil_state->stencil_test = desc->enable_stencil_test ? GL_TRUE : GL_FALSE;
+    depth_stencil_state->depth_func   = aglComparisonFuncToOpenGL(desc->depth_func);
     depth_stencil_state->front_face.sfail  = aglStencilOpToOpenGL(desc->front_face.stencil_fail);
     depth_stencil_state->front_face.dpfail = aglStencilOpToOpenGL(desc->front_face.stencil_depth_fail);
     depth_stencil_state->front_face.dppass = aglStencilOpToOpenGL(desc->front_face.stencil_pass);
@@ -330,9 +348,9 @@ aglVertexBuffer* AGL_API aglCreateVertexBuffer( AGL_USAGE usage, uint32_t access
     aglVertexBuffer* vertex_buffer = (aglVertexBuffer*)aglAlloc(sizeof(aglVertexBuffer));
 
     glGenBuffers(1, &vertex_buffer->id);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->id);
-    glBufferData(GL_ARRAY_BUFFER, num_bytes, data, aglUsageToOpenGL(usage));
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertex_buffer->id);
+    glBufferData(GL_ARRAY_BUFFER_ARB, num_bytes, data, aglUsageToOpenGL(usage));
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
     switch( access_flags ) {
         case AGL_CPU_ACCESS_READ: vertex_buffer->access = GL_READ_ONLY; break;
@@ -352,14 +370,14 @@ void AGL_API aglDestroyVertexBuffer( aglVertexBuffer* vertex_buffer )
 void* AGL_API aglMapVertexBuffer( aglVertexBuffer* vertex_buffer, AGL_MAP map )
 {
     assert(vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->id);
-    return glMapBuffer(GL_ARRAY_BUFFER, aglMapToOpenGL(map));
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertex_buffer->id);
+    return glMapBuffer(GL_ARRAY_BUFFER_ARB, aglMapToOpenGL(map));
 }
 
 void AGL_API aglUnmapVertexBuffer( aglVertexBuffer* vertex_buffer )
 {
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->id);
-    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertex_buffer->id);
+    glUnmapBuffer(GL_ARRAY_BUFFER_ARB);
 }
 
 struct aglIndexBuffer {
@@ -372,9 +390,9 @@ aglIndexBuffer* AGL_API aglCreateIndexBuffer( AGL_USAGE usage, uint32_t access_f
     aglIndexBuffer* index_buffer = (aglIndexBuffer*)aglAlloc(sizeof(aglIndexBuffer));
 
     glGenBuffers(1, &index_buffer->id);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer->id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes, data, aglUsageToOpenGL(usage));
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, index_buffer->id);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER_ARB, num_bytes, data, aglUsageToOpenGL(usage));
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
 
     switch( access_flags ) {
         case AGL_CPU_ACCESS_READ: index_buffer->access = GL_READ_ONLY; break;
@@ -394,14 +412,14 @@ void AGL_API aglDestroyIndexBuffer( aglIndexBuffer* index_buffer )
 void* AGL_API aglMapIndexBuffer( aglIndexBuffer* index_buffer, AGL_MAP map )
 {
     assert(index_buffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer->id);
-    return glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, aglMapToOpenGL(map));
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, index_buffer->id);
+    return glMapBuffer(GL_ELEMENT_ARRAY_BUFFER_ARB, aglMapToOpenGL(map));
 }
 
 void AGL_API aglUnmapIndexBuffer( aglIndexBuffer* index_buffer )
 {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer->id);
-    glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, index_buffer->id);
+    glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER_ARB);
 }
 
 struct aglConstantBuffer {
@@ -416,9 +434,9 @@ aglConstantBuffer* AGL_API aglCreateConstantBuffer( AGL_USAGE usage, uint32_t ac
     aglConstantBuffer* constant_buffer = (aglConstantBuffer*)aglAlloc(sizeof(aglConstantBuffer));
 
     glGenBuffers(1, &constant_buffer->id);
-    glBindBuffer(GL_UNIFORM_BUFFER, constant_buffer->id);
+    glBindBufferARB(GL_UNIFORM_BUFFER, constant_buffer->id);
     glBufferData(GL_UNIFORM_BUFFER, num_bytes, data, aglUsageToOpenGL(usage));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferARB(GL_UNIFORM_BUFFER, 0);
 
     switch( access_flags ) {
         case AGL_CPU_ACCESS_READ: constant_buffer->access = GL_READ_ONLY; break;
@@ -438,13 +456,13 @@ void AGL_API aglDestroyConstantBuffer( aglConstantBuffer* constant_buffer )
 void* AGL_API aglMapConstantBuffer( aglConstantBuffer* constant_buffer, AGL_MAP map )
 {
     assert(constant_buffer);
-    glBindBuffer(GL_UNIFORM_BUFFER, constant_buffer->id);
+    glBindBufferARB(GL_UNIFORM_BUFFER, constant_buffer->id);
     return glMapBuffer(GL_UNIFORM_BUFFER, aglMapToOpenGL(map));
 }
 
 void AGL_API aglUnmapConstantBuffer( aglConstantBuffer* constant_buffer )
 {
-    glBindBuffer(GL_UNIFORM_BUFFER, constant_buffer->id);
+    glBindBufferARB(GL_UNIFORM_BUFFER, constant_buffer->id);
     glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
 
@@ -491,6 +509,13 @@ aglTexture* AGL_API aglCreateTexture2D( const aglTextureDesc2D* desc, const void
     glBindTexture(texture->target, texture->id);
     glTexImage2D(texture->target, 0, internal_format, desc->width, desc->height, 0, format, type, data);
 
+    // TODO: expose
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, desc->generate_mips ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, desc->generate_mips ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST);
+    if( desc->generate_mips ) glGenerateMipmap(GL_TEXTURE_2D);
+
     return texture;
 }
 
@@ -530,17 +555,17 @@ aglRenderTarget* aglCreateRenderTarget( const aglRenderTargetDesc* desc )
 
     render_target = (aglRenderTarget*)aglAlloc(sizeof(aglRenderTarget));
     glGenFramebuffers(1, &render_target->id);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_target->id);
+    glBindFramebuffer(GL_FRAMEBUFFER, render_target->id);
     render_target->depth_stencil = desc->depth_stencil;
     render_target->color[0] = desc->color[0];
     render_target->color[1] = desc->color[1];
     render_target->color[2] = desc->color[2];
     render_target->color[3] = desc->color[3];
-    if( desc->depth_stencil ) glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, desc->depth_stencil->id, 0);
-    if( desc->color[0] ) glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, desc->color[0]->id, 0);
-    if( desc->color[1] ) glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, desc->color[1]->id, 0);
-    if( desc->color[2] ) glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, desc->color[2]->id, 0);
-    if( desc->color[3] ) glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, desc->color[3]->id, 0);
+    if( desc->depth_stencil ) glFramebufferTextureARB(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, desc->depth_stencil->id, 0);
+    if( desc->color[0] ) glFramebufferTextureARB(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, desc->color[0]->id, 0);
+    if( desc->color[1] ) glFramebufferTextureARB(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, desc->color[1]->id, 0);
+    if( desc->color[2] ) glFramebufferTextureARB(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, desc->color[2]->id, 0);
+    if( desc->color[3] ) glFramebufferTextureARB(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, desc->color[3]->id, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     return render_target;
 }
@@ -570,15 +595,9 @@ aglVertexShader* AGL_API aglCreateVertexShaderFromObjCode( const char* objcode )
     assert(objcode);
 
     cg_program = cgCreateProgram(context->cg_context, CG_OBJECT, objcode, context->cg_vs_profile, "vs_main", NULL);
-
-    if( !cg_program ) { 
-        CGerror error;
-        printf("Shader compile failed: %s\n", cgGetLastErrorString(&error));
-        if( error == CG_COMPILER_ERROR ) printf("%s\n", cgGetLastListing(context->cg_context));
-        return NULL;
-    }
-
+    if( !cg_program ) return NULL;
     cgGLLoadProgram(cg_program);
+    if( !cgGLIsProgramLoaded(cg_program) ) { cgDestroyProgram(cg_program); return NULL; }
 
     vertex_shader = (aglVertexShader*)aglAlloc(sizeof(aglVertexShader));
     vertex_shader->cg_program = cg_program;
@@ -612,14 +631,10 @@ aglVertexShader* AGL_API aglCreateVertexShaderFromSource( const char* source, si
         aglFree((void*)args);
     }
 
-    if( !cg_program ) { 
-        CGerror error;
-        printf("Shader compile failed: %s\n", cgGetLastErrorString(&error));
-        if( error == CG_COMPILER_ERROR ) printf("%s\n", cgGetLastListing(context->cg_context));
-        return NULL;
-    }
-    
+    if( !cg_program ) return NULL;
+
     cgGLLoadProgram(cg_program);
+    if( !cgGLIsProgramLoaded(cg_program) ) { cgDestroyProgram(cg_program); return NULL; }
 
     vertex_shader = (aglVertexShader*)aglAlloc(sizeof(aglVertexShader));
     vertex_shader->cg_program = cg_program;
@@ -640,15 +655,9 @@ aglPixelShader* AGL_API aglCreatePixelShaderFromObjCode( const char* objcode )
     assert(objcode);
 
     cg_program = cgCreateProgram(context->cg_context, CG_OBJECT, objcode, context->cg_ps_profile, "ps_main", NULL);
-    
-    if( !cg_program ) { 
-        CGerror error;
-        printf("Shader compile failed: %s\n", cgGetLastErrorString(&error));
-        if( error == CG_COMPILER_ERROR ) printf("%s\n", cgGetLastListing(context->cg_context));
-        return NULL;
-    }
-
+    if( !cg_program ) return NULL;
     cgGLLoadProgram(cg_program);
+    if( !cgGLIsProgramLoaded(cg_program) ) { cgDestroyProgram(cg_program); return NULL; }
 
     pixel_shader = (aglPixelShader*)aglAlloc(sizeof(aglPixelShader));
     pixel_shader->cg_program   = cg_program;
@@ -682,14 +691,10 @@ aglPixelShader* AGL_API aglCreatePixelShaderFromSource( const char* source, size
         aglFree((void*)args);
     }
 
-    if( !cg_program ) { 
-        CGerror error;
-        printf("Shader compile failed: %s\n", cgGetLastErrorString(&error));
-        if( error == CG_COMPILER_ERROR ) printf("%s\n", cgGetLastListing(context->cg_context));
-        return NULL;
-    }
+    if( !cg_program ) return NULL;
     
     cgGLLoadProgram(cg_program);
+    if( !cgGLIsProgramLoaded(cg_program) ) { cgDestroyProgram(cg_program); return NULL; }
 
     pixel_shader = (aglPixelShader*)aglAlloc(sizeof(aglPixelShader));
     pixel_shader->cg_program = cg_program;
@@ -706,17 +711,17 @@ void AGL_API aglDestroyPixelShader( aglPixelShader* pixel_shader )
 
 static aglRenderTarget* current_rt = NULL;
 
-static GLuint aglClearBitsToOpenGL( AGL_CLEAR_BITS clear_bits )
+static GLuint aglClearBitsToOpenGL( uint32_t clear_bits )
 {
     switch( clear_bits )
     {
-        case AGL_CLEAR_COLOR: return GL_COLOR_BUFFER_BIT;
-        case AGL_CLEAR_DEPTH: return GL_DEPTH_BUFFER_BIT;
-        case AGL_CLEAR_STENCIL: return GL_STENCIL_BUFFER_BIT;
-        case AGL_CLEAR_COLOR | AGL_CLEAR_DEPTH: return GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
-        case AGL_CLEAR_COLOR | AGL_CLEAR_STENCIL: return GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
-        case AGL_CLEAR_COLOR | AGL_CLEAR_DEPTH | AGL_CLEAR_STENCIL: return GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
-        case AGL_CLEAR_DEPTH | AGL_CLEAR_STENCIL: return GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+        case AGL_CLEAR_COLOR: return GL_COLOR_BUFFER_BIT; break;
+        case AGL_CLEAR_DEPTH: return GL_DEPTH_BUFFER_BIT; break;
+        case AGL_CLEAR_STENCIL: return GL_STENCIL_BUFFER_BIT; break;
+        case AGL_CLEAR_COLOR | AGL_CLEAR_DEPTH: return GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT; break;
+        case AGL_CLEAR_COLOR | AGL_CLEAR_STENCIL: return GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT; break;
+        case AGL_CLEAR_COLOR | AGL_CLEAR_DEPTH | AGL_CLEAR_STENCIL: return GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT; break;
+        case AGL_CLEAR_DEPTH | AGL_CLEAR_STENCIL: return GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT; break;
     }
 }
 
@@ -753,7 +758,6 @@ static void aglExecuteClearCommand( aglCommand* cmd )
     if( clear_cmd->bits & AGL_CLEAR_DEPTH   ) glClearDepth(clear_cmd->depth);
     if( clear_cmd->bits & AGL_CLEAR_STENCIL ) glClearStencil(clear_cmd->stencil);
 
-    glDrawBuffer(current_rt ? (GL_COLOR_ATTACHMENT0 + clear_cmd->buffer) : GL_BACK);
     glClear(aglClearBitsToOpenGL(clear_cmd->bits));
 }
 
@@ -798,21 +802,21 @@ static void aglExecuteDrawCommand( aglCommand* cmd )
     for( i = 0; i < draw_cmd->input_layout->num_attribs; ++i )
     {
         aglInputLayoutAttrib* attrib = &draw_cmd->input_layout->attribs[i];
-        glEnableVertexAttribArray(attrib->index);
-        glBindBuffer(GL_ARRAY_BUFFER, draw_cmd->vertex_buffers[attrib->slot]->id);
-        glVertexAttribPointer(attrib->index, attrib->num_components, attrib->type, attrib->normalized, attrib->stride, attrib->offset);
-        glVertexAttribDivisor(attrib->index, attrib->divisor);
+        glEnableVertexAttribArrayARB(attrib->index);
+        glBindBufferARB(GL_ARRAY_BUFFER_ARB, draw_cmd->vertex_buffers[attrib->slot]->id);
+        glVertexAttribPointerARB(attrib->index, attrib->num_components, attrib->type, attrib->normalized, attrib->stride, attrib->offset);
+        glVertexAttribDivisorARB(attrib->index, attrib->divisor);
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
     // index_buffer:
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, draw_cmd->index_buffer ? draw_cmd->index_buffer->id : 0);
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, draw_cmd->index_buffer ? draw_cmd->index_buffer->id : 0);
 
     // textures:
     for( i = 0; i < 4; ++i )
     {
-        glActiveTexture(GL_TEXTURE0 + i);
+        glActiveTextureARB(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, draw_cmd->textures[i] ? draw_cmd->textures[i]->id : 0);
     }
 
@@ -856,14 +860,22 @@ static void aglExecuteDrawCommand( aglCommand* cmd )
     for( i = 0; i < draw_cmd->input_layout->num_attribs; ++i )
     {
         aglInputLayoutAttrib* attrib = &draw_cmd->input_layout->attribs[i];
-        glDisableVertexAttribArray(attrib->index);
+        glDisableVertexAttribArrayARB(attrib->index);
     }
 }
 
 static void aglExecuteSetRenderTargetCommand( aglCommand* cmd )
 {
+    static const GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
     aglSetRenderTargetCommand* set_rt_cmd = (aglSetRenderTargetCommand*)cmd;
+    uint32_t num_color_buffers = 0;
     current_rt = set_rt_cmd->render_target;
+    if( current_rt ) {
+        for( num_color_buffers = 0; num_color_buffers < 4; ++num_color_buffers ) if( !current_rt->color[num_color_buffers] ) break;
+        glDrawBuffers(num_color_buffers, &buffers[0]);
+    } else { 
+        glDrawBuffer(GL_BACK);
+    }
 }
 
 void AGL_API aglExecuteCommands( size_t num_commands, aglCommand* cmds )

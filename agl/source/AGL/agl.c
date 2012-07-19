@@ -27,10 +27,19 @@
 #include <AGL/agl.h>
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
+
+#include <Cg/cg.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 aglAllocCallback aglAlloc = NULL;
 aglFreeCallback  aglFree  = NULL;
+
+extern void aglCgErrorHandler( CGcontext context, CGerror error, void* data );
 
 uint32_t AGL_API aglInit( aglAllocCallback alloc_callback, aglFreeCallback free_callback )
 {
@@ -40,5 +49,11 @@ uint32_t AGL_API aglInit( aglAllocCallback alloc_callback, aglFreeCallback free_
     aglAlloc = alloc_callback;
     aglFree  = free_callback;
 
+    cgSetErrorHandler(aglCgErrorHandler, NULL);
+
     return AGL_SUCCESS;
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */

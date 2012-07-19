@@ -135,7 +135,7 @@ static int AGL_API waglCreateHGLRC( const aglContextSettings* settings, aglConte
         goto failure;
     }
 
-    if( !(wglCreateContextAttribsARB = (PFNWGLCREATEBUFFERREGIONARBPROC)wglGetProcAddress("wglCreateContextAttribsARB")) ) {
+    if( !(wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB")) ) {
         wglMakeCurrent(NULL, NULL);
         wglDeleteContext(dummy_context.hRC);
         goto failure;
@@ -150,9 +150,13 @@ static int AGL_API waglCreateHGLRC( const aglContextSettings* settings, aglConte
         }
     }
 
-    context_attributes[1] = major_ver;
+    /*context_attributes[1] = major_ver;
     context_attributes[3] = minor_ver;
-    context->gl_version = major_ver * 10 + minor_ver;
+    context->gl_version   = major_ver * 10 + minor_ver;*/
+
+    context_attributes[1] = 3;
+    context_attributes[3] = 1;
+    context->gl_version   = 31;
 
     if( !(context->hRC = (HGLRC)wglCreateContextAttribsARB(context->hDC, 0, (const int*)&context_attributes[0])) ) {
         wglMakeCurrent(NULL, NULL);
@@ -170,12 +174,12 @@ success:
     if( glewInit() != GLEW_OK ) goto failure;
 
     context->cg_context    = cgCreateContext();
-    context->cg_vs_profile = CG_PROFILE_GLSLV;
-    context->cg_ps_profile = CG_PROFILE_GLSLF;
+    context->cg_vs_profile = cgGLGetLatestProfile(CG_GL_VERTEX);
+    context->cg_ps_profile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
 
     cgSetContextBehavior(context->cg_context, CG_BEHAVIOR_CURRENT);
-    cgGLSetContextOptimalOptions(context->cg_context, CG_PROFILE_GLSLV);
-    cgGLSetContextOptimalOptions(context->cg_context, CG_PROFILE_GLSLF);
+    cgGLSetContextOptimalOptions(context->cg_context, context->cg_vs_profile);
+    cgGLSetContextOptimalOptions(context->cg_context, context->cg_ps_profile);
 
     if( active_context ) wglMakeCurrent(active_context->hDC, active_context->hRC);
     else wglMakeCurrent(NULL, NULL);
