@@ -468,9 +468,64 @@ void AGL_API aglUnmapConstantBuffer( aglConstantBuffer* constant_buffer )
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct aglSamplerState {
+    GLenum mag_filter;
+    GLenum min_filter;
+    GLenum tex_wrap_s;
+    GLenum tex_wrap_t;
+    GLenum tex_wrap_r;
+    BOOL   anisotropic;
+    float  max_anisotropy;
+};
+
+static void aglFilterToOpenGL( aglFilter filter, GLenum* mag_filter, GLenum* min_filter )
+{
+    switch( filter ) {
+        case AGL_FILTER_MIN_MAG_MIP_POINT: *mag_filter = GL_NEAREST; *min_filter = GL_NEAREST; break;
+        case AGL_FILTER_MIN_MAG_POINT_MIP_LINEAR: *mag_filter = GL_NEAREST_MIPMAP_LINEAR; *min_filter = GL_NEAREST; break;
+        case AGL_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT: *mag_filter = GL_LINEAR_MIPMAP_NEAREST; *min_filter = GL_NEAREST; break;
+        case AGL_FILTER_MIN_POINT_MAG_MIP_LINEAR: *mag_filter = GL_LINEAR_MIPMAP_LINEAR; *min_filter = GL_NEAREST; break;
+        case AGL_FILTER_MIN_LINEAR_MAG_MIP_POINT: *mag_filter = GL_NEAREST_MIPMAP_NEAREST; *min_filter = GL_LINEAR; break;
+        case AGL_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR: *mag_filter = GL_NEAREST_MIPMAP_LINEAR; *min_filter = GL_LINEAR; break;
+        case AGL_FILTER_MIN_MAG_LINEAR_MIP_POINT: *mag_filter = GL_LINEAR_MIPMAP_NEAREST; *min_filter = GL_LINEAR; break;
+        case AGL_FILTER_MIN_MAG_MIP_LINEAR: *mag_filter = GL_LINEAR_MIPMAP_LINEAR; *min_filter = GL_LINEAR; break;
+        case AGL_FILTER_ANISOTROPIC: *mag_filter = GL_LINEAR_MIPMAP_LINEAR; *min_filter = GL_LINEAR; break;
+    }
+}
+
+static GLenum aglTextureAddressModeToOpenGL( aglTextureAddressMode texture_address_mode )
+{
+    switch( texture_address_mode ) {
+        case AGL_TEXTURE_ADDRESS_WRAP: return GL_REPEAT; break;
+        case AGL_TEXTURE_ADDRESS_MIRROR: return GL_MIRRORED_REPEAT; break;
+        case AGL_TEXTURE_ADDRESS_CLAMP: return GL_CLAMP; break;
+        case AGL_TEXTURE_ADDRESS_BORDER: return GL_CLAMP_TO_BORDER; break;
+    }
+}
+
+aglSamplerState* AGL_API aglCreateSamplerState( const aglSamplerStateDesc* desc )
+{
+    aglSamplerState* sampler_state = (aglSamplerState*)aglAlloc(sizeof(aglSamplerState));
+    aglFilterToOpenGL(desc->filter, &sampler_state->mag_filter, &sampler_state->min_filter);
+    sampler_state->tex_wrap_s = aglTextureAddressModeToOpenGL(desc->address_u);
+    sampler_state->tex_wrap_t = aglTextureAddressModeToOpenGL(desc->address_v);
+    sampler_state->tex_wrap_r = aglTextureAddressModeToOpenGL(desc->address_w);
+    sampler_state->anisotropic = (desc->filter == AGL_FILTER_ANISOTROPIC);
+    sampler_state->max_anisotropy = desc->max_anisotropy;
+    return sampler_state;
+}
+
+void AGL_API aglDestroySamplerState( aglSamplerState* sampler_state )
+{
+    aglFree((void*)sampler_state);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 struct aglTexture {
     GLuint id;
     GLenum target;
+    aglSamplerState* last_sampler_state;
     GLenum format;
     GLenum type;
 };
@@ -500,6 +555,7 @@ aglTexture* AGL_API aglCreateTexture2D( const aglTextureDesc2D* desc, const void
 
     texture = (aglTexture*)aglAlloc(sizeof(aglTexture));
     glGenTextures(1, &texture->id);
+    texture->last_sampler_state = NULL;
     texture->target = GL_TEXTURE_2D;
 
     aglTextureFormatToOpenGL(desc->format, &internal_format, &format, &type);
@@ -509,12 +565,7 @@ aglTexture* AGL_API aglCreateTexture2D( const aglTextureDesc2D* desc, const void
     glBindTexture(texture->target, texture->id);
     glTexImage2D(texture->target, 0, internal_format, desc->width, desc->height, 0, format, type, data);
 
-    // TODO: expose
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, desc->generate_mips ? GL_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, desc->generate_mips ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST);
-    if( desc->generate_mips ) glGenerateMipmap(GL_TEXTURE_2D);
+    if( desc->generate_mips ) glGenerateMipmap(texture->target);
 
     return texture;
 }
@@ -814,10 +865,21 @@ static void aglExecuteDrawCommand( aglCommand* cmd )
     glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, draw_cmd->index_buffer ? draw_cmd->index_buffer->id : 0);
 
     // textures:
-    for( i = 0; i < 4; ++i )
-    {
-        glActiveTextureARB(GL_TEXTURE0 + i);
-        glBindTexture(GL_TEXTURE_2D, draw_cmd->textures[i] ? draw_cmd->textures[i]->id : 0);
+    for( i = 0; i < 4; ++i ) {
+        if( draw_cmd->textures[i] ) {
+            glActiveTextureARB(GL_TEXTURE0 + i);
+            glBindTexture(draw_cmd->textures[i]->target, draw_cmd->textures[i]->id);
+            if( draw_cmd->textures[i]->last_sampler_state != draw_cmd->sampler_states[i] ) {
+                const aglSamplerState* sampler_state = draw_cmd->sampler_states[i];
+                const aglTexture* texture = draw_cmd->textures[i];
+                glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, sampler_state->mag_filter);
+                glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, sampler_state->min_filter);
+                glTexParameteri(texture->target, GL_TEXTURE_WRAP_S, sampler_state->tex_wrap_s);
+                glTexParameteri(texture->target, GL_TEXTURE_WRAP_T, sampler_state->tex_wrap_t);
+                glTexParameteri(texture->target, GL_TEXTURE_WRAP_R, sampler_state->tex_wrap_r);
+                if( sampler_state->anisotropic ) glTexParameterf(texture->target, GL_TEXTURE_MAX_ANISOTROPY_EXT, sampler_state->max_anisotropy);
+            }
+        }
     }
 
     // vs_constant_buffers:

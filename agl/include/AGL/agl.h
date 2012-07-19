@@ -352,6 +352,40 @@ extern AGL_EXPORT(void AGL_API aglUnmapConstantBuffer( aglConstantBuffer* consta
 
 ////////////////////////////////////////////////////////////////////////////////
 
+typedef struct aglSamplerState aglSamplerState;
+
+typedef enum aglFilter {
+    AGL_FILTER_MIN_MAG_MIP_POINT               = 1,
+    AGL_FILTER_MIN_MAG_POINT_MIP_LINEAR        = 2,
+    AGL_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT  = 3,
+    AGL_FILTER_MIN_POINT_MAG_MIP_LINEAR        = 4,
+    AGL_FILTER_MIN_LINEAR_MAG_MIP_POINT        = 5,
+    AGL_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR = 6,
+    AGL_FILTER_MIN_MAG_LINEAR_MIP_POINT        = 7,
+    AGL_FILTER_MIN_MAG_MIP_LINEAR              = 8,
+    AGL_FILTER_ANISOTROPIC                     = 9 
+} aglFilter;
+
+typedef enum aglTextureAddressMode {
+    AGL_TEXTURE_ADDRESS_WRAP   = 1,
+    AGL_TEXTURE_ADDRESS_MIRROR = 2,
+    AGL_TEXTURE_ADDRESS_CLAMP  = 3,
+    AGL_TEXTURE_ADDRESS_BORDER = 4
+} aglTextureAddressMode;
+
+typedef struct aglSamplerStateDesc {
+    aglFilter filter;
+    aglTextureAddressMode address_u;
+    aglTextureAddressMode address_v;
+    aglTextureAddressMode address_w;
+    float max_anisotropy;
+} aglSamplerStateDesc;
+
+extern AGL_EXPORT(aglSamplerState* AGL_API aglCreateSamplerState( const aglSamplerStateDesc* desc ));
+extern AGL_EXPORT(void AGL_API aglDestroySamplerState( aglSamplerState* sampler_state ));
+
+////////////////////////////////////////////////////////////////////////////////
+
 typedef struct aglTexture aglTexture;
 
 typedef enum AGL_TEXTURE_FORMAT {
@@ -480,6 +514,7 @@ typedef struct aglDrawCommand {
     AGL_PRIMITIVE_TOPOLOGY  primitive_topology : 8;
     aglVertexShader*        vertex_shader;
     aglPixelShader*         pixel_shader;
+    aglSamplerState*        sampler_states[4];
     aglTexture*             textures[4];
     AGL_INDEX_TYPE          index_type : 8;
     aglIndexBuffer*         index_buffer;
