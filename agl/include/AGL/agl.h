@@ -138,6 +138,10 @@ typedef void  (AGL_API *aglFreeCallback)  ( void* );
 
 extern AGL_EXPORT(uint32_t AGL_API aglInit( aglAllocCallback alloc_callback, aglFreeCallback free_callback ));
 
+typedef const char* (AGL_API *aglShaderIncludeCallback ) ( const char* );
+
+extern AGL_EXPORT(void AGL_API aglSetShaderIncludeCallback( aglShaderIncludeCallback shader_include_callback ));
+
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef struct aglContextSettings {

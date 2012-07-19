@@ -41,6 +41,13 @@ aglFreeCallback  aglFree  = NULL;
 
 extern void aglCgErrorHandler( CGcontext context, CGerror error, void* data );
 
+aglShaderIncludeCallback aglShaderInclude = NULL;
+
+void AGL_API aglSetShaderIncludeCallback( aglShaderIncludeCallback shader_include_callback )
+{
+    aglShaderInclude = shader_include_callback;
+}
+
 uint32_t AGL_API aglInit( aglAllocCallback alloc_callback, aglFreeCallback free_callback )
 {
     assert(alloc_callback);

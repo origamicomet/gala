@@ -180,6 +180,7 @@ success:
     cgSetContextBehavior(context->cg_context, CG_BEHAVIOR_CURRENT);
     cgGLSetContextOptimalOptions(context->cg_context, context->cg_vs_profile);
     cgGLSetContextOptimalOptions(context->cg_context, context->cg_ps_profile);
+    cgSetCompilerIncludeCallback(context->cg_context, &aglCgIncludeCallback);
 
     if( active_context ) wglMakeCurrent(active_context->hDC, active_context->hRC);
     else wglMakeCurrent(NULL, NULL);

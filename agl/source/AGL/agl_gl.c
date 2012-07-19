@@ -40,6 +40,15 @@ extern "C" {
 
 extern aglAllocCallback aglAlloc;
 extern aglFreeCallback  aglFree;
+extern aglShaderIncludeCallback aglShaderInclude;
+
+void aglCgIncludeCallback( CGcontext context, const char* filename )
+{
+    if( aglShaderInclude ) {
+        const char* src = aglShaderInclude(filename);
+        if( src ) cgSetCompilerIncludeString(context, filename, src);
+    }
+}
 
 #if defined(AGL_PLATFORM_WINDOWS)
     #include "win_gl.incl"
