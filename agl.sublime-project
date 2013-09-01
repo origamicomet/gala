@@ -1,0 +1,34 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+			"file_exclude_patterns": [
+				".gitmodules",
+				"*.sublime-workspace",
+				"*.log",
+				"*.o",
+				"*.obj",
+				"*.exp",
+				"*.res",
+				"*.pdb",
+				"*.exe",
+				"*.lib",
+				"*.dll",
+				"*.elf",
+				"*.a",
+				"*.so",
+				"*.macho",
+				"*.dwarf",
+				"*.a",
+				"*.dylib",
+			],
+
+			"folder_exclude_patterns": [
+				".git",
+				".tup",
+				"docs/doxygen"
+			]
+		}
+	]
+}

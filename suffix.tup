@@ -1,0 +1,15 @@
+ifeq (@(AGL_BUILD),debug)
+SUFFIX = -dbg
+endif
+
+ifeq (@(TUP_ARCH),i386)
+SUFFIX = $(SUFFIX)-x86
+endif
+
+ifeq (@(TUP_ARCH),x86_64)
+SUFFIX = $(SUFFIX)-x86_64
+endif
+
+ifeq (@(TUP_ARCH),arm)
+SUFFIX = $(SUFFIX)-arm
+endif

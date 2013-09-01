@@ -1,0 +1,97 @@
+CC = cl
+LD = link
+AR = lib
+AS = nasm
+RC = rc
+
+CFLAGS += /nologo /c /W4 /GF /GL /GR- /TP
+CFLAGS += /I"$(TUP_CWD)\include"
+
+CFLAGS += /I"@(WINDOWS_SDK_DIR)Include"
+
+# See http://jaewon.mine.nu/jaewon/2013/01/12/visual-studio-2012-and-directx-sdk/
+CFLAGS += /I"@(DXSDK_DIR)Include"
+
+LDFLAGS += /NOLOGO /LTCG
+
+ifeq (@(TUP_ARCH),i386)
+LDFLAGS += /LIBPATH:"@(DXSDK_DIR)Lib/x86"
+endif
+
+ifeq (@(TUP_ARCH),x86_64)
+LDFLAGS += /LIBPATH:"@(DXSDK_DIR)Lib/x64"
+endif
+
+LDFLAGS += /LIBPATH:"@(WINDOWS_SDK_DIR)Lib"
+
+RCFLAGS += /nologo /l 0x0409
+RCFLAGS += /I"$(TUP_CWD)\include"
+RCFLAGS += /I"@(WINDOWS_SDK_DIR)Include"
+
+CFLAGS += /D"AGL_COMPILING"
+
+ifeq (@(AGL_PARANOID),true)
+CFLAGS += /D"AGL_PARANOID"
+RCFLAGS += /D"AGL_PARANOID"
+ASFLAGS += /D"AGL_PARANOID"
+endif
+
+ifeq (@(AGL_BUILD),debug)
+CFLAGS += /D"AGL_DEBUG_BUILD"
+RCFLAGS += /D"AGL_DEBUG_BUILD"
+ASFLAGS += /D"AGL_DEBUG_BUILD"
+endif
+
+ifeq (@(AGL_BUILD),release)
+CFLAGS += /D"AGL_RELEASE_BUILD"
+RCFLAGS += /D"AGL_RELEASE_BUILD"
+ASFLAGS += /D"AGL_RELEASE_BUILD"
+endif
+
+ifeq (@(TUP_ARCH),i386)
+CFLAGS += /arch:SSE2
+ASFLAGS += -f win32
+LDFLAGS += /MACHINE:X86
+endif
+ifeq (@(TUP_ARCH),x86_64)
+CFLAGS += /arch:SSE2
+ASFLAGS += -f win64
+LDFLAGS += /MACHINE:X64
+endif
+
+CFLAGS += /D "_CRT_SECURE_NO_WARNINGS" /Zi
+LDFLAGS += /DEBUG
+
+ifeq (@(AGL_BUILD),debug)
+CFLAGS += /MDd /D "_DEBUG"
+ASFLAGS += -g
+RCFLAGS += /D "_DEBUG"
+else
+CFLAGS += /MD /D "NDEBUG"
+RCFLAGS += /D "NDEBUG"
+endif
+
+WIN32_LIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib
+
+DEBUG_SYBMOLS_EXT = .pdb
+!cc = |> $(CC) $(CFLAGS) /Fd"$(TUP_CWD)\%O.pdb" %f /Fo"%o" |>
+
+SHARED_LIB_EXT = .dll
+!so = |> $(LD) $(LDFLAGS) /DLL /OUT:"$(TUP_CWD)\%o" %f $(WIN32_LIBS) $(LIBS) |>
+
+ifeq (@(AGL_BUILD),debug)
+SUBSYSTEM = /SUBSYSTEM:CONSOLE /ENTRY:mainCRTStartup
+endif
+ifeq (@(AGL_BUILD),release)
+SUBSYSTEM = /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup
+endif
+
+EXE_EXT = .exe
+!exe = |> $(LD) $(LDFLAGS) $(SUBSYSTEM) /OUT:"$(TUP_CWD)\%o" %f $(WIN32_LIBS) $(LIBS) |>
+
+LIB_EXT = .lib
+!ar = |> $(AR) $(ARFLAGS) /OUT:"$(TUP_CWD)\%o" %f |>
+
+!as = |> $(AS) $(ASFLAGS) -o %o %f |>
+
+!rc = |> $(RC) $(RCFLAGS) /fo %o %f |>
