@@ -28,6 +28,7 @@
 #ifndef _AGL_COMPAT_STDBOOL_H_
 #define _AGL_COMPAT_STDBOOL_H_
 
+#ifndef __cplusplus // [
 #ifndef _MSC_VER // [
    #include <stdbool.h>
 #else
@@ -37,5 +38,6 @@
    #define true  ((_Bool)1)
    #define false ((_Bool)0)
 #endif // _MSC_VER ]
+#endif // __cplusplus ]
 
 #endif // _AGL_COMPAT_STDBOOL_H_
