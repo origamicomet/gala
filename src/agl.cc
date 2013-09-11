@@ -26,4 +26,4 @@
  */
 
 #include <agl/config.h>
-#include <agl/compat.h>
+#include <agl/detect.h>
