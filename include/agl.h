@@ -33,4 +33,46 @@
 #include <agl/compat.h>
 #include <agl/api.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+/* ==========================================================================
+    Errors (agl_error_t):
+   ========================================================================== */
+
+/*! Represents error or success. */
+typedef enum agl_err {
+  /*! No error; success. */
+  AGL_ENONE       = 0,
+  /*! One or more supplied arguments were invalid. */
+  AGL_EINVALIDARG = -1,
+  /*! Failed, but don't know why. */
+  AGL_EUNKNOWN    = -2
+} agl_err_t;
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+/* ==========================================================================
+    C++ Wrapper/Interface:
+   ========================================================================== */
+
+#ifdef __cplusplus
+namespace agl {
+  namespace Error {
+    /*! See agl_err_t. */
+    enum _ {
+      /*! See agl_err_t::AGL_ENONE. */
+      None       = ::AGL_ENONE,
+      /*! See agl_err_t::AGL_EINVALIDARG. */
+      InvalidArg = ::AGL_EINVALIDARG,
+      /*! See agl_err_t::AGL_EUNKNOWN. */
+      Unknown    = ::AGL_EUNKNOWN
+    };
+  } typedef Error::_ Error_;
+} /* agl */
+#endif /* __cplusplus */
+
 #endif /* _AGL_H_ */
