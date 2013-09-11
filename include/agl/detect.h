@@ -25,11 +25,11 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 
-#ifndef _AGL_COMPAT_H_
-#define _AGL_COMPAT_H_
+#ifndef _AGL_DETECT_H_
+#define _AGL_DETECT_H_
 
 #include <agl/detect/compiler.h>
 #include <agl/detect/platform.h>
 #include <agl/detect/architecture.h>
 
-#endif /* _AGL_COMPAT_H_ */
+#endif /* _AGL_DETECT_H_ */
