@@ -25,6 +25,26 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 
-#include <agl.h>
+#ifndef _AGL_API_H_
+#define _AGL_API_H_
 
+#include <agl/config.h>
 
+/*! @def AGL_API
+  */
+
+#ifndef AGL_STATICALLY_LINKING
+  #ifdef _MSC_VER
+    #ifdef AGL_COMPILING
+      #define AGL_API __declspec(dllexport)
+    #else
+      #define AGL_API __declspec(dllimport)
+    #endif
+  #else
+    #define AGL_API
+  #endif
+#else
+  #define AGL_API
+#endif
+
+#endif /* _AGL_API_H_ */

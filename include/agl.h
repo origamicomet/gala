@@ -25,6 +25,12 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 
-#include <agl.h>
+#ifndef _AGL_H_
+#define _AGL_H_
 
+#include <agl/config.h>
+#include <agl/detect.h>
+#include <agl/compat.h>
+#include <agl/api.h>
 
+#endif /* _AGL_H_ */
