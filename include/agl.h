@@ -52,6 +52,24 @@ typedef enum agl_err {
   AGL_EUNKNOWN    = -2
 } agl_err_t;
 
+/* ==========================================================================
+    Requests (agl_request_t):
+   ========================================================================== */
+
+/*!  */
+typedef uint agl_request_t;
+
+/*! */
+typedef uint agl_request_response_t;
+
+/*! @def AGL_FULFILLED_REQUEST
+  Represents an answered or fulfilled request. */
+#define AGL_FULFILLED_REQUEST ((uintptr_t)0x0000000000000000ull)
+
+/*! @def AGL_UNFULFILLED_REQUEST
+  Represents an unanswered or unfulfilled request. */
+#define AGL_UNFULFILLED_REQUEST ((uintptr_t)0xffffffffffffffffull)
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
@@ -73,6 +91,56 @@ namespace agl {
       Unknown    = ::AGL_EUNKNOWN
     };
   } typedef Error::_ Error_;
+
+  /*! See agl_request_t. */
+  class Request {
+    private:
+      Request(const Request &);
+      Request& operator=(const Request &);
+
+    public:
+      Request()
+        : _(AGL_UNFULFILLED_REQUEST)
+      {}
+
+      ~Request()
+      {}
+
+    public:
+      /*! Determines if the requested has been fulfilled or answered. */
+      bool is_fulfilled() const {
+        return (agl_atomic_compr_and_swap(
+          (volatile uint *)&_,
+          AGL_UNFULFILLED_REQUEST,
+          AGL_UNFULFILLED_REQUEST
+        ) != AGL_UNFULFILLED_REQUEST);
+      }
+
+      /*! See Request::is_fulfilled. */
+      bool is_answered() const
+      { return is_fulfilled(); }
+
+      /*! Determines if the requested has not been fulfilled or answered. */
+      bool is_not_fulfilled() const {
+        return (agl_atomic_compr_and_swap(
+          (volatile uint *)&_,
+          AGL_UNFULFILLED_REQUEST,
+          AGL_UNFULFILLED_REQUEST
+        ) == AGL_UNFULFILLED_REQUEST);
+      }
+
+      /*! See Request::is_not_fulfilled. */
+      bool is_not_answered() const
+      { return is_not_fulfilled(); }
+
+      /*! Gets the associated response. */
+      const agl_request_response_t &response() const
+      { return _response; }
+
+    public: /* pseduo-private: */
+      mutable agl_request_t _;
+      agl_request_response_t _response;
+  };
 } /* agl */
 #endif /* __cplusplus */
 
