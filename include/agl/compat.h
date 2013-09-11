@@ -25,6 +25,16 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 
-#include <agl/config.h>
-#include <agl/detect.h>
-#include <agl/compat.h>
+#ifndef _AGL_COMPAT_H_
+#define _AGL_COMPAT_H_
+
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+#include <malloc.h>
+
+#include <agl/compat/stdint.h>
+#include <agl/compat/inttypes.h>
+#include <agl/compat/stdbool.h>
+
+#endif /* _AGL_COMPAT_H_ */
