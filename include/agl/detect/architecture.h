@@ -25,37 +25,32 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 
-#include "agl_runtime.h"
+#ifndef _AGL_DETECT_ARCHITECTURE_H_
+#define _AGL_DETECT_ARCHITECTURE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+#include <agl/config.h>
 
-AGL_RUNTIME size_t aglr_get_num_of_adapters()
-{
-  return 0;
-}
+#define AGL_ARCHITECTURE_X86    1
+#define AGL_ARCHITECTURE_X86_64 2
+#define AGL_ARCHITECTURE_ARM    3
 
-AGL_RUNTIME const agl_adapter_t *aglr_get_adapter(
-  const agl_adapter_id_t id)
-{
-  return NULL;
-}
+#ifndef AGL_DONT_AUTODETECT_ARCHITECTURE
+  /* x86: */
+  #if (defined(_M_IX86) || defined(__i386__))
+    #define AGL_ARCHITECTURE AGL_ARCHITECTURE_X86
+  /* x86-64: */
+  #elif (defined(_M_X64) || defined(__x86_64__))
+    #define AGL_ARCHITECTURE AGL_ARCHITECTURE_X86_64
+  /* ARM: */
+  #elif defined(__ARMEL__)
+    #define AGL_ARCHITECTURE AGL_ARCHITECTURE_ARM
+  #else
+    #error ("Unable to detect architecture from pre-proccesor defines!")
+  #endif
+#else /* AGL_DONT_AUTODETECT_ARCHITECTURE */
+  #ifndef AGL_ARCHITECTURE
+    #error ("No architecture specified!")
+  #endif
+#endif
 
-/*struct agl_context {
-};*/
-
-AGL_RUNTIME agl_context_t *aglr_create_context(
-  const agl_adapter_id_t adapter)
-{
-  return NULL;
-}
-
-AGL_RUNTIME void aglr_destroy_context(
-  agl_context_t *context)
-{
-}
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+#endif /* _AGL_DETECT_ARCHITECTURE_H_ */

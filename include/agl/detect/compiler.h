@@ -25,32 +25,37 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 
-#ifndef _AGL_RUNTIME_H_
-#define _AGL_RUNTIME_H_
+#ifndef _AGL_DETECT_COMPILER_H_
+#define _AGL_DETECT_COMPILER_H_
 
-#include "agl_private.h"
+#include <agl/config.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+#define AGL_COMPILER_MSVC  1
+#define AGL_COMPILER_CLANG 2
+#define AGL_COMPILER_GCC   3
+#define AGL_COMPILER_ICC   4
 
-/* 1. Resources: */
+#ifndef AGL_DONT_AUTODETECT_COMPILER
+  /* Microsoft Visual Studio C/C++: */
+  #if defined(_MSC_VER)
+    #define AGL_COMPILER AGL_COMPILER_MSVC
+  /* Clang/LLVM: */
+  #elif defined(__clang__)
+    #define AGL_COMPILER AGL_COMPILER_CLANG
+  /* GCC: */
+  #elif (defined(__GNUC__) || defined(__GNUG__)) && \
+        !(defined(__clang__) || defined(__ICC) || defined(__INTEL_COMPILER))
+    #define AGL_COMPILER AGL_COMPILER_GCC
+  /* Intel C/C++ Compiler: */
+  #elif (defined(__ICC) || defined(__INTEL_COMPILER))
+    #define AGL_COMPILER AGL_COMPILER_ICC
+  #else
+    #error ("Unable to detect compiler from pre-proccesor defines!")
+  #endif
+#else /* AGL_DONT_AUTODETECT_COMPILER */
+  #ifndef AGL_COMPILER
+    #error ("No compiler specified!")
+  #endif
+#endif
 
-typedef enum agl_resource_type {
-} agl_resource_type_t;
-
-typedef struct agl_resource {
-  agl_resource_type_t type;
-  uint ops;
-} agl_resource_t;
-
-extern agl_resource_t *agl_resource_from_id(
-  const volatile agl_id_t *id);
-
-extern agl_id_t agl_id_from_resource(
-  const agl_resource_t *resource);
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-#endif /* _AGL_RUNTIME_H_ */
+#endif /* _AGL_DETECT_COMPILER_H_ */

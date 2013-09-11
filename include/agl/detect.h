@@ -25,41 +25,11 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 
-#include "agl_runtime.h"
+#ifndef _AGL_COMPAT_H_
+#define _AGL_COMPAT_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+#include <agl/detect/compiler.h>
+#include <agl/detect/platform.h>
+#include <agl/detect/architecture.h>
 
-/* 1. Resources: */
-
-agl_resource_t *agl_resource_from_id(const volatile agl_id_t *id) {
-  agl_assert(paranoid, id != NULL);
-  const agl_id_t id_ = *id;
-  return ((id_ == AGL_INVALID_ID) ? NULL : ((agl_resource_t*)id));
-}
-
-agl_id_t agl_id_from_resource(const agl_resource_t *resource) {
-  agl_assert(paranoid, resource != NULL);
-  return ((agl_id_t)resource);
-}
-
-AGL_RUNTIME bool aglr_is_available(
-  const agl_context_t *context,
-  const volatile agl_id_t *id)
-{
-  const agl_resource_t *res = agl_resource_from_id(id);
-  return (res != NULL);
-}
-
-AGL_RUNTIME bool aglr_is_reflective(
-  const agl_context_t *context,
-  const volatile agl_id_t *id)
-{
-  agl_resource_t *res = agl_resource_from_id(id);
-  return (res ? agl_atomic_compare_and_swap(&res->ops, 0, 0) : false);
-}
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+#endif /* _AGL_COMPAT_H_ */

@@ -25,20 +25,5 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 
-#ifndef _AGL_STDBOOL_H_
-#define _AGL_STDBOOL_H_
-
-#ifndef _MSC_VER // [
-   #include <stdbool.h>
-#else
-   typedef unsigned int _Bool;
-
-   #ifndef __bool_true_false_are_defined
-      #define __bool_true_false_are_defined 1
-      #define bool _Bool
-      #define false 0
-      #define true 1
-   #endif
-#endif // _MSC_VER ]
-
-#endif // _AGL_STDBOOL_H_
+#include <agl/config.h>
+#include <agl/compat.h>
