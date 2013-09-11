@@ -25,6 +25,38 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 
-#include <agl.h>
-#include <agl.private.h>
+#ifndef _AGL_ATOMIC_H_
+#define _AGL_ATOMIC_H_
 
+#include <agl/config.h>
+#include <agl/detect.h>
+#include <agl/compat.h>
+#include <agl/api.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+/* ==========================================================================
+    Atomics (agl_atomic_incr, agl_atomic_decr, agl_atomic_compr_and_swap):
+   ========================================================================== */
+
+/*! */
+extern AGL_API uint agl_atomic_incr(
+  volatile uint *value);
+
+/*! */
+extern AGL_API uint agl_atomic_decr(
+  volatile uint *value);
+
+/*! */
+extern AGL_API uint agl_atomic_compr_and_swap(
+  volatile uint *comparee,
+  const uint comparand,
+  const uint value);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* _AGL_ATOMIC_H_ */
