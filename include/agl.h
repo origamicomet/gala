@@ -70,6 +70,76 @@ typedef uint agl_request_response_t;
   Represents an unanswered or unfulfilled request. */
 #define AGL_UNFULFILLED_REQUEST ((uintptr_t)0xffffffffffffffffull)
 
+/* ==========================================================================
+    Resources (agl_resource_t):
+   ========================================================================== */
+
+/*! Specifies a resource type. */
+typedef enum agl_resource_type {
+  AGL_RESOURCE_TYPE_UNKNOWN = 0
+} agl_resource_type_t;
+
+/*! An opaque handle that represents a resource. */
+typedef struct agl_resource {
+  agl_resource_type_t _type;
+  uint _refs;
+  uint _ops;
+  uintptr_t _internal;
+} agl_resource_t;
+
+/*! @def AGL_INVALID_RESOURCE
+  A invalid resource. */
+#define AGL_INVALID_RESOURCE ((agl_resource_t *)NULL)
+
+/* ========================================================================== */
+
+/*! Creates a new resource.
+  @param[in] type The type of resource to create.
+  @returns AGL_INVALID_RESOURCE if the resource could not be created; or a
+           non-AGL_INVALID_RESOURCE if the resource was created.
+  @warning Succesful creation doesn't imply or guarantee existence. An
+           initialization command like agl_texture_storage_2d() might be
+           nessecary. */
+extern AGL_API agl_resource_t *agl_resource_create(
+  const agl_resource_type_t type);
+
+/*! Determines the resource type.
+  @param[in] resource The resource.
+  @returns AGL_RESOURCE_TYPE_UNKNOWN if the specifed resource is unknown or
+           non-existent; or an agl_resource_type_t. */
+extern AGL_API agl_resource_type_t agl_resource_type(
+  const agl_resource_t *resource);
+
+/*! Determines the number of pending operations.
+  @param[in] resource The resource. */
+extern AGL_API uint agl_resource_ops(
+  const agl_resource_t *resource);
+
+/*! Increments the internal reference count.
+  @param[in] resource The resource. */
+extern AGL_API void agl_resource_ref(
+  agl_resource_t *resource);
+
+/*! Decrement the internal reference count.
+  @remark If the internal reference count reaches zero the resource is destroyed.
+  @param[in] resource The resource. */
+extern AGL_API void agl_resource_deref(
+  agl_resource_t *resource);
+
+/*! Determines if the resource is existent.
+  @param[in] resource The resource.
+  @returns True if the resource is existent; or
+           false if the resource is non-existent. */
+extern AGL_API bool agl_resource_is_available(
+  const agl_resource_t *resource);
+
+/*! Determines if the resource has any outstanding operations.
+  @param[in] resource The resource.
+  @returns True if the resource has not outstanding operations; or
+           false if the resource ihas outstanding operations. */
+extern AGL_API bool agl_resource_is_reflective(
+  const agl_resource_t *resource);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
@@ -140,6 +210,68 @@ namespace agl {
     public: /* pseduo-private: */
       mutable agl_request_t _;
       agl_request_response_t _response;
+  };
+
+  /*! See agl_resource_t. */
+  class Resource : private ::agl_resource_t {
+    public:
+      struct Type {
+        /*! See agl_resource_type_t. */
+        enum _ {
+          /*! See agl_resource_type_t::AGL_RESOURCE_TYPE_UNKNOWN. */
+          Unknown = ::AGL_RESOURCE_TYPE_UNKNOWN
+        };
+      }; typedef Type::_ Type_;
+
+    private:
+      Resource(const Resource &);
+      Resource& operator=(const Resource &);
+
+    private:
+      Resource()
+      {}
+
+      ~Resource()
+      {}
+
+    public:
+      /*! See agl_resource_create. */
+      static Resource *create(const Type_ type) {
+        return (Resource *)agl_resource_create((agl_resource_type_t)type);
+      }
+
+    public:
+      /*! See agl_resource_type. */
+      Type_ type() const {
+        return (Type_)agl_resource_type((const ::agl_resource_t *)this);
+      }
+
+      /*! See agl_resource_ops. */
+      uint ops() const {
+        return agl_resource_ops((const ::agl_resource_t *)this);
+      }
+
+    public:
+      /*! See agl_resource_ref. */
+      void ref() {
+        agl_resource_ref((::agl_resource_t *)this);
+      }
+
+      /*! See agl_resource_deref. */
+      void deref() {
+        agl_resource_deref((::agl_resource_t *)this);
+      }
+
+    public:
+      /*! See agl_resource_is_available. */
+      bool is_available() const {
+        return agl_resource_is_available((const ::agl_resource_t *)this);
+      }
+
+      /*! See agl_resource_is_reflective. */
+      bool is_reflective() const {
+        return agl_resource_is_reflective((const ::agl_resource_t *)this);
+      }
   };
 } /* agl */
 #endif /* __cplusplus */
