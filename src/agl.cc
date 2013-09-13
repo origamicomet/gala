@@ -28,3 +28,90 @@
 #include <agl.h>
 #include <agl.private.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+/* ==========================================================================
+    Errors (agl_error_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ==========================================================================
+    Requests (agl_request_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ==========================================================================
+    Resources (agl_resource_t):
+   ========================================================================== */
+
+agl_resource_t *agl_resource_create(
+  const agl_resource_type_t type)
+{
+  if (type == AGL_RESOURCE_TYPE_UNKNOWN)
+    return NULL;
+  /* TODO (mtwilliams): Lock-free pool or free-list. */
+  agl_resource_t *resource = (agl_resource_t *)malloc(sizeof(agl_resource_t));
+  resource->_type = type;
+  resource->_refs = 1u;
+  resource->_ops = 0u;
+  resource->_internal = NULL;
+  return resource;
+}
+
+agl_resource_type_t agl_resource_type(
+  const agl_resource_t *resource)
+{
+  if (!resource)
+    return AGL_RESOURCE_TYPE_UNKNOWN;
+  return resource->_type;
+}
+
+uint agl_resource_ops(
+  const agl_resource_t *resource)
+{
+  if (!resource)
+    return 0;
+  return resource->_ops;
+}
+
+void agl_resource_ref(
+  agl_resource_t *resource)
+{
+  if (!resource)
+    return;
+  agl_atomic_incr(&resource->_refs);
+}
+
+void agl_resource_deref(
+  agl_resource_t *resource)
+{
+  if (!resource)
+    return;
+  if (agl_atomic_decr(&resource->_refs) > 0)
+    return;
+  free((void *)resource);
+}
+
+bool agl_resource_is_available(
+  const agl_resource_t *resource)
+{
+  if (!resource)
+    return false;
+  return false;
+}
+
+bool agl_resource_is_reflective(
+  const agl_resource_t *resource)
+{
+  if (!resource)
+    return false;
+  return false;
+}
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
