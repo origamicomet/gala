@@ -89,6 +89,49 @@ typedef uint agl_request_response_t;
 #define AGL_ERRORED_REQUEST ((uintptr_t)0x0000000000000001ull)
 
 /* ==========================================================================
+    Pixel Formats (agl_pixel_format_t):
+   ========================================================================== */
+
+/*! @def AGL_PIXEL_FORMAT_IS_COLOR
+  Specifies a pixel format that supports color. */
+#define AGL_PIXEL_FORMAT_IS_COLOR (1 << 31)
+
+/*! @def AGL_PIXEL_FORMAT_IS_DEPTH
+  Specifies a pixel format that supports depth. */
+#define AGL_PIXEL_FORMAT_IS_DEPTH (1 << 30)
+
+/*! @def AGL_PIXEL_FORMAT_IS_STENCIL
+  Specifies a pixel format that supports stencil. */
+#define AGL_PIXEL_FORMAT_IS_STENCIL (1 << 29)
+
+/*! @def AGL_PIXEL_FORMAT_IS_COMPRESSED
+  Specifies a pixel format that is compressed. */
+#define AGL_PIXEL_FORMAT_IS_COMPRESSED (1 << 28)
+
+/*! Specifies the format and type of pixel data. */
+typedef enum agl_pixel_format {
+  /*! An unknown pixel format. */
+  AGL_PIXEL_FORMAT_UNKNOWN = 0,
+
+  /*! A three-component, 24-bit unsigned-integer format that supports 8 bits
+    per-channel excluding alpha.
+    @note Can only be a back-buffer format. */
+  AGL_R8G8B8 = 1 |
+    AGL_PIXEL_FORMAT_IS_COLOR,
+
+  /*! A four-component, 32-bit unsigned-integer format that supports 8 bits
+    per-channel including alpha. */
+  AGL_R8G8B8A8 = 2 |
+    AGL_PIXEL_FORMAT_IS_COLOR,
+
+  /*! A 32-bit depth-buffer format that supports 24 bits for depth and 8 bits
+    for stencil. */
+  AGL_D24_S8 = 3 |
+    AGL_PIXEL_FORMAT_IS_DEPTH |
+    AGL_PIXEL_FORMAT_IS_STENCIL
+} agl_pixel_format_t;
+
+/* ==========================================================================
     Command Lists (agl_command_list_t):
    ========================================================================== */
 
@@ -231,6 +274,32 @@ namespace agl {
       mutable agl_request_t _;
       agl_request_response_t _response;
   };
+
+  namespace PixelFormat {
+    /*! See AGL_PIXEL_FORMAT_IS_COLOR. */
+    static const uint IsColor = AGL_PIXEL_FORMAT_IS_COLOR;
+
+    /*! See AGL_PIXEL_FORMAT_IS_DEPTH. */
+    static const uint IsDepth = AGL_PIXEL_FORMAT_IS_DEPTH;
+
+    /*! See AGL_PIXEL_FORMAT_IS_STENCIL. */
+    static const uint IsStencil = AGL_PIXEL_FORMAT_IS_STENCIL;
+
+    /*! See AGL_PIXEL_FORMAT_IS_COMPRESSED. */
+    static const uint IsCompressed = AGL_PIXEL_FORMAT_IS_COMPRESSED;
+
+    /*! See agl_pixel_format_t. */
+    enum _ {
+      /*! See agl_pixel_format_t::AGL_PIXEL_FORMAT_UNKNOWN. */
+      UNKNOWN =  ::AGL_PIXEL_FORMAT_UNKNOWN,
+      /*! See agl_pixel_format_t::AGL_R8G8B8. */
+      R8G8B8 =   ::AGL_R8G8B8,
+      /*! See agl_pixel_format_t::AGL_R8G8B8A8. */
+      R8G8B8A8 = ::AGL_R8G8B8A8,
+      /*! See agl_pixel_format_t::AGL_D24_S8. */
+      D24_S8 =   ::AGL_D24_S8
+    };
+  } typedef PixelFormat::_ PixelFormat_;
 
   /*! See agl_command_list_t. */
   typedef ::agl_command_list_t CommandList;
