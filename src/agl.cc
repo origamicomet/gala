@@ -36,7 +36,29 @@ extern "C" {
     Errors (agl_error_t):
    ========================================================================== */
 
-/* ... */
+static agl_error_handler_fn _agl_error_handler = NULL;
+
+agl_error_handler_fn agl_error_handler()
+{
+  return _agl_error_handler;
+}
+
+void agl_set_error_handler(
+  agl_error_handler_fn handler)
+{
+  agl_assert(debug, handler != NULL);
+  _agl_error_handler = handler;
+}
+
+/* ========================================================================== */
+
+void agl_error(
+  const agl_err_t error)
+{
+  agl_assert(debug, _agl_error_handler != NULL);
+  _agl_error_handler(error);
+  raise(SIGABRT);
+}
 
 /* ==========================================================================
     Requests (agl_request_t):

@@ -30,8 +30,10 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <malloc.h>
+#include <signal.h>
 
 #include <agl/compat/stdint.h>
 #include <agl/compat/inttypes.h>

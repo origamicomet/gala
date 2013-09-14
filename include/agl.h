@@ -52,6 +52,17 @@ typedef enum agl_err {
   AGL_EUNKNOWN    = -2
 } agl_err_t;
 
+/*! */
+typedef void (*agl_error_handler_fn)(
+  const agl_err_t error);
+
+/*! */
+extern AGL_API agl_error_handler_fn agl_error_handler();
+
+/*! */
+extern AGL_API void agl_set_error_handler(
+  agl_error_handler_fn handler);
+
 /* ==========================================================================
     Requests (agl_request_t):
    ========================================================================== */
