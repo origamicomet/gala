@@ -46,11 +46,13 @@ extern "C" {
 /*! Represents error or success. */
 typedef enum agl_err {
   /*! No error; success. */
-  AGL_ENONE       = 0,
+  AGL_ENONE        = 0,
   /*! One or more supplied arguments were invalid. */
-  AGL_EINVALIDARG = -1,
+  AGL_EINVALIDARG  = -1,
   /*! Failed, but don't know why. */
-  AGL_EUNKNOWN    = -2
+  AGL_EUNKNOWN     = -2,
+  /*! Ran out of memory. */
+  AGL_EOUTOFMEMORY = -3
 } agl_err_t;
 
 /*! */
@@ -170,11 +172,13 @@ namespace agl {
     /*! See agl_err_t. */
     enum _ {
       /*! See agl_err_t::AGL_ENONE. */
-      None       = ::AGL_ENONE,
+      None        = ::AGL_ENONE,
       /*! See agl_err_t::AGL_EINVALIDARG. */
-      InvalidArg = ::AGL_EINVALIDARG,
+      InvalidArg  = ::AGL_EINVALIDARG,
       /*! See agl_err_t::AGL_EUNKNOWN. */
-      Unknown    = ::AGL_EUNKNOWN
+      Unknown     = ::AGL_EUNKNOWN,
+      /*! See agl_err_t::AGL_EOUTOFMEMORY. */
+      OutOfMemory = ::AGL_EOUTOFMEMORY
     };
   } typedef Error::_ Error_;
 
