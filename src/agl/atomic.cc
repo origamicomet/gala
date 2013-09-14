@@ -40,10 +40,12 @@
       #pragma intrinsic(_InterlockedIncrement)
       #pragma intrinsic(_InterlockedDecrement)
       #pragma intrinsic(_InterlockedCompareExchange)
+      #pragma intrinsic(_InterlockedCompareExchangePointer)
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
       #pragma intrinsic(_InterlockedIncrement64)
       #pragma intrinsic(_InterlockedDecrement64)
       #pragma intrinsic(_InterlockedCompareExchange64)
+      #pragma intrinsic(_InterlockedCompareExchangePointer)
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
@@ -52,10 +54,12 @@
       /* InterlockedIncrement */
       /* InterlockedDecrement */
       /* InterlockedCompareExchange */
+      /* InterlockedCompareExchangePointer */
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
-      /* intrinsic(InterlockedIncrement64) */
-      /* intrinsic(InterlockedDecrement64) */
-      /* intrinsic(InterlockedCompareExchange64) */
+      /* intrinsic(_InterlockedIncrement64) */
+      /* intrinsic(_InterlockedDecrement64) */
+      /* intrinsic(_InterlockedCompareExchange64) */
+      /* intrinsic(_InterlockedCompareExchangePointer) */
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
@@ -147,6 +151,38 @@ uint agl_atomic_compr_and_swap(
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
       return InterlockedCompareExchange64(
         (volatile long *)comparee, value, comparand);
+    #else
+      #error ("Unknown or unsupported architecture!")
+    #endif
+  #endif
+#else
+  #error ("Unknown or unsupported platform!")
+#endif
+}
+
+uintptr_t agl_atomic_compr_and_swap_ptr(
+  volatile uintptr_t *comparee,
+  const uintptr_t comparand,
+  const uintptr_t value)
+{
+#if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+  #if (AGL_COMPILER == AGL_COMPILER_MSVC)
+    #if (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86)
+      return (uintptr_t)_InterlockedCompareExchangePointer(
+        (volatile void *)comparee, (void *)value, (void *)comparand);
+    #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
+      return (uintptr_t)_InterlockedCompareExchangePointer(
+        (volatile void *)comparee, value, comparand);
+    #else
+      #error ("Unknown or unsupported architecture!")
+    #endif
+  #else
+    #if (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86)
+      return (uintptr_t)InterlockedCompareExchangePointer(
+        (volatile void *)comparee, (void *)value, (void *)comparand);
+    #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
+      return (uintptr_t)InterlockedCompareExchangePointer(
+        (volatile void *)comparee, (void *)value, (void *)comparand);
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
