@@ -89,6 +89,26 @@ typedef uint agl_request_response_t;
 #define AGL_ERRORED_REQUEST ((uintptr_t)0x0000000000000001ull)
 
 /* ==========================================================================
+    Command Lists (agl_command_list_t):
+   ========================================================================== */
+
+/*! A user-controlled slice of memory used to queue up commands. */
+typedef struct agl_command_list {
+  /*! @defgroup Slice @{ */
+  uintptr_t begin;
+  uintptr_t end;
+  uintptr_t current;
+  /*! @} */
+
+  /*! Called when there is not enough space left to accomodate a command.
+    @param[in,out] command_list The command list that must be resized.
+    @return True if the command list was resized to potentially accomodate the
+            command; or false if the command list was not resized. */
+  bool (*exhausted)(
+    struct agl_command_list *command_list);
+} agl_command_list_t;
+
+/* ==========================================================================
     Resources (agl_resource_t):
    ========================================================================== */
 
@@ -211,6 +231,9 @@ namespace agl {
       mutable agl_request_t _;
       agl_request_response_t _response;
   };
+
+  /*! See agl_command_list_t. */
+  typedef ::agl_command_list_t CommandList;
 
   /*! See agl_resource_t. */
   class Resource : private ::agl_resource_t {
