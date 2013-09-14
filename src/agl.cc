@@ -73,49 +73,48 @@ void agl_error(
 agl_resource_t *agl_resource_create(
   const agl_resource_type_t type)
 {
-  if (type == AGL_RESOURCE_TYPE_UNKNOWN)
-    return NULL;
-  /* TODO (mtwilliams): Lock-free pool or free-list. */
+  agl_assert(paranoid, type != AGL_RESOURCE_TYPE_UNKNOWN);
   agl_resource_t *resource = (agl_resource_t *)malloc(sizeof(agl_resource_t));
   resource->_type = type;
-  resource->_refs = 1u;
-  resource->_ops = 0u;
-  resource->_internal = NULL;
+  resource->_ops = 1;
+  resource->_internal = ((uintptr_t)NULL);
   return resource;
 }
 
 agl_resource_type_t agl_resource_type(
   const agl_resource_t *resource)
 {
-  if (!resource)
-    return AGL_RESOURCE_TYPE_UNKNOWN;
+  agl_assert(debug, resource != NULL);
   return resource->_type;
 }
 
 uint agl_resource_ops(
   const agl_resource_t *resource)
 {
-  if (!resource)
-    return 0;
+  agl_assert(debug, resource != NULL);
   return resource->_ops;
 }
 
-void agl_resource_ref(
-  agl_resource_t *resource)
+/* ========================================================================== */
+
+bool agl_resource_is_available(
+  const agl_resource_t *resource)
 {
-  if (!resource)
-    return;
-  agl_atomic_incr(&resource->_refs);
+  agl_assert(debug, resource != NULL);
+  return (agl_atomic_compr_and_swap_ptr(
+    (volatile uintptr_t *)&resource->_internal,
+    ((uintptr_t)NULL), ((uintptr_t)NULL)
+  ) != ((uintptr_t)NULL));
 }
 
-void agl_resource_deref(
-  agl_resource_t *resource)
+bool agl_resource_is_reflective(
+  const agl_resource_t *resource)
 {
-  if (!resource)
-    return;
-  if (agl_atomic_decr(&resource->_refs) > 0)
-    return;
-  free((void *)resource);
+  agl_assert(debug, resource != NULL);
+  return (agl_atomic_compr_and_swap_ptr(
+    (volatile uint *)&resource->_ops,
+    0, 0
+  ) == 0);
 }
 
 bool agl_resource_is_available(

@@ -100,7 +100,6 @@ typedef enum agl_resource_type {
 /*! An opaque handle that represents a resource. */
 typedef struct agl_resource {
   agl_resource_type_t _type;
-  uint _refs;
   uint _ops;
   uintptr_t _internal;
 } agl_resource_t;
@@ -110,16 +109,6 @@ typedef struct agl_resource {
 #define AGL_INVALID_RESOURCE ((agl_resource_t *)NULL)
 
 /* ========================================================================== */
-
-/*! Creates a new resource.
-  @param[in] type The type of resource to create.
-  @returns AGL_INVALID_RESOURCE if the resource could not be created; or a
-           non-AGL_INVALID_RESOURCE if the resource was created.
-  @warning Succesful creation doesn't imply or guarantee existence. An
-           initialization command like agl_texture_storage_2d() might be
-           nessecary. */
-extern AGL_API agl_resource_t *agl_resource_create(
-  const agl_resource_type_t type);
 
 /*! Determines the resource type.
   @param[in] resource The resource.
@@ -133,16 +122,7 @@ extern AGL_API agl_resource_type_t agl_resource_type(
 extern AGL_API uint agl_resource_ops(
   const agl_resource_t *resource);
 
-/*! Increments the internal reference count.
-  @param[in] resource The resource. */
-extern AGL_API void agl_resource_ref(
-  agl_resource_t *resource);
-
-/*! Decrement the internal reference count.
-  @remark If the internal reference count reaches zero the resource is destroyed.
-  @param[in] resource The resource. */
-extern AGL_API void agl_resource_deref(
-  agl_resource_t *resource);
+/* ========================================================================== */
 
 /*! Determines if the resource is existent.
   @param[in] resource The resource.
@@ -247,18 +227,12 @@ namespace agl {
       Resource(const Resource &);
       Resource& operator=(const Resource &);
 
-    private:
+    protected:
       Resource()
       {}
 
       ~Resource()
       {}
-
-    public:
-      /*! See agl_resource_create. */
-      static Resource *create(const Type_ type) {
-        return (Resource *)agl_resource_create((agl_resource_type_t)type);
-      }
 
     public:
       /*! See agl_resource_type. */
@@ -269,17 +243,6 @@ namespace agl {
       /*! See agl_resource_ops. */
       uint ops() const {
         return agl_resource_ops((const ::agl_resource_t *)this);
-      }
-
-    public:
-      /*! See agl_resource_ref. */
-      void ref() {
-        agl_resource_ref((::agl_resource_t *)this);
-      }
-
-      /*! See agl_resource_deref. */
-      void deref() {
-        agl_resource_deref((::agl_resource_t *)this);
       }
 
     public:
