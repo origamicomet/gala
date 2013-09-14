@@ -35,6 +35,7 @@ endif
 
 include build/toolchain.mk
 include build/architecture.mk
+include build/backend.mk
 
 ################################################################################
 
@@ -62,6 +63,18 @@ endif
 
 ifeq ($(TARGET_PLATFORM),windows)
   CFLAGS += -D_WIN32 -DWINVER=0x500
+endif
+
+ifeq ($(BACKEND),opengl)
+  CFLAGS += -DAGL_BACKEND=1
+
+  ifeq ($(PLATFORM),windows)
+    ifneq ($(TARGET_PLATFORM),windows)
+      $(error No cross-compilation support for '$(TARGET_PLATFORM)' on Windows.)
+    else
+      LDFLAGS += -lopengl32
+    endif
+ 	endif
 endif
 
 ################################################################################
