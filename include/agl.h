@@ -32,6 +32,7 @@
 #include <agl/detect.h>
 #include <agl/compat.h>
 #include <agl/api.h>
+#include <agl/assert.h>
 #include <agl/atomic.h>
 
 #ifdef __cplusplus
