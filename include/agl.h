@@ -82,6 +82,10 @@ typedef uint agl_request_response_t;
   Represents an unanswered or unfulfilled request. */
 #define AGL_UNFULFILLED_REQUEST ((uintptr_t)0xffffffffffffffffull)
 
+/*! @def AGL_ERRORED_REQUEST
+  Represents an error occuring during a request. */
+#define AGL_ERRORED_REQUEST ((uintptr_t)0x0000000000000001ull)
+
 /* ==========================================================================
     Resources (agl_resource_t):
    ========================================================================== */
