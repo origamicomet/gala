@@ -28,6 +28,11 @@
 #ifndef _AGL_H_
 #define _AGL_H_
 
+/* ========================================================================== */
+/*!  @file agl.h                                                              */
+/*!    Defines the public C and C++ interfaces for AGL.                       */
+/* ========================================================================== */
+
 #include <agl/config.h>
 #include <agl/detect.h>
 #include <agl/compat.h>
@@ -79,7 +84,7 @@ extern "C" {
     Errors (agl_err_t):
    ========================================================================== */
 
-/*! Represents error or success. */
+/*! Represents an error or success. */
 typedef enum agl_err {
   /*! No error; success. */
   AGL_ENONE        = 0,
@@ -94,7 +99,7 @@ typedef enum agl_err {
 /* ========================================================================== */
 
 /*! A user-defined error handler.
-  @note If the handler returns a SIGABRT signal will be raised. */
+  @note If the handler returns, a SIGABRT signal will be raised. */
 typedef void (*agl_error_handler_fn)(
   const agl_err_t error);
 
@@ -103,7 +108,7 @@ typedef void (*agl_error_handler_fn)(
 extern AGL_API agl_error_handler_fn agl_error_handler();
 
 /*! Sets the user-defined error handler.
-  @params[in] handler The user-defined error handler to use. */
+  @param[in] handler The user-defined error handler to use. */
 extern AGL_API void agl_set_error_handler(
   agl_error_handler_fn handler);
 
@@ -172,7 +177,7 @@ typedef struct agl_allocator {
 extern AGL_API agl_allocator_t *agl_allocator();
 
 /*! Sets the user-defined allocator.
-  @params[in] allocator The user-defined allocator to use. */
+  @param[in] allocator The user-defined allocator to use. */
 extern AGL_API void agl_set_allocator(
   agl_allocator_t *allocator);
 
@@ -402,14 +407,12 @@ extern "C" {
 
 /*! A user-controlled slice of memory used to queue up commands. */
 typedef struct agl_command_list {
-  /*! @defgroup Slice @{ */
   uintptr_t begin;
   uintptr_t end;
   uintptr_t current;
-  /*! @} */
 
   /*! Called when there is not enough space left to accomodate a command.
-    @param[in,out] command_list The command list that must be resized.
+    @param[in] command_list The command list that must be resized.
     @return True if the command list was resized to potentially accomodate the
             command; or false if the command list was not resized. */
   bool (*exhausted)(
