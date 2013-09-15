@@ -70,7 +70,7 @@ typedef void (*agl_error_handler_fn)(
   const agl_err_t error);
 
 /*! Gets the user-defined error handler.
-  @returns The user-defiend error handler. */
+  @returns The user-defined error handler. */
 extern AGL_API agl_error_handler_fn agl_error_handler();
 
 /*! Sets the user-defined error handler.
@@ -82,7 +82,7 @@ extern AGL_API void agl_set_error_handler(
     Allocators (agl_allocator_t):
    ========================================================================== */
 
-/*! */
+/*! A user-defined allocator. */
 typedef struct agl_allocator {
   void *(*alloc)(
     struct agl_allocator *allocator,
@@ -102,10 +102,12 @@ typedef struct agl_allocator {
 
 /* ========================================================================== */
 
-/*! */
+/*! Gets the user-defined allocator.
+  @returns The user-defined allocator. */
 extern AGL_API agl_allocator_t *agl_allocator();
 
-/*! */
+/*! Sets the user-defined allocator.
+  @params[in] allocator The user-defined allocator to use. */
 extern AGL_API void agl_set_allocator(
   agl_allocator_t *allocator);
 
