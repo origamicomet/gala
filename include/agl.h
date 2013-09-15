@@ -42,9 +42,38 @@ extern "C" {
 
 /* ========================================================================== */
 /*  Integration:                                                              */
+/*   * Initialization & Deinitalization                                       */
 /*   * Errors & Error Handling                                                */
 /*   * Memory Management                                                      */
 /* ========================================================================== */
+
+/* ==========================================================================
+    Initialization & Deinitalization (agl_initialize, agl_deinitialize):
+   ========================================================================== */
+
+/*! */
+extern AGL_API void agl_initialize();
+
+/*! */
+extern AGL_API void agl_deinitialize();
+
+/* ========================================================================== */
+
+#ifdef __cplusplus
+} /* extern "C" */
+namespace agl {
+  /*! See agl_initialize. */
+  static void initialize() {
+    ::agl_initialize();
+  }
+
+  /*! See agl_deinitialize. */
+  static void deinitialize() {
+    ::agl_deinitialize();
+  }
+} /* agl */
+extern "C" {
+#endif /* __cplusplus */
 
 /* ==========================================================================
     Errors (agl_err_t):
