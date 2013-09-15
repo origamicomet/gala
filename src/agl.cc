@@ -32,6 +32,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* ========================================================================== */
+/*  Integration:                                                              */
+/*   * Errors & Error Handling                                                */
+/*   * Memory Management                                                      */
+/* ========================================================================== */
+
 /* ==========================================================================
     Errors (agl_error_t):
    ========================================================================== */
@@ -100,8 +106,52 @@ void agl_free(void *ptr) {
   _agl_allocator->free(_agl_allocator, ptr);
 }
 
+/* ========================================================================== */
+/*  Common/Types:                                                             */
+/*   * Pixel Formats                                                          */
+/* ========================================================================== */
+
 /* ==========================================================================
-    Requests (agl_request_t):
+    Pixel Formats (agl_pixel_format_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ========================================================================== */
+/*  Infrastructure:                                                           */
+/*   * Adapters                                                               */
+/*   * Outputs                                                                */
+/*   * Display Modes                                                          */
+/* ========================================================================== */
+
+/* ==========================================================================
+    Adapters (agl_adapter_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ==========================================================================
+    Outputs (agl_output_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ==========================================================================
+    Display Modes (agl_display_mode_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ========================================================================== */
+/*  Runtime:                                                                  */
+/*   * Contexts                                                               */
+/*   * Command Lists                                                          */
+/*   * Requests                                                               */
+/*   * Resources                                                              */
+/* ========================================================================== */
+
+/* ==========================================================================
+    Contexts (agl_context_t):
    ========================================================================== */
 
 /* ... */
@@ -110,7 +160,7 @@ void agl_free(void *ptr) {
     Command Lists (agl_command_list_t):
    ========================================================================== */
 
-agl_command_t *agl_command_list_enqueue(
+struct agl_command *agl_command_list_enqueue(
   agl_command_list_t *command_list,
   const size_t command_len)
 {
@@ -118,23 +168,29 @@ agl_command_t *agl_command_list_enqueue(
   while ((command_list->end - command_list->current) < command_len) {
     if (!command_list->exhausted(command_list))
       agl_error(AGL_EOUTOFMEMORY); }
-  agl_command_t *cmd = (agl_command_t *)command_list->current;
+  struct agl_command *cmd = (struct agl_command *)command_list->current;
   command_list->current += command_len;
   return cmd;
 }
 
-const agl_command_t *agl_command_list_dequeue(
+const struct agl_command *agl_command_list_dequeue(
   const agl_command_list_t *command_list,
-  const agl_command_t *cmd)
+  const struct agl_command *cmd)
 {
   agl_assert(paranoid, command_list != NULL);
   agl_assert(paranoid, (((uintptr_t)cmd) >= command_list->begin) || (cmd == NULL));
   agl_assert(paranoid, (((uintptr_t)cmd) <= command_list->current) || (cmd == NULL));
   if (cmd == NULL)
     return NULL;
-  uintptr_t cmd_ = ((uintptr_t)cmd) + agl_command_length_from_type(cmd->type);
-  return ((cmd_ == command_list->current) ? NULL : (const agl_command_t *)cmd_);
+  uintptr_t cmd_ = ((uintptr_t)cmd) + agl_command_length(cmd);
+  return ((cmd_ == command_list->current) ? NULL : (const struct agl_command *)cmd_);
 }
+
+/* ==========================================================================
+    Requests (agl_request_t):
+   ========================================================================== */
+
+/* ... */
 
 /* ==========================================================================
     Resources (agl_resource_t):
@@ -225,26 +281,106 @@ bool agl_resource_is_reflective(
   ) == 0);
 }
 
-bool agl_resource_is_available(
+/* ========================================================================== */
+
+/* QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ */
+bool agl_resource_is_a_query(
   const agl_resource_t *resource)
 {
-  if (!resource)
-    return false;
-  return false;
+  agl_assert(debug, resource != NULL);
+  return (resource->_type == AGL_RESOURCE_TYPE_QUERY);
 }
+
+/* ==========================================================================
+    Queries (agl_query_t):
+   ========================================================================== */
+
+agl_resource_t *agl_query_create(
+  const agl_query_type_t type,
+  agl_command_list_t *cmds)
+{
+  agl_assert(debug, cmds != NULL);
+  agl_resource_t *resource =
+    (agl_resource_t *)agl_resource_create(AGL_RESOURCE_TYPE_QUERY);
+  resource->_internal = (uintptr_t)agl_alloc(
+    sizeof(agl_query_t), agl_alignof(agl_query_t));
+  agl_query_t *query = (agl_query_t *)resource->_internal;
+#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
+  query->id = 0;
+#else
+  #error ("Unknown or unsupported backend!")
+#endif
+  query->type = type;
+  agl_resource_queue_for_create(resource, cmds);
+  return resource;
+}
+
+void agl_query_destroy(
+  agl_resource_t *query,
+  agl_command_list_t *cmds)
+{
+  agl_assert(debug, query != NULL);
+  agl_assert(debug, cmds != NULL);
+  agl_resource_queue_for_destroy(query, cmds);
+}
+
+/* ========================================================================== */
+
+void agl_query_begin(
+  agl_resource_t *query,
+  agl_command_list_t *cmds)
+{
+  agl_assert(debug, query != NULL);
+  agl_assert(debug, cmds != NULL);
+  agl_atomic_incr(&query->_ops);
+  agl_query_begin_cmd_t *cmd = (agl_query_begin_cmd_t *)
+    agl_command_list_enqueue(cmds, sizeof(agl_query_begin_cmd_t));
+  cmd->cmd.type = AGL_COMMAND_TYPE_QUERY_BEGIN;
+  cmd->query = query;
+}
+
+void agl_query_end(
+  agl_resource_t *query,
+  agl_command_list_t *cmds)
+{
+  agl_assert(debug, query != NULL);
+  agl_assert(debug, cmds != NULL);
+  agl_atomic_incr(&query->_ops);
+  agl_query_end_cmd_t *cmd = (agl_query_end_cmd_t *)
+    agl_command_list_enqueue(cmds, sizeof(agl_query_end_cmd_t));
+  cmd->cmd.type = AGL_COMMAND_TYPE_QUERY_END;
+  cmd->query = query;
+}
+/* QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ */
+
+
+/* ========================================================================== */
+/*  Commands:                                                                 */
+/*   * Resource Commands                                                      */
+/* ========================================================================== */
 
 /* ==========================================================================
     Commands (agl_command_t):
    ========================================================================== */
 
-size_t agl_command_length_from_type(
-  const agl_command_type_t type)
+size_t agl_command_length(
+  const agl_command_t *cmd)
 {
-  switch (type) {
-    case AGL_COMMAND_TYPE_RESOURCE_CREATE: return sizeof(agl_resource_create_cmd_t);
-    case AGL_COMMAND_TYPE_RESOURCE_DESTROY: return sizeof(agl_resource_destroy_cmd_t);
-  agl_error(AGL_EUNKNOWN);
+  switch (cmd->type) {
+    case AGL_COMMAND_TYPE_RESOURCE_CREATE:
+      return sizeof(agl_resource_create_cmd_t);
+    case AGL_COMMAND_TYPE_RESOURCE_DESTROY:
+      return sizeof(agl_resource_destroy_cmd_t);
+    default:
+      agl_error(AGL_EUNKNOWN);
+  }
 }
+
+/* ==========================================================================
+    Resource Commands:
+   ========================================================================== */
+
+/* ... */
 
 #ifdef __cplusplus
 }

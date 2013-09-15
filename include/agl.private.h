@@ -35,6 +35,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* ========================================================================== */
+/*  Integration:                                                              */
+/*   * Errors & Error Handling                                                */
+/*   * Memory Management                                                      */
+/* ========================================================================== */
+
 /* ==========================================================================
     Errors (agl_error_t):
    ========================================================================== */
@@ -59,8 +65,52 @@ void *agl_realloc(
 void agl_free(
   void *ptr);
 
+/* ========================================================================== */
+/*  Common/Types:                                                             */
+/*   * Pixel Formats                                                          */
+/* ========================================================================== */
+
 /* ==========================================================================
-    Requests (agl_request_t):
+    Pixel Formats (agl_pixel_format_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ========================================================================== */
+/*  Infrastructure:                                                           */
+/*   * Adapters                                                               */
+/*   * Outputs                                                                */
+/*   * Display Modes                                                          */
+/* ========================================================================== */
+
+/* ==========================================================================
+    Adapters (agl_adapter_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ==========================================================================
+    Outputs (agl_output_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ==========================================================================
+    Display Modes (agl_display_mode_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ========================================================================== */
+/*  Runtime:                                                                  */
+/*   * Contexts                                                               */
+/*   * Command Lists                                                          */
+/*   * Requests                                                               */
+/*   * Resources                                                              */
+/* ========================================================================== */
+
+/* ==========================================================================
+    Contexts (agl_context_t):
    ========================================================================== */
 
 /* ... */
@@ -76,7 +126,7 @@ void agl_free(
            the command-list.
   @warning May raise an AGL_EOUTOFMEMORY error if the command-list is exhausted
            and cannot be resized to accomodate the command. */
-agl_command_t *agl_command_list_enqueue(
+struct agl_command *agl_command_list_enqueue(
   agl_command_list_t *command_list,
   const size_t command_len);
 
@@ -86,9 +136,15 @@ agl_command_t *agl_command_list_enqueue(
   @returns A pointer to the next command that is "enqueued" in the command-list,
            or NULL if there are no more commands. If `cmd` is NULL then the
            first command is returned or NULL if there are no commands. */
-const agl_command_t *agl_command_list_dequeue(
+const struct agl_command *agl_command_list_dequeue(
   const agl_command_list_t *command_list,
-  const agl_command_t *cmd);
+  const struct agl_command *cmd);
+
+/* ==========================================================================
+    Requests (agl_request_t):
+   ========================================================================== */
+
+/* ... */
 
 /* ==========================================================================
     Resources (agl_resource_t):

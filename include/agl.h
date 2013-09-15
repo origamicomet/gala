@@ -40,6 +40,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* ========================================================================== */
+/*  Integration:                                                              */
+/*   * Errors & Error Handling                                                */
+/*   * Memory Management                                                      */
+/* ========================================================================== */
+
 /* ==========================================================================
     Errors (agl_err_t):
    ========================================================================== */
@@ -73,7 +79,7 @@ extern AGL_API void agl_set_error_handler(
   agl_error_handler_fn handler);
 
 /* ==========================================================================
-    Allocator (agl_allocator_t):
+    Allocators (agl_allocator_t):
    ========================================================================== */
 
 /*! */
@@ -103,27 +109,10 @@ extern AGL_API agl_allocator_t *agl_allocator();
 extern AGL_API void agl_set_allocator(
   agl_allocator_t *allocator);
 
-/* ==========================================================================
-    Requests (agl_request_t):
-   ========================================================================== */
-
-/*!  */
-typedef uint agl_request_t;
-
-/*! */
-typedef uint agl_request_response_t;
-
-/*! @def AGL_FULFILLED_REQUEST
-  Represents an answered or fulfilled request. */
-#define AGL_FULFILLED_REQUEST ((uintptr_t)0x0000000000000000ull)
-
-/*! @def AGL_UNFULFILLED_REQUEST
-  Represents an unanswered or unfulfilled request. */
-#define AGL_UNFULFILLED_REQUEST ((uintptr_t)0xffffffffffffffffull)
-
-/*! @def AGL_ERRORED_REQUEST
-  Represents an error occuring during a request. */
-#define AGL_ERRORED_REQUEST ((uintptr_t)0x0000000000000001ull)
+/* ========================================================================== */
+/*  Common/Types:                                                             */
+/*   * Pixel Formats                                                          */
+/* ========================================================================== */
 
 /* ==========================================================================
     Pixel Formats (agl_pixel_format_t):
@@ -168,6 +157,45 @@ typedef enum agl_pixel_format {
     AGL_PIXEL_FORMAT_IS_STENCIL
 } agl_pixel_format_t;
 
+/* ========================================================================== */
+/*  Infrastructure:                                                           */
+/*   * Adapters                                                               */
+/*   * Outputs                                                                */
+/*   * Display Modes                                                          */
+/* ========================================================================== */
+
+/* ==========================================================================
+    Adapters (agl_adapter_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ==========================================================================
+    Outputs (agl_outputs_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ==========================================================================
+    Display Modes (agl_display_mode_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ========================================================================== */
+/*  Runtime:                                                                  */
+/*   * Contexts                                                               */
+/*   * Command Lists                                                          */
+/*   * Requests                                                               */
+/*   * Resources                                                              */
+/* ========================================================================== */
+
+/* ==========================================================================
+    Contexts (agl_context_t):
+   ========================================================================== */
+
+/* ... */
+
 /* ==========================================================================
     Command Lists (agl_command_list_t):
    ========================================================================== */
@@ -187,6 +215,28 @@ typedef struct agl_command_list {
   bool (*exhausted)(
     struct agl_command_list *command_list);
 } agl_command_list_t;
+
+/* ==========================================================================
+    Requests (agl_request_t):
+   ========================================================================== */
+
+/*!  */
+typedef uint agl_request_t;
+
+/*! */
+typedef uint agl_request_response_t;
+
+/*! @def AGL_FULFILLED_REQUEST
+  Represents an answered or fulfilled request. */
+#define AGL_FULFILLED_REQUEST ((uintptr_t)0x0000000000000000ull)
+
+/*! @def AGL_UNFULFILLED_REQUEST
+  Represents an unanswered or unfulfilled request. */
+#define AGL_UNFULFILLED_REQUEST ((uintptr_t)0xffffffffffffffffull)
+
+/*! @def AGL_ERRORED_REQUEST
+  Represents an error occuring during a request. */
+#define AGL_ERRORED_REQUEST ((uintptr_t)0x0000000000000001ull)
 
 /* ==========================================================================
     Resources (agl_resource_t):
