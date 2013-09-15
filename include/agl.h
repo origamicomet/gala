@@ -96,6 +96,20 @@ namespace agl {
       OutOfMemory = ::AGL_EOUTOFMEMORY
     };
   } typedef Error::_ Error_;
+
+  /*! See agl_error_handler_fn. */
+  typedef ::agl_error_handler_fn ErrorHandlerFn;
+
+  /*! See agl_error_handler. */
+  static ErrorHandlerFn error_handler() {
+    return (ErrorHandlerFn)::agl_error_handler();
+  }
+
+  /*! See agl_set_error_handler. */
+  static void set_error_handler(ErrorHandlerFn handler) {
+    agl_assert(debug, handler != NULL);
+    ::agl_set_error_handler((::agl_error_handler_fn)handler);
+  }
 } /* agl */
 extern "C" {
 #endif /* __cplusplus */
@@ -218,7 +232,7 @@ namespace agl {
   static Allocator *allocator() {
     static const size_t offset =
       (offsetof(Allocator, _self) - offsetof(Allocator, _));
-    ::agl_allocator_t *allocator = agl_allocator();
+    ::agl_allocator_t *allocator = ::agl_allocator();
     if (!allocator) return NULL;
     return *(Allocator**)(((uintptr_t)allocator) + offset);
   }
@@ -226,7 +240,7 @@ namespace agl {
   /*! See agl_set_allocator. */
   static void set_allocator(Allocator *allocator) {
     agl_assert(debug, allocator != NULL);
-    agl_set_allocator(&allocator->_);
+    ::agl_set_allocator(&allocator->_);
   }
 } /* agl */
 extern "C" {
@@ -428,7 +442,7 @@ namespace agl {
     public:
       /*! Determines if the requested has been fulfilled or answered. */
       bool is_fulfilled() const {
-        return (agl_atomic_compr_and_swap(
+        return (::agl_atomic_compr_and_swap(
           (volatile uint *)&_,
           AGL_UNFULFILLED_REQUEST,
           AGL_UNFULFILLED_REQUEST
@@ -441,7 +455,7 @@ namespace agl {
 
       /*! Determines if the requested has not been fulfilled or answered. */
       bool is_not_fulfilled() const {
-        return (agl_atomic_compr_and_swap(
+        return (::agl_atomic_compr_and_swap(
           (volatile uint *)&_,
           AGL_UNFULFILLED_REQUEST,
           AGL_UNFULFILLED_REQUEST
@@ -544,23 +558,23 @@ namespace agl {
     public:
       /*! See agl_resource_type. */
       Type_ type() const {
-        return (Type_)agl_resource_type((const ::agl_resource_t *)this);
+        return (Type_)::agl_resource_type((const ::agl_resource_t *)this);
       }
 
       /*! See agl_resource_ops. */
       uint ops() const {
-        return agl_resource_ops((const ::agl_resource_t *)this);
+        return ::agl_resource_ops((const ::agl_resource_t *)this);
       }
 
     public:
       /*! See agl_resource_is_available. */
       bool is_available() const {
-        return agl_resource_is_available((const ::agl_resource_t *)this);
+        return ::agl_resource_is_available((const ::agl_resource_t *)this);
       }
 
       /*! See agl_resource_is_reflective. */
       bool is_reflective() const {
-        return agl_resource_is_reflective((const ::agl_resource_t *)this);
+        return ::agl_resource_is_reflective((const ::agl_resource_t *)this);
       }
   };
 } /* agl */
