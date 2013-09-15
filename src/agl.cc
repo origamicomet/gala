@@ -61,6 +61,46 @@ void agl_error(
 }
 
 /* ==========================================================================
+    Allocator (agl_allocator_t):
+   ========================================================================== */
+
+static agl_allocator_t *_agl_allocator = NULL;
+
+agl_allocator_t *agl_allocator()
+{
+  return _agl_allocator;
+}
+
+void agl_set_allocator(
+  agl_allocator_t *allocator)
+{
+  agl_assert(debug, allocator != NULL);
+  _agl_allocator = allocator;
+}
+
+/* ========================================================================== */
+
+void *agl_alloc(const size_t num_of_bytes, const size_t alignment) {
+  agl_assert(debug, _agl_allocator != NULL);
+  void *ptr = _agl_allocator->alloc(_agl_allocator, num_of_bytes, alignment);
+  if (!ptr) agl_error(AGL_EOUTOFMEMORY);
+  return ptr;
+}
+
+void *agl_realloc(void *ptr, const size_t num_of_bytes, const size_t alignment) {
+  agl_assert(debug, _agl_allocator != NULL);
+  ptr = _agl_allocator->realloc(_agl_allocator, ptr, num_of_bytes, alignment);
+  if (!ptr && (num_of_bytes > 0)) agl_error(AGL_EOUTOFMEMORY);
+  return ptr;
+}
+
+void agl_free(void *ptr) {
+  agl_assert(debug, _agl_allocator != NULL);
+  agl_assert(paranoid, ptr != NULL);
+  _agl_allocator->free(_agl_allocator, ptr);
+}
+
+/* ==========================================================================
     Requests (agl_request_t):
    ========================================================================== */
 
@@ -104,7 +144,8 @@ agl_resource_t *agl_resource_create(
   const agl_resource_type_t type)
 {
   agl_assert(paranoid, type != AGL_RESOURCE_TYPE_UNKNOWN);
-  agl_resource_t *resource = (agl_resource_t *)malloc(sizeof(agl_resource_t));
+  agl_resource_t *resource = (agl_resource_t *)agl_alloc(
+    sizeof(agl_resource_t), agl_alignof(agl_resource_t));
   resource->_type = type;
   resource->_ops = 1;
   resource->_internal = ((uintptr_t)NULL);
@@ -115,7 +156,7 @@ void agl_resource_destroy(
   agl_resource_t *resource)
 {
   agl_assert(paranoid, resource != NULL);
-  free((void *)resource);
+  agl_free((void *)resource);
 }
 
 /* ========================================================================== */

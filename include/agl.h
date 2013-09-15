@@ -73,6 +73,37 @@ extern AGL_API void agl_set_error_handler(
   agl_error_handler_fn handler);
 
 /* ==========================================================================
+    Allocator (agl_allocator_t):
+   ========================================================================== */
+
+/*! */
+typedef struct agl_allocator {
+  void *(*alloc)(
+    struct agl_allocator *allocator,
+    const size_t num_of_bytes,
+    const size_t alignment);
+
+  void *(*realloc)(
+    struct agl_allocator *allocator,
+    void *ptr,
+    const size_t num_of_bytes,
+    const size_t alignment);
+
+  void (*free)(
+    struct agl_allocator *allocator,
+    void *ptr);
+} agl_allocator_t;
+
+/* ========================================================================== */
+
+/*! */
+extern AGL_API agl_allocator_t *agl_allocator();
+
+/*! */
+extern AGL_API void agl_set_allocator(
+  agl_allocator_t *allocator);
+
+/* ==========================================================================
     Requests (agl_request_t):
    ========================================================================== */
 
@@ -230,6 +261,97 @@ namespace agl {
       OutOfMemory = ::AGL_EOUTOFMEMORY
     };
   } typedef Error::_ Error_;
+
+  /*! See agl_allocator_t. */
+  class Allocator {
+    private:
+      Allocator(const Allocator &);
+      Allocator& operator=(const Allocator &);
+
+    protected:
+      Allocator()
+      {
+        _self = this;
+        _.alloc = &Allocator::_alloc;
+        _.realloc = &Allocator::_realloc;
+        _.free = &Allocator::_free;
+      }
+
+      virtual ~Allocator()
+      {}
+
+    public:
+      /*! See agl_allocator_t::alloc. */
+      virtual void *alloc(
+        const size_t num_of_bytes,
+        const size_t alignment) const = 0;
+
+      /*! See agl_allocator_t::realloc. */
+      virtual void *realloc(
+        void *ptr,
+        const size_t num_of_bytes,
+        const size_t alignment) const = 0;
+
+      /*! See agl_allocator_t::free. */
+      virtual void free(
+        void *ptr) const = 0;
+
+    private:
+      static void *_alloc(
+        ::agl_allocator_t *allocator,
+        const size_t num_of_bytes,
+        const size_t alignment)
+      {
+        static const size_t offset =
+          (offsetof(Allocator, _self) - offsetof(Allocator, _));
+        Allocator *allocator_ =
+          *(Allocator**)(((uintptr_t)allocator) + offset);
+        return allocator_->alloc(num_of_bytes, alignment);
+      }
+
+      static void *_realloc(
+        ::agl_allocator_t *allocator,
+        void *ptr,
+        const size_t num_of_bytes,
+        const size_t alignment)
+      {
+        static const size_t offset =
+          (offsetof(Allocator, _self) - offsetof(Allocator, _));
+        Allocator *allocator_ =
+          *(Allocator**)(((uintptr_t)allocator) + offset);
+        return allocator_->realloc(ptr, num_of_bytes, alignment);
+      }
+
+      static void _free(
+        ::agl_allocator_t *allocator,
+        void *ptr)
+      {
+        static const size_t offset =
+          (offsetof(Allocator, _self) - offsetof(Allocator, _));
+        Allocator *allocator_ =
+          *(Allocator**)(((uintptr_t)allocator) + offset);
+        return allocator_->free(ptr);
+      }
+
+    public: /* private */
+      ::agl_allocator_t _;
+      Allocator *_self;
+  };
+
+  /*! See agl_allocator. */
+  static Allocator *allocator() {
+    static const size_t offset =
+      (offsetof(Allocator, _self) - offsetof(Allocator, _));
+    ::agl_allocator_t *allocator = agl_allocator();
+    if (!allocator) return NULL;
+    return *(Allocator**)(((uintptr_t)allocator) + offset);
+  }
+
+  /*! See agl_set_allocator. */
+  static void set_allocator(Allocator *allocator) {
+    agl_assert(debug, allocator != NULL);
+    agl_set_allocator(&allocator->_);
+  }
 
   /*! See agl_request_t. */
   class Request {

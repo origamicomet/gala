@@ -44,6 +44,22 @@ void agl_error(
   const agl_err_t error);
 
 /* ==========================================================================
+    Allocator (agl_allocator_t):
+   ========================================================================== */
+
+void *agl_alloc(
+  const size_t num_of_bytes,
+  const size_t alignment);
+
+void *agl_realloc(
+  void *ptr,
+  const size_t num_of_bytes,
+  const size_t alignment);
+
+void agl_free(
+  void *ptr);
+
+/* ==========================================================================
     Requests (agl_request_t):
    ========================================================================== */
 
