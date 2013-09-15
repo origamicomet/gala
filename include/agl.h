@@ -41,7 +41,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* ==========================================================================
-    Errors (agl_error_t):
+    Errors (agl_err_t):
    ========================================================================== */
 
 /*! Represents error or success. */
@@ -56,14 +56,19 @@ typedef enum agl_err {
   AGL_EOUTOFMEMORY = -3
 } agl_err_t;
 
-/*! */
+/* ========================================================================== */
+
+/*! A user-defined error handler.
+  @note If the handler returns a SIGABRT signal will be raised. */
 typedef void (*agl_error_handler_fn)(
   const agl_err_t error);
 
-/*! */
+/*! Gets the user-defined error handler.
+  @returns The user-defiend error handler. */
 extern AGL_API agl_error_handler_fn agl_error_handler();
 
-/*! */
+/*! Sets the user-defined error handler.
+  @params[in] handler The user-defined error handler to use. */
 extern AGL_API void agl_set_error_handler(
   agl_error_handler_fn handler);
 
