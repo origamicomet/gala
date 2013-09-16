@@ -507,6 +507,22 @@ void agl_resource_destroy(
 
 /* ========================================================================== */
 
+agl_resource_type_t agl_resource_type(
+  const agl_resource_t *resource)
+{
+  agl_assert(debug, resource != NULL);
+  return resource->_type;
+}
+
+uint agl_resource_ops(
+  const agl_resource_t *resource)
+{
+  agl_assert(debug, resource != NULL);
+  return resource->_ops;
+}
+
+/* ========================================================================== */
+
 void agl_resource_queue_for_create(
   agl_resource_t *resource,
   agl_command_list_t *cmds)
@@ -535,18 +551,22 @@ void agl_resource_queue_for_destroy(
 
 /* ========================================================================== */
 
-agl_resource_type_t agl_resource_type(
+bool agl_resource_is_available(
   const agl_resource_t *resource)
 {
   agl_assert(debug, resource != NULL);
-  return resource->_type;
+  return (agl_atomic_compr_and_swap_ptr(
+    (volatile uintptr_t *)&resource->_internal,
+    ((uintptr_t)NULL), ((uintptr_t)NULL)) != ((uintptr_t)NULL));
 }
 
-uint agl_resource_ops(
+bool agl_resource_is_reflective(
   const agl_resource_t *resource)
 {
   agl_assert(debug, resource != NULL);
-  return resource->_ops;
+  return (agl_atomic_compr_and_swap_ptr(
+    (volatile uint *)&resource->_ops,
+    0, 0) == 0);
 }
 
 /* ========================================================================== */

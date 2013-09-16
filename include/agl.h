@@ -610,6 +610,10 @@ typedef uint agl_request_response_t;
 namespace agl {
   /*! See agl_request_t. */
   class Request {
+    public:
+      /*! See agl_request_response_t. */
+      typedef agl_request_response_t Response;
+
     private:
       Request(const Request &);
       Request& operator=(const Request &);
@@ -628,8 +632,7 @@ namespace agl {
         return (::agl_atomic_compr_and_swap(
           (volatile uint *)&_,
           AGL_UNFULFILLED_REQUEST,
-          AGL_UNFULFILLED_REQUEST
-        ) != AGL_UNFULFILLED_REQUEST);
+          AGL_UNFULFILLED_REQUEST) != AGL_UNFULFILLED_REQUEST);
       }
 
       /*! See Request::is_fulfilled. */
@@ -641,8 +644,7 @@ namespace agl {
         return (::agl_atomic_compr_and_swap(
           (volatile uint *)&_,
           AGL_UNFULFILLED_REQUEST,
-          AGL_UNFULFILLED_REQUEST
-        ) == AGL_UNFULFILLED_REQUEST);
+          AGL_UNFULFILLED_REQUEST) == AGL_UNFULFILLED_REQUEST);
       }
 
       /*! See Request::is_not_fulfilled. */
@@ -650,12 +652,12 @@ namespace agl {
       { return is_not_fulfilled(); }
 
       /*! Gets the associated response. */
-      const agl_request_response_t &response() const
+      const Response &response() const
       { return _response; }
 
     public: /* pseduo-private: */
       mutable agl_request_t _;
-      agl_request_response_t _response;
+      Response _response;
   };
 } /* agl */
 extern "C" {
