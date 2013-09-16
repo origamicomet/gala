@@ -673,19 +673,27 @@ namespace agl {
       {}
 
     public:
-      /*! Determines if the requested has been fulfilled or answered. */
+      /*! Determines if the request has been fulfilled or answered. */
       bool is_fulfilled() const {
         return (::agl_atomic_compr_and_swap(
           (volatile uint *)&_,
-          AGL_UNFULFILLED_REQUEST,
-          AGL_UNFULFILLED_REQUEST) != AGL_UNFULFILLED_REQUEST);
+          AGL_FULFILLED_REQUEST,
+          AGL_FULFILLED_REQUEST) == AGL_FULFILLED_REQUEST);
       }
 
       /*! See Request::is_fulfilled. */
       bool is_answered() const
       { return is_fulfilled(); }
 
-      /*! Determines if the requested has not been fulfilled or answered. */
+      /*! Determines if an error occured during a request. */
+      bool is_errored() const {
+        return (::agl_atomic_compr_and_swap(
+          (volatile uint *)&_,
+          AGL_ERRORED_REQUEST,
+          AGL_ERRORED_REQUEST) == AGL_ERRORED_REQUEST);
+      }
+
+      /*! Determines if the request has not been fulfilled or answered. */
       bool is_not_fulfilled() const {
         return (::agl_atomic_compr_and_swap(
           (volatile uint *)&_,
@@ -696,6 +704,14 @@ namespace agl {
       /*! See Request::is_not_fulfilled. */
       bool is_not_answered() const
       { return is_not_fulfilled(); }
+
+      /*! Determines if an error has not occured during a request. */
+      bool is_not_errored() const {
+        return (::agl_atomic_compr_and_swap(
+          (volatile uint *)&_,
+          AGL_ERRORED_REQUEST,
+          AGL_ERRORED_REQUEST) != AGL_ERRORED_REQUEST);
+      }
 
       /*! Gets the associated response. */
       const Response &response() const
