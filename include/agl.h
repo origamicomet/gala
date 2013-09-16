@@ -373,19 +373,170 @@ extern "C" {
     Adapters (agl_adapter_t):
    ========================================================================== */
 
-/* ... */
+/*! Specifies if an adapter is implemented in software or hardware. */
+typedef enum agl_adapter_type {
+  AGL_SOFTWARE = 1,
+  AGL_HARDWARE = 2
+} agl_adapter_type_t;
+
+/*! Represents a software or hardware rendering device. */
+typedef struct agl_adapter {
+  /*! Specifies if it's the primary adapter. */
+  bool primary;
+  /*! Specifies if it's a software or hardware adapter. */
+  agl_adapter_type_t type;
+  size_t num_of_outputs;
+  const struct agl_output *outputs;
+  uintptr_t _internal;
+} agl_adapter_t;
+
+/* ========================================================================== */
+
+/*! Gets the number of available adapters. */
+extern AGL_API size_t agl_adapter_count();
+
+/*! Gets an available adapter. */
+extern AGL_API const agl_adapter_t *agl_adapter_get(
+  const size_t adapter_id);
+
+/*! Gets the primary adapter. */
+extern AGL_API const agl_adapter_t *agl_adapter_primary();
+
+/*! Gets the primary monitor/display of an adapter. */
+extern AGL_API const struct agl_output *agl_adapter_primary_output(
+  const agl_adapter_t *adapter);
+
+/* ========================================================================== */
+
+#ifdef __cplusplus
+} /* extern "C" */
+namespace agl {
+  class Output;
+
+  /* See agl_adapter_t. */
+  class Adapter : public ::agl_adapter_t {
+    private:
+      Adapter(const Adapter &);
+      Adapter& operator=(const Adapter &);
+
+    private:
+      Adapter()
+      {}
+
+      ~Adapter()
+      {}
+
+    public:
+      /*! See agl_adapter_count. */
+      static size_t count() {
+        return ::agl_adapter_count();
+      }
+
+      /*! See agl_adapter_get. */
+      static const Adapter &get(const size_t id) {
+        return *((const Adapter *)::agl_adapter_get(id));
+      }
+
+      /*! See agl_adapter_primary. */
+      static const Adapter &primary() {
+        return *((const Adapter *)::agl_adapter_primary());
+      }
+
+    public:
+      /*! See agl_adapter_primary_output. */
+      const Output &primary_output() const {
+        return *((const Output *)::agl_adapter_primary_output(this));
+      }
+  };
+} /* agl */
+extern "C" {
+#endif /* __cplusplus */
 
 /* ==========================================================================
     Outputs (agl_outputs_t):
    ========================================================================== */
 
-/* ... */
+/*! Represents a monitor/display. */
+typedef struct agl_output {
+  /*! Specifies if it's the primary output. */
+  bool primary;
+  size_t num_of_display_modes;
+  const struct agl_display_mode *display_modes;
+  uintptr_t _internal;
+} agl_output_t;
+
+/* Tries to find the closest matching display mode.
+  @remarks If templ->format is AGL_PIXEL_FORMAT_UNKNOWN then any pixel format is
+           accepted. If templ->width and/or templ->height are 0 then any
+           resolutions are accepted. If templ->referesh_rate is 0 then any
+           refresh rate is accepted.
+  @param[in] output The output thats display modes are matched against.
+  @param[in] templ The display mode to match against.
+  @returns A pointer to the closest matching display mode; or NULL if no
+           no matching display mode could be found. */
+
+extern AGL_API const struct agl_display_mode *agl_output_find_closest_matching_display_mode(
+  const agl_output_t *output,
+  const struct agl_display_mode *templ);
+
+/* ========================================================================== */
+
+#ifdef __cplusplus
+} /* extern "C" */
+namespace agl {
+  struct DisplayMode;
+
+  /*! See agl_output_t. */
+  class Output : public ::agl_output_t {
+    private:
+      Output(const Output &);
+      Output& operator=(const Output &);
+
+    private:
+      Output()
+      {}
+
+      ~Output()
+      {}
+
+    public:
+      /*! See agl_output_find_closest_matching_display_mode. */
+      const DisplayMode *find_closest_matching_display_mode(
+        const DisplayMode &templ) const
+      {
+        return ((const DisplayMode *)::agl_output_find_closest_matching_display_mode(
+          this, (const struct agl_display_mode *)&templ));
+      }
+  };
+} /* agl */
+extern "C" {
+#endif /* __cplusplus */
 
 /* ==========================================================================
     Display Modes (agl_display_mode_t):
    ========================================================================== */
 
-/* ... */
+/*! Specifies a supported fullscreen display modes. */
+typedef struct agl_display_mode {
+  /*! The back-buffer's pixel format. */
+  agl_pixel_format_t format;
+  uint32_t width;
+  uint32_t height;
+  /*! The number of times the screen refreshes in one second. */
+  uint32_t refresh_rate;
+} agl_display_mode_t;
+
+/* ========================================================================== */
+
+#ifdef __cplusplus
+} /* extern "C" */
+namespace agl {
+  /* See agl_display_mode_t. */
+  struct DisplayMode : public ::agl_display_mode_t {
+  };
+} /* agl */
+extern "C" {
+#endif /* __cplusplus */
 
 /* ========================================================================== */
 /*  Runtime:                                                                  */

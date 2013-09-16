@@ -31,6 +31,16 @@
 #include <agl.h>
 #include <agl.commands.h>
 
+#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
+  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+    #include <GL/GL.h>
+  #else
+    #error ("Unknown or unsupported platform!")
+  #endif
+#else
+  #error ("Unknown or unsupported backend!")
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -94,7 +104,8 @@ void agl_free(
     Adapters (agl_adapter_t):
    ========================================================================== */
 
-/* ... */
+extern size_t _agl_num_of_adapters;
+extern agl_adapter_t *_agl_adapters;
 
 /* ==========================================================================
     Outputs (agl_output_t):
