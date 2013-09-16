@@ -715,7 +715,8 @@ extern "C" {
 
 /*! Specifies a resource type. */
 typedef enum agl_resource_type {
-  AGL_RESOURCE_TYPE_UNKNOWN = 0,
+  AGL_RESOURCE_TYPE_UNKNOWN    = 0,
+  AGL_RESOURCE_TYPE_SWAP_CHAIN = 1
 } agl_resource_type_t;
 
 /*! An opaque handle that represents a resource. */
@@ -771,7 +772,9 @@ namespace agl {
         /*! See agl_resource_type_t. */
         enum _ {
           /*! See agl_resource_type_t::AGL_RESOURCE_TYPE_UNKNOWN. */
-          Unknown = ::AGL_RESOURCE_TYPE_UNKNOWN
+          Unknown = ::AGL_RESOURCE_TYPE_UNKNOWN,
+          /*! See agl_resource_type_t::AGL_RESOURCE_TYPE_SWAP_CHAIN. */
+          SwapChain = ::AGL_RESOURCE_TYPE_SWAP_CHAIN
         };
       }; typedef Type::_ Type_;
 
@@ -806,6 +809,214 @@ namespace agl {
       /*! See agl_resource_is_reflective. */
       bool is_reflective() const {
         return ::agl_resource_is_reflective((const ::agl_resource_t *)this);
+      }
+  };
+} /* agl */
+extern "C" {
+#endif /* __cplusplus */
+
+/* ==========================================================================
+    Resources > Swap Chains:
+   ========================================================================== */
+
+/*! An opaque type for resresenting a platform specific window handle.
+  On Windows this is a HWND. */
+typedef uintptr_t agl_window_hndl_t;
+
+/*! ... */
+extern AGL_API agl_resource_t *agl_swap_chain_create(
+  agl_context_t *context,
+  agl_command_list_t *cmds,
+  agl_window_hndl_t window,
+  agl_pixel_format_t format,
+  uint32_t width,
+  uint32_t height,
+  bool fullscreen,
+  bool verical_sync);
+
+/*! ... */
+extern AGL_API void agl_swap_chain_destroy(
+  agl_resource_t *swap_chain,
+  agl_command_list_t *cmds);
+
+/* ========================================================================== */
+
+/*! ... */
+extern AGL_API agl_pixel_format_t agl_swap_chain_pixel_format(
+  const agl_resource_t *swap_chain);
+
+/*! ... */
+extern AGL_API uint32_t agl_swap_chain_width(
+  const agl_resource_t *swap_chain);
+
+/*! ... */
+extern AGL_API uint32_t agl_swap_chain_height(
+  const agl_resource_t *swap_chain);
+
+/* ========================================================================== */
+
+/*! ... */
+extern AGL_API void agl_swap_chain_resize(
+  agl_resource_t *swap_chain,
+  agl_command_list_t *cmds,
+  uint32_t width,
+  uint32_t height);
+
+/*! ... */
+extern AGL_API void agl_swap_chain_window(
+  agl_resource_t *swap_chain,
+  agl_command_list_t *cmds);
+
+/*! ... */
+extern AGL_API void agl_swap_chain_fullscreen(
+  agl_resource_t *swap_chain,
+  agl_command_list_t *cmds);
+
+/*! ... */
+extern AGL_API void agl_swap_chain_vertically_synchronize(
+  agl_resource_t *swap_chain,
+  agl_command_list_t *cmds,
+  bool synchronize);
+
+/* ========================================================================== */
+
+/*! ... */
+extern AGL_API bool agl_swap_chain_is_windowed(
+  const agl_resource_t *swap_chain);
+
+/*! ... */
+extern AGL_API bool agl_swap_chain_is_fullscreen(
+  const agl_resource_t *swap_chain);
+
+/*! ... */
+extern AGL_API bool agl_swap_chain_is_vertically_synchronized(
+  const agl_resource_t *swap_chain);
+
+/* ========================================================================== */
+
+#ifdef __cplusplus
+} /* extern "C" */
+namespace agl {
+  /*! See agl_window_hndl_t. */
+  typedef agl_window_hndl_t WindowHndl;
+
+  /*!  */
+  class SwapChain : public Resource {
+    private:
+      SwapChain(const SwapChain &);
+      SwapChain& operator=(const SwapChain &);
+
+    protected:
+      SwapChain()
+      {}
+
+      ~SwapChain()
+      {}
+
+    public:
+      /*! See agl_swap_chain_create. */
+      static SwapChain *create(
+        Context *context,
+        CommandList &cmds,
+        WindowHndl window,
+        PixelFormat_ format,
+        uint32_t width,
+        uint32_t height,
+        bool fullscreen,
+        bool verical_sync)
+      {
+        return (SwapChain *)::agl_swap_chain_create(
+          (::agl_context_t *)context,
+          (::agl_command_list_t *)&cmds,
+          (::agl_window_hndl_t)window,
+          (::agl_pixel_format_t)format,
+          width, height,
+          fullscreen,
+          verical_sync);
+      }
+
+      /*! See agl_swap_chain_destroy. */
+      void destroy(
+        CommandList &cmds)
+      {
+        ::agl_swap_chain_destroy(
+          (::agl_resource_t *)this,
+          (::agl_command_list_t *)&cmds);
+      }
+
+    public:
+      /*! See agl_swap_chain_pixel_format.  */
+      PixelFormat_ pixel_format() const {
+        return (PixelFormat_)::agl_swap_chain_pixel_format(
+          (const ::agl_resource_t *)this);
+      }
+
+      /*! See agl_swap_chain_width.  */
+      uint32_t width() const {
+        return ::agl_swap_chain_width((const ::agl_resource_t *)this);
+      }
+
+      /*! See agl_swap_chain_height.  */
+      uint32_t height() const {
+        return ::agl_swap_chain_height((const ::agl_resource_t *)this);
+      }
+
+    public:
+      /*! See agl_swap_chain_resize. */
+      void resize(
+        CommandList &cmds,
+        uint32_t width,
+        uint32_t height)
+      {
+        ::agl_swap_chain_resize(
+          (::agl_resource_t *)this,
+          (::agl_command_list_t *)&cmds,
+          width, height);
+      }
+
+      /*! See agl_swap_chain_window. */
+      void window(
+        CommandList &cmds)
+      {
+        ::agl_swap_chain_window(
+          (::agl_resource_t *)this,
+          (agl_command_list_t *)&cmds);
+      }
+
+      /*! See agl_swap_chain_fullscreen. */
+      void fullscreen(
+        CommandList &cmds)
+      {
+        ::agl_swap_chain_fullscreen(
+          (::agl_resource_t *)this,
+          (::agl_command_list_t *)&cmds);
+      }
+
+      /*! See agl_swap_chain_vertically_synchronize. */
+      void vertically_synchronize(
+        CommandList &cmds,
+        bool synchronize)
+      {
+        ::agl_swap_chain_vertically_synchronize(
+          (::agl_resource_t *)this,
+          (::agl_command_list_t *)&cmds,
+          synchronize);
+      }
+
+    public:
+      /*! See agl_swap_chain_is_windowed. */
+      bool is_windowed() const {
+        return ::agl_swap_chain_is_windowed((const ::agl_resource_t *)this);
+      }
+
+      /*! See agl_swap_chain_is_fullscreen. */
+      bool is_fullscreen() const {
+        return ::agl_swap_chain_is_fullscreen((const ::agl_resource_t *)this);
+      }
+
+      /*! See agl_swap_chain_is_vertically_synchronized. */
+      bool is_vertically_synchronized() const {
+        return ::agl_swap_chain_is_vertically_synchronized((const ::agl_resource_t *)this);
       }
   };
 } /* agl */

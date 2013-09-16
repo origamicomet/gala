@@ -580,26 +580,114 @@ bool agl_resource_is_reflective(
     0, 0) == 0);
 }
 
-/* ========================================================================== */
+/* ==========================================================================
+    Resources > Swap Chains:
+   ========================================================================== */
 
-bool agl_resource_is_available(
-  const agl_resource_t *resource)
+agl_resource_t *agl_swap_chain_create(
+  agl_context_t *context,
+  agl_command_list_t *cmds,
+  agl_window_hndl_t window,
+  agl_pixel_format_t format,
+  uint32_t width,
+  uint32_t height,
+  bool fullscreen,
+  bool verical_sync)
 {
-  agl_assert(debug, resource != NULL);
-  return (agl_atomic_compr_and_swap_ptr(
-    (volatile uintptr_t *)&resource->_internal,
-    ((uintptr_t)NULL), ((uintptr_t)NULL)
-  ) != ((uintptr_t)NULL));
+  agl_assert(debug, context != NULL);
+  agl_assert(debug, cmds != NULL);
+  agl_assert(debug, window != ((agl_window_hndl_t)0));
+  agl_assert(debug, width > 0);
+  agl_assert(debug, height > 0);
+  return NULL;
 }
 
-bool agl_resource_is_reflective(
-  const agl_resource_t *resource)
+void agl_swap_chain_destroy(
+  agl_resource_t *swap_chain,
+  agl_command_list_t *cmds)
 {
-  agl_assert(debug, resource != NULL);
-  return (agl_atomic_compr_and_swap_ptr(
-    (volatile uint *)&resource->_ops,
-    0, 0
-  ) == 0);
+  agl_assert(debug, swap_chain != NULL);
+  agl_assert(debug, cmds != NULL);
+}
+
+/* ========================================================================== */
+
+agl_pixel_format_t agl_swap_chain_pixel_format(
+  const agl_resource_t *swap_chain)
+{
+  agl_assert(debug, swap_chain != NULL);
+  return AGL_PIXEL_FORMAT_UNKNOWN;
+}
+
+uint32_t agl_swap_chain_width(
+  const agl_resource_t *swap_chain)
+{
+  agl_assert(debug, swap_chain != NULL);
+  return 0;
+}
+
+uint32_t agl_swap_chain_height(
+  const agl_resource_t *swap_chain)
+{
+  agl_assert(debug, swap_chain != NULL);
+  return 0;
+}
+
+/* ========================================================================== */
+
+void agl_swap_chain_resize(
+  agl_resource_t *swap_chain,
+  agl_command_list_t *cmds,
+  uint32_t width,
+  uint32_t height)
+{
+  agl_assert(debug, swap_chain != NULL);
+  agl_assert(debug, cmds != NULL);
+}
+
+void agl_swap_chain_window(
+  agl_resource_t *swap_chain,
+  agl_command_list_t *cmds)
+{
+  agl_assert(debug, swap_chain != NULL);
+  agl_assert(debug, cmds != NULL);
+}
+
+void agl_swap_chain_fullscreen(
+  agl_resource_t *swap_chain,
+  agl_command_list_t *cmds)
+{
+  agl_assert(debug, swap_chain != NULL);
+  agl_assert(debug, cmds != NULL);
+}
+
+void agl_swap_chain_vertically_synchronize(
+  agl_resource_t *swap_chain,
+  agl_command_list_t *cmds,
+  bool synchronize)
+{
+  agl_assert(debug, swap_chain != NULL);
+  agl_assert(debug, cmds != NULL);
+}
+
+/* ========================================================================== */
+
+bool agl_swap_chain_is_windowed(
+  const agl_resource_t *swap_chain)
+{
+  return false;
+}
+
+bool agl_swap_chain_is_fullscreen(
+  const agl_resource_t *swap_chain)
+{
+  return false;
+}
+
+bool agl_swap_chain_is_vertically_synchronized(
+  const agl_resource_t *swap_chain)
+{
+  return false;
 }
 
 /* ========================================================================== */

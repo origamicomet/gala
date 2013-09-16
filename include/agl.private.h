@@ -125,6 +125,7 @@ extern agl_adapter_t *_agl_adapters;
 /*   * Command Lists                                                          */
 /*   * Requests                                                               */
 /*   * Resources                                                              */
+/*     * Swap Chains                                                          */
 /* ========================================================================== */
 
 /* ==========================================================================
@@ -199,6 +200,12 @@ void agl_resource_queue_for_create(
 void agl_resource_queue_for_destroy(
   agl_resource_t *resource,
   agl_command_list_t *cmds);
+
+/* ==========================================================================
+    Resources > Swap Chains:
+   ========================================================================== */
+
+/* ... */
 
 #ifdef __cplusplus
 }
