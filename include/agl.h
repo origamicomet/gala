@@ -544,13 +544,59 @@ extern "C" {
 /*   * Command Lists                                                          */
 /*   * Requests                                                               */
 /*   * Resources                                                              */
+/*     * Swap Chains                                                          */
 /* ========================================================================== */
 
 /* ==========================================================================
     Contexts (agl_context_t):
    ========================================================================== */
 
-/* ... */
+/*! ... */
+typedef struct agl_context_t agl_context_t;
+
+/*! ... */
+extern AGL_API agl_context_t *agl_context_create(
+  const agl_adapter_t *adapter);
+
+/*! ... */
+extern AGL_API void agl_context_destroy(
+  agl_context_t *context);
+
+/* ========================================================================== */
+
+#ifdef __cplusplus
+} /* extern "C" */
+namespace agl {
+  /*! See agl_context_t. */
+  class Context {
+    private:
+      Context(const Context &);
+      Context& operator=(const Context &);
+
+    private:
+      Context()
+      {}
+
+      ~Context()
+      {}
+
+    public:
+      /*! See agl_context_create. */
+      static Context *create(
+        const Adapter &adapter)
+      {
+        return (Context *)::agl_context_create((const agl_adapter_t *)&adapter);
+      }
+
+      /*! See agl_context_destroy. */
+      void destroy()
+      {
+        ::agl_context_destroy((agl_context_t *)this);
+      }
+  };
+} /* agl */
+extern "C" {
+#endif /* __cplusplus */
 
 /* ==========================================================================
     Command Lists (agl_command_list_t):

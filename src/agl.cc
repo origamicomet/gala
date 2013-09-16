@@ -444,7 +444,18 @@ const struct agl_display_mode *agl_output_find_closest_matching_display_mode(
     Contexts (agl_context_t):
    ========================================================================== */
 
-/* ... */
+agl_context_t *agl_context_create(
+  const agl_adapter_t *adapter)
+{
+  agl_assert(debug, adapter != NULL);
+  return NULL;
+}
+
+void agl_context_destroy(
+  agl_context_t *context)
+{
+  agl_assert(debug, context != NULL);
+}
 
 /* ==========================================================================
     Command Lists (agl_command_list_t):
