@@ -169,21 +169,11 @@ const struct agl_command *agl_command_list_dequeue(
     Resources (agl_resource_t):
    ========================================================================== */
 
-/*! Creates a new resource.
-  @param[in] type The type of resource to create.
-  @returns AGL_INVALID_RESOURCE if the resource could not be created; or a
-           non-AGL_INVALID_RESOURCE if the resource was created.
-  @warning Succesful creation doesn't imply or guarantee existence. An
-           initialization command like agl_texture_storage_2d() might be
-           nessecary. */
-agl_resource_t *agl_resource_create(
-  const agl_resource_type_t type);
-
-/*! Destroys a resource.
-  @param[in] resource The resource to destroy.
-  @warning Doesn't touch _internal (that's handled per-type). */
-void agl_resource_destroy(
-  agl_resource_t *resource);
+struct agl_resource {
+  agl_resource_type_t type;
+  uint flags;
+  uint ops;
+};
 
 /* ========================================================================== */
 
@@ -205,7 +195,9 @@ void agl_resource_queue_for_destroy(
     Resources > Swap Chains:
    ========================================================================== */
 
-/* ... */
+struct agl_swap_chain {
+  agl_resource_t resource;
+};
 
 #ifdef __cplusplus
 }

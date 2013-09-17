@@ -735,27 +735,27 @@ typedef enum agl_resource_type {
   AGL_RESOURCE_TYPE_SWAP_CHAIN = 1
 } agl_resource_type_t;
 
+/*! ... */
+typedef enum agl_resource_flags {
+  AGL_RESOURCE_IS_AVAILABLE_BIT = 0,
+  AGL_RESOURCE_IS_AVAILABLE = (1 << AGL_RESOURCE_IS_AVAILABLE_BIT)
+} agl_resource_flags_t;
+
 /*! An opaque handle that represents a resource. */
-typedef struct agl_resource {
-  agl_resource_type_t _type;
-  uint _ops;
-  uintptr_t _internal;
-} agl_resource_t;
+typedef struct agl_resource agl_resource_t;
 
 /*! @def AGL_INVALID_RESOURCE
-  A invalid resource. */
+  An invalid resource. */
 #define AGL_INVALID_RESOURCE ((agl_resource_t *)NULL)
 
 /* ========================================================================== */
 
-/*! Determines the resource type.
-  @param[in] resource The resource.
-  @returns AGL_RESOURCE_TYPE_UNKNOWN if the specifed resource is unknown or
-           non-existent; or an agl_resource_type_t. */
+/*! Determines the resource's type.
+  @param[in] resource The resource. */
 extern AGL_API agl_resource_type_t agl_resource_type(
   const agl_resource_t *resource);
 
-/*! Determines the number of pending operations.
+/*! Determines the resource's number of outstanding operations.
   @param[in] resource The resource. */
 extern AGL_API uint agl_resource_ops(
   const agl_resource_t *resource);
@@ -782,7 +782,7 @@ extern AGL_API bool agl_resource_is_reflective(
 } /* extern "C" */
 namespace agl {
   /*! See agl_resource_t. */
-  class Resource : private ::agl_resource_t {
+  class Resource {
     public:
       struct Type {
         /*! See agl_resource_type_t. */
@@ -839,8 +839,17 @@ extern "C" {
   On Windows this is a HWND. */
 typedef uintptr_t agl_window_hndl_t;
 
+/*! An opaque handle that represents a swap chain. */
+typedef struct agl_swap_chain agl_swap_chain_t;
+
+/*! @def AGL_INVALID_SWAP_CHAIN
+  An invalid swap chain. */
+#define AGL_INVALID_SWAP_CHAIN ((agl_resource_t *)NULL)
+
+/* ========================================================================== */
+
 /*! ... */
-extern AGL_API agl_resource_t *agl_swap_chain_create(
+extern AGL_API agl_swap_chain_t *agl_swap_chain_create(
   agl_context_t *context,
   agl_command_list_t *cmds,
   agl_window_hndl_t window,
@@ -852,45 +861,45 @@ extern AGL_API agl_resource_t *agl_swap_chain_create(
 
 /*! ... */
 extern AGL_API void agl_swap_chain_destroy(
-  agl_resource_t *swap_chain,
+  agl_swap_chain_t *swap_chain,
   agl_command_list_t *cmds);
 
 /* ========================================================================== */
 
 /*! ... */
 extern AGL_API agl_pixel_format_t agl_swap_chain_pixel_format(
-  const agl_resource_t *swap_chain);
+  const agl_swap_chain_t *swap_chain);
 
 /*! ... */
 extern AGL_API uint32_t agl_swap_chain_width(
-  const agl_resource_t *swap_chain);
+  const agl_swap_chain_t *swap_chain);
 
 /*! ... */
 extern AGL_API uint32_t agl_swap_chain_height(
-  const agl_resource_t *swap_chain);
+  const agl_swap_chain_t *swap_chain);
 
 /* ========================================================================== */
 
 /*! ... */
 extern AGL_API void agl_swap_chain_resize(
-  agl_resource_t *swap_chain,
+  agl_swap_chain_t *swap_chain,
   agl_command_list_t *cmds,
   uint32_t width,
   uint32_t height);
 
 /*! ... */
 extern AGL_API void agl_swap_chain_window(
-  agl_resource_t *swap_chain,
+  agl_swap_chain_t *swap_chain,
   agl_command_list_t *cmds);
 
 /*! ... */
 extern AGL_API void agl_swap_chain_fullscreen(
-  agl_resource_t *swap_chain,
+  agl_swap_chain_t *swap_chain,
   agl_command_list_t *cmds);
 
 /*! ... */
 extern AGL_API void agl_swap_chain_vertically_synchronize(
-  agl_resource_t *swap_chain,
+  agl_swap_chain_t *swap_chain,
   agl_command_list_t *cmds,
   bool synchronize);
 
@@ -898,15 +907,15 @@ extern AGL_API void agl_swap_chain_vertically_synchronize(
 
 /*! ... */
 extern AGL_API bool agl_swap_chain_is_windowed(
-  const agl_resource_t *swap_chain);
+  const agl_swap_chain_t *swap_chain);
 
 /*! ... */
 extern AGL_API bool agl_swap_chain_is_fullscreen(
-  const agl_resource_t *swap_chain);
+  const agl_swap_chain_t *swap_chain);
 
 /*! ... */
 extern AGL_API bool agl_swap_chain_is_vertically_synchronized(
-  const agl_resource_t *swap_chain);
+  const agl_swap_chain_t *swap_chain);
 
 /* ========================================================================== */
 
@@ -956,7 +965,7 @@ namespace agl {
         CommandList &cmds)
       {
         ::agl_swap_chain_destroy(
-          (::agl_resource_t *)this,
+          (::agl_swap_chain_t *)this,
           (::agl_command_list_t *)&cmds);
       }
 
@@ -964,17 +973,17 @@ namespace agl {
       /*! See agl_swap_chain_pixel_format.  */
       PixelFormat_ pixel_format() const {
         return (PixelFormat_)::agl_swap_chain_pixel_format(
-          (const ::agl_resource_t *)this);
+          (const ::agl_swap_chain_t *)this);
       }
 
       /*! See agl_swap_chain_width.  */
       uint32_t width() const {
-        return ::agl_swap_chain_width((const ::agl_resource_t *)this);
+        return ::agl_swap_chain_width((const ::agl_swap_chain_t *)this);
       }
 
       /*! See agl_swap_chain_height.  */
       uint32_t height() const {
-        return ::agl_swap_chain_height((const ::agl_resource_t *)this);
+        return ::agl_swap_chain_height((const ::agl_swap_chain_t *)this);
       }
 
     public:
@@ -985,7 +994,7 @@ namespace agl {
         uint32_t height)
       {
         ::agl_swap_chain_resize(
-          (::agl_resource_t *)this,
+          (::agl_swap_chain_t *)this,
           (::agl_command_list_t *)&cmds,
           width, height);
       }
@@ -995,7 +1004,7 @@ namespace agl {
         CommandList &cmds)
       {
         ::agl_swap_chain_window(
-          (::agl_resource_t *)this,
+          (::agl_swap_chain_t *)this,
           (agl_command_list_t *)&cmds);
       }
 
@@ -1004,7 +1013,7 @@ namespace agl {
         CommandList &cmds)
       {
         ::agl_swap_chain_fullscreen(
-          (::agl_resource_t *)this,
+          (::agl_swap_chain_t *)this,
           (::agl_command_list_t *)&cmds);
       }
 
@@ -1014,7 +1023,7 @@ namespace agl {
         bool synchronize)
       {
         ::agl_swap_chain_vertically_synchronize(
-          (::agl_resource_t *)this,
+          (::agl_swap_chain_t *)this,
           (::agl_command_list_t *)&cmds,
           synchronize);
       }
@@ -1022,17 +1031,17 @@ namespace agl {
     public:
       /*! See agl_swap_chain_is_windowed. */
       bool is_windowed() const {
-        return ::agl_swap_chain_is_windowed((const ::agl_resource_t *)this);
+        return ::agl_swap_chain_is_windowed((const ::agl_swap_chain_t *)this);
       }
 
       /*! See agl_swap_chain_is_fullscreen. */
       bool is_fullscreen() const {
-        return ::agl_swap_chain_is_fullscreen((const ::agl_resource_t *)this);
+        return ::agl_swap_chain_is_fullscreen((const ::agl_swap_chain_t *)this);
       }
 
       /*! See agl_swap_chain_is_vertically_synchronized. */
       bool is_vertically_synchronized() const {
-        return ::agl_swap_chain_is_vertically_synchronized((const ::agl_resource_t *)this);
+        return ::agl_swap_chain_is_vertically_synchronized((const ::agl_swap_chain_t *)this);
       }
   };
 } /* agl */
