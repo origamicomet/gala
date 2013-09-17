@@ -28,21 +28,6 @@
 #include <agl.h>
 #include <agl.private.h>
 
-#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
-  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
-    #define WIN32_LEAN_AND_MEAN
-    #define WIN32_EXTRA_LEAN
-    #include <Windows.h>
-    #undef WIN32_EXTRA_LEAN
-    #undef WIN32_LEAN_AND_MEAN
-    #include <GL/GL.h>
-  #else
-    #error ("Unknown or unsupported platform!")
-  #endif
-#else
-  #error ("Unknown or unsupported backend!")
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -78,6 +63,21 @@ void agl_initialize()
 {
 #if (AGL_BACKEND == AGL_BACKEND_OPENGL)
   #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+    WNDCLASSEX wcx;
+    memset((void *)&wcx, 0, sizeof(WNDCLASSEX));
+
+    wcx.cbSize        = sizeof(WNDCLASSEX);
+    wcx.style         = CS_VREDRAW | CS_HREDRAW;
+    wcx.lpfnWndProc   = DefWindowProc;
+    wcx.hInstance     = GetModuleHandle(NULL);
+    wcx.hCursor       = LoadCursor(NULL, IDC_ARROW);
+    wcx.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
+    wcx.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
+    wcx.lpszClassName = "agl";
+
+    if (!RegisterClassExA(&wcx))
+      agl_error(AGL_EUNKNOWN);
+
     _agl_num_of_adapters = 0; {
       DISPLAY_DEVICE dd;
       memset((void *)&dd, 0, sizeof(DISPLAY_DEVICE));
@@ -233,6 +233,16 @@ void agl_initialize()
 
 void agl_deinitialize()
 {
+#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
+  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+    UnregisterClassA("agl", GetModuleHandle(NULL));
+  #else
+    #error ("Unknown or unsupported platform!")
+  #endif
+#else
+  #error ("Unknown or unsupported backend!")
+#endif
+
   for (size_t adapter_id = 0; adapter_id < _agl_num_of_adapters; ++adapter_id) {
     const agl_adapter_t *adapter = &_agl_adapters[adapter_id];
 

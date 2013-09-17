@@ -33,6 +33,11 @@
 
 #if (AGL_BACKEND == AGL_BACKEND_OPENGL)
   #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+    #define WIN32_LEAN_AND_MEAN
+    #define WIN32_EXTRA_LEAN
+    #include <Windows.h>
+    #undef WIN32_EXTRA_LEAN
+    #undef WIN32_LEAN_AND_MEAN
     #include <GL/GL.h>
   #else
     #error ("Unknown or unsupported platform!")
