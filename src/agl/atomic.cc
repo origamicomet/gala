@@ -82,17 +82,17 @@ uint agl_atomic_incr(
 #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
   #if (AGL_COMPILER == AGL_COMPILER_MSVC)
     #if (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86)
-      return _InterlockedIncrement((volatile long *)value);
+      return _InterlockedIncrement((volatile LONG *)value);
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
-      return _InterlockedIncrement64((volatile long *)value);
+      return _InterlockedIncrement64((volatile LONG64 *)value);
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
   #else
     #if (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86)
-      return InterlockedIncrement((volatile long *)value);
+      return InterlockedIncrement((volatile LONG *)value);
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
-      return InterlockedIncrement64((volatile long *)value);
+      return InterlockedIncrement64((volatile LONG64 *)value);
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
@@ -108,17 +108,17 @@ uint agl_atomic_decr(
 #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
   #if (AGL_COMPILER == AGL_COMPILER_MSVC)
     #if (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86)
-      return _InterlockedDecrement((volatile long *)value);
+      return _InterlockedDecrement((volatile LONG *)value);
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
-      return _InterlockedDecrement64((volatile long *)value);
+      return _InterlockedDecrement64((volatile LONG64 *)value);
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
   #else
     #if (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86)
-      return InterlockedDecrement((volatile long *)value);
+      return InterlockedDecrement((volatile LONG *)value);
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
-      return InterlockedDecrement64((volatile long *)value);
+      return InterlockedDecrement64((volatile LONG64 *)value);
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
@@ -137,20 +137,20 @@ uint agl_atomic_compr_and_swap(
   #if (AGL_COMPILER == AGL_COMPILER_MSVC)
     #if (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86)
       return _InterlockedCompareExchange(
-        (volatile long *)comparee, value, comparand);
+        (volatile LONG *)comparee, value, comparand);
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
       return _InterlockedCompareExchange64(
-        (volatile long *)comparee, value, comparand);
+        (volatile LONG64 *)comparee, value, comparand);
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
   #else
     #if (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86)
       return InterlockedCompareExchange(
-        (volatile long *)comparee, value, comparand);
+        (volatile LONG *)comparee, value, comparand);
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
       return InterlockedCompareExchange64(
-        (volatile long *)comparee, value, comparand);
+        (volatile LONG64 *)comparee, value, comparand);
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
