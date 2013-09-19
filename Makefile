@@ -72,7 +72,7 @@ ifeq ($(BACKEND),opengl)
     ifneq ($(TARGET_PLATFORM),windows)
       $(error No cross-compilation support for '$(TARGET_PLATFORM)' on Windows.)
     else
-      LDFLAGS += -lopengl32
+      DEPENDENCIES += -lkernel32 -luser32 -lgdi32 -lopengl32
     endif
  	endif
 endif
