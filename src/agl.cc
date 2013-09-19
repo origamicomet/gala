@@ -63,10 +63,10 @@ void agl_initialize()
 {
 #if (AGL_BACKEND == AGL_BACKEND_OPENGL)
   #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
-    WNDCLASSEX wcx;
-    memset((void *)&wcx, 0, sizeof(WNDCLASSEX));
+    WNDCLASSEXA wcx;
+    memset((void *)&wcx, 0, sizeof(WNDCLASSEXA));
 
-    wcx.cbSize        = sizeof(WNDCLASSEX);
+    wcx.cbSize        = sizeof(WNDCLASSEXA);
     wcx.style         = CS_VREDRAW | CS_HREDRAW;
     wcx.lpfnWndProc   = DefWindowProc;
     wcx.hInstance     = GetModuleHandle(NULL);
@@ -342,7 +342,39 @@ void agl_free(void *ptr) {
     Pixel Formats (agl_pixel_format_t):
    ========================================================================== */
 
-/* ... */
+#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
+  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+    static bool agl_pixel_format_to_pfd(
+      const agl_pixel_format_t format,
+      PIXELFORMATDESCRIPTOR *pfd)
+    {
+      agl_assert(paranoid, pfd != NULL);
+
+      switch (format) {
+        case AGL_R8G8B8:
+        case AGL_R8G8B8A8: {
+          memset((void *)pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+          pfd->nSize = sizeof(PIXELFORMATDESCRIPTOR);
+          pfd->nVersion = 1;
+          pfd->dwFlags = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
+          pfd->iPixelType = PFD_TYPE_RGBA;
+          pfd->cColorBits = 24;
+          pfd->cAlphaBits = (format == AGL_R8G8B8A8) ? 8 : 0;
+          pfd->cDepthBits = 24;
+          pfd->cStencilBits = 8;
+          pfd->iLayerType = PFD_MAIN_PLANE;
+          return true;
+        } break;
+      }
+
+      return false;
+    }
+  #else
+    #error ("Unknown or unsupported platform!")
+  #endif
+#else
+  #error ("Unknown or unsupported backend!")
+#endif
 
 /* ========================================================================== */
 /*  Infrastructure:                                                           */
@@ -458,6 +490,131 @@ agl_context_t *agl_context_create(
   const agl_adapter_t *adapter)
 {
   agl_assert(debug, adapter != NULL);
+
+#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
+  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+    PIXELFORMATDESCRIPTOR pfd;
+
+    if (!agl_pixel_format_to_pfd(AGL_R8G8B8A8, &pfd))
+      return NULL;
+
+    HWND hwnd = CreateWindowExA(
+      WS_EX_APPWINDOW | WS_EX_WINDOWEDGE,
+      "agl", "agl",
+      WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW,
+      0, 0, 1, 1,
+      NULL, NULL,
+      GetModuleHandle(NULL), NULL);
+
+    if (!hwnd)
+      return NULL;
+
+    HDC hdc = GetDC(hwnd);
+
+    int pixel_format = ChoosePixelFormat(hdc, &pfd);
+    if (!pixel_format || !SetPixelFormat(hdc, pixel_format, &pfd)) {
+      DestroyWindow(hwnd);
+      return NULL;
+    }
+
+    HGLRC hglrc = wglCreateContext(hdc);
+
+    if (!hglrc) {
+      DestroyWindow(hwnd);
+      return NULL;
+    }
+
+    wglMakeCurrent(hdc, hglrc);
+
+    GLint major_ver = 0;
+    glGetIntegerv(GL_MAJOR_VERSION, &major_ver);
+
+    GLint minor_ver = 0;
+    glGetIntegerv(GL_MINOR_VERSION, &minor_ver);
+
+    if (major_ver == 3) {
+      if (minor_ver < 1) {
+        wglMakeCurrent(NULL, NULL);
+        wglDeleteContext(hglrc);
+        DestroyWindow(hwnd);
+        return NULL;
+      }
+    } else if (major_ver < 3) {
+      wglMakeCurrent(NULL, NULL);
+      wglDeleteContext(hglrc);
+      DestroyWindow(hwnd);
+      return NULL;
+    }
+
+    PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB =
+      (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress(
+        "wglChoosePixelFormatARB");
+
+    PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB =
+      (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress(
+        "wglCreateContextAttribsARB");
+
+    if (!wglChoosePixelFormatARB || !wglCreateContextAttribsARB) {
+      wglMakeCurrent(NULL, NULL);
+      wglDeleteContext(hglrc);
+      DestroyWindow(hwnd);
+      return NULL;
+    }
+
+    const int pfda[] = {
+      WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+      WGL_ACCELERATION_ARB,   WGL_FULL_ACCELERATION_ARB,
+      WGL_COLOR_BITS_ARB,     pfd.cColorBits,
+      WGL_ALPHA_BITS_ARB,     pfd.cAlphaBits,
+      WGL_DEPTH_BITS_ARB,     pfd.cDepthBits,
+      WGL_STENCIL_BITS_ARB,   pfd.cStencilBits,
+      WGL_DOUBLE_BUFFER_ARB,  GL_TRUE,
+      WGL_SAMPLE_BUFFERS_ARB, GL_FALSE,
+      WGL_SAMPLES_ARB,        0,
+      NULL, NULL
+    };
+
+    const int ca[] = {
+      WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+      WGL_CONTEXT_MINOR_VERSION_ARB, 1,
+      WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+      WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+      NULL, NULL
+    };
+
+    UINT num_of_formats = 0;
+    if (!wglChoosePixelFormatARB(hdc, &pfda[0], 0, 1, &pixel_format, &num_of_formats) || (num_of_formats == 0)) {
+      wglMakeCurrent(NULL, NULL);
+      wglDeleteContext(hglrc);
+      DestroyWindow(hwnd);
+      return NULL;
+    }
+
+    HGLRC hglrc_ = (HGLRC)wglCreateContextAttribsARB(hdc, 0, &ca[0]);
+    if (!hglrc_) {
+      wglMakeCurrent(NULL, NULL);
+      wglDeleteContext(hglrc);
+      DestroyWindow(hwnd);
+      return NULL;
+    }
+
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(hglrc);
+
+    agl_context_t *context = (agl_context_t *)agl_alloc(
+      sizeof(agl_context_t), agl_alignof(agl_context_t));
+    context->hwnd = hwnd;
+    context->hdc = hdc;
+    context->hglrc = hglrc_;
+
+    return context;
+  #else
+    #error ("Unknown or unsupported platform!")
+  #endif
+#else
+  #error ("Unknown or unsupported backend!")
+#endif
+
   return NULL;
 }
 
@@ -465,6 +622,20 @@ void agl_context_destroy(
   agl_context_t *context)
 {
   agl_assert(debug, context != NULL);
+
+#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
+  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(context->hglrc);
+    DestroyWindow(context->hwnd);
+
+    agl_free((void *)context);
+  #else
+    #error ("Unknown or unsupported platform!")
+  #endif
+#else
+  #error ("Unknown or unsupported backend!")
+#endif
 }
 
 /* ==========================================================================

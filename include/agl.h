@@ -552,7 +552,7 @@ extern "C" {
    ========================================================================== */
 
 /*! ... */
-typedef struct agl_context_t agl_context_t;
+typedef struct agl_context agl_context_t;
 
 /*! ... */
 extern AGL_API agl_context_t *agl_context_create(

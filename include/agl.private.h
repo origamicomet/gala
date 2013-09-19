@@ -39,6 +39,8 @@
     #undef WIN32_EXTRA_LEAN
     #undef WIN32_LEAN_AND_MEAN
     #include <GL/GL.h>
+    #include <GL/GLCoreARB.h>
+    #include <GL/WGLExt.h>
   #else
     #error ("Unknown or unsupported platform!")
   #endif
@@ -137,7 +139,19 @@ extern agl_adapter_t *_agl_adapters;
     Contexts (agl_context_t):
    ========================================================================== */
 
-/* ... */
+struct agl_context {
+#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
+  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+    HWND hwnd;
+    HDC hdc;
+    HGLRC hglrc;
+  #else
+    #error ("Unknown or unsupported platform!")
+  #endif
+#else
+  #error ("Unknown or unsupported backend!")
+#endif
+};
 
 /* ==========================================================================
     Command Lists (agl_command_list_t):
