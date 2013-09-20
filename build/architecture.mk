@@ -35,5 +35,5 @@ ifeq ($(findstring arm,$(UNAME)),arm)
 endif
 
 ifndef ARCH
-	$(error Unknown or unsupported architecture!)
+  $(error Unknown or unsupported architecture!)
 endif
