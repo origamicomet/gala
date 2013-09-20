@@ -1,0 +1,18 @@
+language: cpp
+compiler:
+  - gcc
+  - clang
+before_script:
+  - ./configure
+script: make all
+branches:
+  only:
+    - master
+notifications:
+  recipients:
+    - mtwilliams@live.com
+  email:
+    on_success: change
+    on_failure: always
+rvm:
+  - 1.9.3
