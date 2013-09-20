@@ -27,9 +27,17 @@ UNAME := $(shell uname -m)
 ifeq ($(findstring i386,$(UNAME)),i386)
   ARCH := x86
 endif
+ifeq ($(findstring x86,$(UNAME)),x86)
+  ARCH := x86
+endif
 ifeq ($(findstring i686,$(UNAME)),i686)
+  ARCH := x86
+endif
+
+ifeq ($(findstring x86_64,$(UNAME)),x86_64)
   ARCH := x86_64
 endif
+
 ifeq ($(findstring arm,$(UNAME)),arm)
   ARCH := arm
 endif
