@@ -363,7 +363,7 @@ bool agl_resource_is_reflective(
   const agl_resource_t *resource)
 {
   agl_assert(debug, resource != NULL);
-  return (agl_atomic_compr_and_swap_ptr(
+  return (agl_atomic_compr_and_swap(
     (volatile uint *)&resource->ops,
     0, 0) == 0);
 }
