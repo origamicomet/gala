@@ -41,11 +41,15 @@
       #pragma intrinsic(_InterlockedDecrement)
       #pragma intrinsic(_InterlockedCompareExchange)
       #pragma intrinsic(_InterlockedCompareExchangePointer)
+      #pragma intrinsic(_interlockedbittestandset)
+      #pragma intrinsic(_interlockedbittestandreset)
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
       #pragma intrinsic(_InterlockedIncrement64)
       #pragma intrinsic(_InterlockedDecrement64)
       #pragma intrinsic(_InterlockedCompareExchange64)
       #pragma intrinsic(_InterlockedCompareExchangePointer)
+      #pragma intrinsic(_interlockedbittestandset64)
+      #pragma intrinsic(_interlockedbittestandreset64)
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
@@ -55,11 +59,15 @@
       /* InterlockedDecrement */
       /* InterlockedCompareExchange */
       /* InterlockedCompareExchangePointer */
+      /* InterlockedBitTestAndSet */
+      /* InterlockedBitTestAndReset */
     #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
-      /* intrinsic(_InterlockedIncrement64) */
-      /* intrinsic(_InterlockedDecrement64) */
-      /* intrinsic(_InterlockedCompareExchange64) */
-      /* intrinsic(_InterlockedCompareExchangePointer) */
+      /* InterlockedIncrement64 */
+      /* InterlockedDecrement64 */
+      /* InterlockedCompareExchange64 */
+      /* InterlockedCompareExchangePointer */
+      /* InterlockedBitTestAndSet64 */
+      /* InterlockedBitTestAndReset64 */
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
@@ -186,6 +194,58 @@ uintptr_t agl_atomic_compr_and_swap_ptr(
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
+  #endif
+#else
+  #error ("Unknown or unsupported platform!")
+#endif
+}
+
+bool agl_atomic_test_and_set(
+  volatile uint *comparee,
+  const uint bit)
+{
+#if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+  #if (AGL_COMPILER == AGL_COMPILER_MSVC)
+    #if (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86)
+      return !!(_interlockedbittestandset(
+        (volatile LONG *)comparee, bit));
+    #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
+      return !!(_interlockedbittestandset64(
+        (volatile LONG64 *)comparee, bit));
+    #else
+      #error ("Unknown or unsupported architecture!")
+    #endif
+  #else
+    const uint mask = (1u << bit);
+    uint v; do {
+      v = *comparee;
+    } while (agl_atomic_compr_and_swap(comparee, v, v & mask) != v);
+  #endif
+#else
+  #error ("Unknown or unsupported platform!")
+#endif
+}
+
+bool agl_atomic_test_and_clear(
+  volatile uint *comparee,
+  const uint bit)
+{
+#if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+  #if (AGL_COMPILER == AGL_COMPILER_MSVC)
+    #if (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86)
+      return !!(_interlockedbittestandreset(
+        (volatile LONG *)comparee, bit));
+    #elif (AGL_ARCHITECTURE == AGL_ARCHITECTURE_X86_64)
+      return !!(_interlockedbittestandreset64(
+        (volatile LONG64 *)comparee, bit));
+    #else
+      #error ("Unknown or unsupported architecture!")
+    #endif
+  #else
+    const uint mask = ~(1u << bit);
+    uint v; do {
+      v = *comparee;
+    } while (agl_atomic_compr_and_swap(comparee, v, v & mask) != v);
   #endif
 #else
   #error ("Unknown or unsupported platform!")

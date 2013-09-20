@@ -61,6 +61,17 @@ extern AGL_API uintptr_t agl_atomic_compr_and_swap_ptr(
   const uintptr_t comparand,
   const uintptr_t value);
 
+/*! */
+extern AGL_API bool agl_atomic_test_and_set(
+  volatile uint *comparee,
+  const uint bit);
+
+/*! */
+extern AGL_API bool agl_atomic_test_and_clear(
+  volatile uint *comparee,
+  const uint bit);
+
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
