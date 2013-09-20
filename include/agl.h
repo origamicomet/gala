@@ -434,19 +434,19 @@ namespace agl {
       }
 
       /*! See agl_adapter_get. */
-      static const Adapter &get(const size_t id) {
-        return *((const Adapter *)::agl_adapter_get(id));
+      static const Adapter *get(const size_t id) {
+        return ((const Adapter *)::agl_adapter_get(id));
       }
 
       /*! See agl_adapter_primary. */
-      static const Adapter &primary() {
-        return *((const Adapter *)::agl_adapter_primary());
+      static const Adapter *primary() {
+        return ((const Adapter *)::agl_adapter_primary());
       }
 
     public:
       /*! See agl_adapter_primary_output. */
-      const Output &primary_output() const {
-        return *((const Output *)::agl_adapter_primary_output(this));
+      const Output *primary_output() const {
+        return ((const Output *)::agl_adapter_primary_output(this));
       }
   };
 } /* agl */
@@ -506,7 +506,8 @@ namespace agl {
         const DisplayMode &templ) const
       {
         return ((const DisplayMode *)::agl_output_find_closest_matching_display_mode(
-          this, (const struct agl_display_mode *)&templ));
+          (const ::agl_output_t *)this,
+          (const struct agl_display_mode *)&templ));
       }
   };
 } /* agl */
@@ -592,7 +593,7 @@ namespace agl {
       /*! See agl_context_destroy. */
       void destroy()
       {
-        ::agl_context_destroy((agl_context_t *)this);
+        ::agl_context_destroy((::agl_context_t *)this);
       }
   };
 } /* agl */
