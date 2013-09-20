@@ -33,6 +33,8 @@
   #include <Windows.h>
   #undef WIN32_EXTRA_LEAN
   #undef WIN32_LEAN_AND_MEAN
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  #include <dlfcn.h>
 #else
   #error ("Unknown or unsupported platform!")
 #endif
@@ -53,6 +55,11 @@ agl_shared_lib_t *agl_shared_lib_open(
   if (!lib)
     return NULL;
   return ((agl_shared_lib_t *)lib);
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  void *hndl = dlopen(path, RTLD_NOW|RTLD_LOCAL);
+  if (!hndl)
+    return NULL;
+  return ((agl_shared_lib_t *)hndl);
 #else
   #error ("Unknown or unsupported platform!")
 #endif
@@ -64,6 +71,8 @@ void *agl_shared_lib_sym(
 {
 #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
   return ((void *)GetProcAddress((HMODULE)shared_lib, name));
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  return dlsym((void *)shared_lib, name);
 #else
   #error ("Unknown or unsupported platform!")
 #endif
@@ -74,6 +83,8 @@ uint agl_shared_lib_close(
 {
 #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
   FreeLibrary(((HMODULE)shared_lib));
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  dlclose((void *)shared_lib);
 #else
   #error ("Unknown or unsupported platform!")
 #endif
