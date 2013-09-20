@@ -72,6 +72,12 @@
       #error ("Unknown or unsupported architecture!")
     #endif
   #endif
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  #if ((AGL_COMPILER == AGL_COMPILER_GCC) || (AGL_COMPILER == AGL_COMPILER_CLANG))
+    /* See "5.47 Built-in functions for atomic memory access" */
+  #else
+    #error ("Unknown or unsupported compiler!")
+  #endif
 #else
   #error ("Unknown or unsupported platform!")
 #endif
@@ -105,6 +111,12 @@ uint agl_atomic_incr(
       #error ("Unknown or unsupported architecture!")
     #endif
   #endif
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  #if ((AGL_COMPILER == AGL_COMPILER_GCC) || (AGL_COMPILER == AGL_COMPILER_CLANG))
+    return __sync_add_and_fetch(value, 1);
+  #else
+    #error ("Unknown or unsupported compiler!")
+  #endif
 #else
   #error ("Unknown or unsupported platform!")
 #endif
@@ -130,6 +142,12 @@ uint agl_atomic_decr(
     #else
       #error ("Unknown or unsupported architecture!")
     #endif
+  #endif
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  #if ((AGL_COMPILER == AGL_COMPILER_GCC) || (AGL_COMPILER == AGL_COMPILER_CLANG))
+    return __sync_sub_and_fetch(value, 1);
+  #else
+    #error ("Unknown or unsupported compiler!")
   #endif
 #else
   #error ("Unknown or unsupported platform!")
@@ -163,6 +181,12 @@ uint agl_atomic_compr_and_swap(
       #error ("Unknown or unsupported architecture!")
     #endif
   #endif
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  #if ((AGL_COMPILER == AGL_COMPILER_GCC) || (AGL_COMPILER == AGL_COMPILER_CLANG))
+    return __sync_val_compare_and_swap(comparee, comparand, value);
+  #else
+    #error ("Unknown or unsupported compiler!")
+  #endif
 #else
   #error ("Unknown or unsupported platform!")
 #endif
@@ -195,6 +219,12 @@ uintptr_t agl_atomic_compr_and_swap_ptr(
       #error ("Unknown or unsupported architecture!")
     #endif
   #endif
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  #if ((AGL_COMPILER == AGL_COMPILER_GCC) || (AGL_COMPILER == AGL_COMPILER_CLANG))
+    return __sync_val_compare_and_swap(comparee, comparand, value);
+  #else
+    #error ("Unknown or unsupported compiler!")
+  #endif
 #else
   #error ("Unknown or unsupported platform!")
 #endif
@@ -221,6 +251,15 @@ bool agl_atomic_test_and_set(
       v = *comparee;
     } while (agl_atomic_compr_and_swap(comparee, v, v & mask) != v);
   #endif
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  #if ((AGL_COMPILER == AGL_COMPILER_GCC) || (AGL_COMPILER == AGL_COMPILER_CLANG))
+    const uint mask = (1u << bit);
+    uint v; do {
+      v = *comparee;
+    } while(!__sync_bool_compare_and_swap(comparee, v, v & mask));
+  #else
+    #error ("Unknown or unsupported compiler!")
+  #endif
 #else
   #error ("Unknown or unsupported platform!")
 #endif
@@ -246,6 +285,15 @@ bool agl_atomic_test_and_clear(
     uint v; do {
       v = *comparee;
     } while (agl_atomic_compr_and_swap(comparee, v, v & mask) != v);
+  #endif
+#elif AGL_PLATFORM_IS_POSIX(AGL_PLATFORM)
+  #if ((AGL_COMPILER == AGL_COMPILER_GCC) || (AGL_COMPILER == AGL_COMPILER_CLANG))
+    const uint mask = ~(1u << bit);
+    uint v; do {
+      v = *comparee;
+    } while(!__sync_bool_compare_and_swap(comparee, v, v & mask));
+  #else
+    #error ("Unknown or unsupported compiler!")
   #endif
 #else
   #error ("Unknown or unsupported platform!")
