@@ -399,7 +399,7 @@ void agl_swap_chain_free(agl_swap_chain_t *swap_chain) {
 agl_swap_chain_t *agl_swap_chain_create(
   agl_context_t *context,
   agl_command_list_t *cmds,
-  agl_window_hndl_t window,
+  agl_surface_hndl_t surface,
   agl_pixel_format_t format,
   uint32_t width,
   uint32_t height,
@@ -408,7 +408,7 @@ agl_swap_chain_t *agl_swap_chain_create(
 {
   agl_assert(debug, context != NULL);
   agl_assert(debug, cmds != NULL);
-  agl_assert(debug, window != ((agl_window_hndl_t)0));
+  agl_assert(debug, surface != ((agl_surface_hndl_t)0));
   agl_assert(debug, width > 0);
   agl_assert(debug, height > 0);
   return NULL;
@@ -424,7 +424,14 @@ void agl_swap_chain_destroy(
 
 /* ========================================================================== */
 
-agl_pixel_format_t agl_swap_chain_pixel_format(
+agl_surface_hndl_t agl_swap_chain_surface(
+const agl_swap_chain_t *swap_chain)
+{
+  agl_assert(debug, swap_chain != NULL);
+  return 0;
+}
+
+agl_pixel_format_t agl_swap_chain_format(
   const agl_swap_chain_t *swap_chain)
 {
   agl_assert(debug, swap_chain != NULL);

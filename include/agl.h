@@ -900,13 +900,13 @@ extern "C" {
     Resources > Swap Chains:
    ========================================================================== */
 
-/*! An opaque type for representing a platform specific window handle.
+/*! An opaque type for representing a platform specific surface/window handle.
   @remark On Windows this is a HWND.
   @remark On Linux and BSD this is a XLib Window.
   @remark On Mac OS X this is a nsHandle to a NSWindow or NSView.
   @remark On Anroid this is an ANativeWindow.
   @remark On iOS this is an UIView. */
-typedef uintptr_t agl_window_hndl_t;
+typedef uintptr_t agl_surface_hndl_t;
 
 /*! */
 typedef enum agl_swap_chain_flags {
@@ -939,7 +939,7 @@ typedef struct agl_swap_chain agl_swap_chain_t;
 extern AGL_API agl_swap_chain_t *agl_swap_chain_create(
   agl_context_t *context,
   agl_command_list_t *cmds,
-  agl_window_hndl_t window,
+  agl_surface_hndl_t surface,
   agl_pixel_format_t format,
   uint32_t width,
   uint32_t height,
@@ -954,7 +954,11 @@ extern AGL_API void agl_swap_chain_destroy(
 /* ========================================================================== */
 
 /*! ... */
-extern AGL_API agl_pixel_format_t agl_swap_chain_pixel_format(
+extern AGL_API agl_surface_hndl_t agl_swap_chain_surface(
+  const agl_swap_chain_t *swap_chain);
+
+/*! ... */
+extern AGL_API agl_pixel_format_t agl_swap_chain_format(
   const agl_swap_chain_t *swap_chain);
 
 /*! ... */
@@ -1009,8 +1013,8 @@ extern AGL_API bool agl_swap_chain_is_vertically_synchronized(
 #ifdef __cplusplus
 } /* extern "C" */
 namespace agl {
-  /*! See agl_window_hndl_t. */
-  typedef agl_window_hndl_t WindowHndl;
+  /*! See agl_surface_hndl_t. */
+  typedef agl_surface_hndl_t SurfaceHndl;
 
   /*!  */
   class SwapChain : public Resource {
@@ -1030,7 +1034,7 @@ namespace agl {
       static SwapChain *create(
         Context *context,
         CommandList &cmds,
-        WindowHndl window,
+        SurfaceHndl surface,
         PixelFormat_ format,
         uint32_t width,
         uint32_t height,
@@ -1040,7 +1044,7 @@ namespace agl {
         return (SwapChain *)::agl_swap_chain_create(
           (::agl_context_t *)context,
           (::agl_command_list_t *)&cmds,
-          (::agl_window_hndl_t)window,
+          (::agl_surface_hndl_t)surface,
           (::agl_pixel_format_t)format,
           width, height,
           fullscreen,
@@ -1057,9 +1061,15 @@ namespace agl {
       }
 
     public:
-      /*! See agl_swap_chain_pixel_format.  */
-      PixelFormat_ pixel_format() const {
-        return (PixelFormat_)::agl_swap_chain_pixel_format(
+      /*! See agl_swap_chain_surface. */
+      SurfaceHndl surface() const {
+        return (SurfaceHndl)::agl_swap_chain_surface(
+          (const ::agl_swap_chain_t *)this);
+      }
+
+      /*! See agl_swap_chain_format.  */
+      PixelFormat_ format() const {
+        return (PixelFormat_)::agl_swap_chain_format(
           (const ::agl_swap_chain_t *)this);
       }
 
