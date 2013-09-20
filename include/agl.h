@@ -518,7 +518,7 @@ typedef struct agl_output {
            accepted. If templ->width and/or templ->height are 0 then any
            resolutions are accepted. If templ->referesh_rate is 0 then any
            refresh rate is accepted.
-  @param[in] output The output thats display modes are matched against.
+  @param[in] output The output that its display modes are matched against.
   @param[in] templ The display mode to match against.
   @returns A pointer to the closest matching display mode; or NULL if no
            no matching display mode could be found. */
@@ -565,7 +565,7 @@ extern "C" {
     Display Modes (agl_display_mode_t):
    ========================================================================== */
 
-/*! Specifies a supported fullscreen display modes. */
+/*! Specifies a supported fullscreen display mode. */
 typedef struct agl_display_mode {
   /*! The back-buffer's pixel format. */
   agl_pixel_format_t format;
