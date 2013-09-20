@@ -50,6 +50,7 @@ extern "C" {
 /*  Integration:                                                              */
 /*   * Errors & Error Handling                                                */
 /*   * Memory Management                                                      */
+/*   * Backends                                                               */
 /*   * Initialization & Deinitialization                                      */
 /* ========================================================================== */
 
@@ -254,11 +255,58 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* ==========================================================================
+    Backends (agl_backend_t):
+   ========================================================================== */
+
+/*! ... */
+typedef enum agl_backend {
+  /*! A null backend (doesn't render anything). */
+  AGL_BACKEND_NULL   = 0,
+  /*! Uses D3D9. */
+  AGL_BACKEND_D3D9   = 1,
+  /*! Uses D3D11. */
+  AGL_BACKEND_D3D11  = 2,
+  /*! Uses OpenGL 3.1+. */
+  AGL_BACKEND_OPENGL = 3,
+  /*! Uses OpenGL ES 2. */
+  AGL_BACKEND_GLES2  = 4,
+  /*! Uses OpenGL ES 3. */
+  AGL_BACKEND_GLES3  = 5
+} agl_backend_t;
+
+/* ========================================================================== */
+
+#ifdef __cplusplus
+} /* extern "C" */
+namespace agl {
+  namespace Backend {
+    /*! See agl_backend_t. */
+    enum _ {
+      /*! See agl_backend_t::AGL_BACKEND_NULL. */
+      Null       = ::AGL_BACKEND_NULL,
+      /*! See agl_backend_t::AGL_BACKEND_D3D9. */
+      Direct3D9  = ::AGL_BACKEND_D3D9,
+      /*! See agl_backend_t::AGL_BACKEND_D3D11. */
+      Direct3D11 = ::AGL_BACKEND_D3D11,
+      /*! See agl_backend_t::AGL_BACKEND_OPENGL. */
+      OpenGL     = ::AGL_BACKEND_OPENGL,
+      /*! See agl_backend_t::AGL_BACKEND_GLES2. */
+      OpenGLES2  = ::AGL_BACKEND_GLES2,
+      /*! See agl_backend_t::AGL_BACKEND_GLES3. */
+      OpenGLES3  = ::AGL_BACKEND_GLES3
+    };
+  } typedef Backend::_ Backend_;
+} /* agl */
+extern "C" {
+#endif /* __cplusplus */
+
+/* ==========================================================================
     Initialization & Deinitialization (agl_initialize, agl_deinitialize):
    ========================================================================== */
 
 /*! */
-extern AGL_API agl_err_t agl_initialize();
+extern AGL_API agl_err_t agl_initialize(
+  const agl_backend_t backend);
 
 /*! */
 extern AGL_API void agl_deinitialize();
@@ -269,8 +317,8 @@ extern AGL_API void agl_deinitialize();
 } /* extern "C" */
 namespace agl {
   /*! See agl_initialize. */
-  static Error_ initialize() {
-    return (Error_)::agl_initialize();
+  static Error_ initialize(const agl::Backend_ backend) {
+    return (Error_)::agl_initialize((const ::agl_backend_t)backend);
   }
 
   /*! See agl_deinitialize. */

@@ -89,21 +89,4 @@
   #define AGL_RELEASE
 #endif
 
-/* ==========================================================================
-    Backends:
-   ========================================================================== */
-
-#define AGL_BACKEND_OPENGL 1
-#define AGL_BACKEND_GLES2  2
-#define AGL_BACKEND_GLES3  3
-#define AGL_BACKEND_D3D9   4
-#define AGL_BACKEND_D3D11  5
-#define AGL_BACKEND_GCM    6
-
-/*! @define AGL_BACKEND
-  Selects the backend to use. This should be defined during compiler invocation. */
-#if defined(DOXYGEN)
-  #define AGL_BACKEND
-#endif
-
 #endif /* _AGL_CONFIG_H_ */

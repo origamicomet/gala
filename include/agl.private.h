@@ -39,6 +39,7 @@ extern "C" {
 /*  Integration:                                                              */
 /*   * Errors & Error Handling                                                */
 /*   * Memory Management                                                      */
+/*   * Backends                                                               */
 /*   * Initialization & Deinitialization                                      */
 /* ========================================================================== */
 
@@ -65,6 +66,12 @@ void *agl_realloc(
 
 void agl_free(
   void *ptr);
+
+/* ==========================================================================
+    Backends (agl_backend_t):
+   ========================================================================== */
+
+/* ... */
 
 /* ==========================================================================
     Initialization & Deinitialization (agl_initialize, agl_deinitialize):

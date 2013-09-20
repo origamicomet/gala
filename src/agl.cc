@@ -36,6 +36,7 @@ extern "C" {
 /*  Integration:                                                              */
 /*   * Errors & Error Handling                                                */
 /*   * Memory Management                                                      */
+/*   * Backends                                                               */
 /*   * Initialization & Deinitialization                                      */
 /* ========================================================================== */
 
@@ -108,10 +109,17 @@ void agl_free(void *ptr) {
 }
 
 /* ==========================================================================
+    Backends (agl_backend_t):
+   ========================================================================== */
+
+/* ... */
+
+/* ==========================================================================
     Initialization & Deinitialization (agl_initialize, agl_deinitialize):
    ========================================================================== */
 
-agl_err_t agl_initialize()
+agl_err_t agl_initialize(
+  const agl_backend_t backend)
 {
   return AGL_EUNKNOWN;
 }
