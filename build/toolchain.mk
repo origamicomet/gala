@@ -26,7 +26,9 @@ ifeq ($(PLATFORM),windows)
   ifneq ($(TARGET_PLATFORM),windows)
     $(error No cross-compilation support for '$(TARGET_PLATFORM)' on Windows.)
   else
-    CC := gcc
+    ifndef CC
+      CC := gcc
+    endif
     LIB_PREFIX :=
     LIB_SUFFIX := .lib
     SHARED_LIB_PREFIX :=
@@ -38,7 +40,9 @@ ifeq ($(PLATFORM),macosx)
   ifneq ($(TARGET_PLATFORM),macosx)
     $(error No cross-compilation support for '$(TARGET_PLATFORM)' on MacOSX.)
   else
-    CC := clang
+    ifndef CC
+      CC := clang
+    endif
     LIB_PREFIX := lib
     LIB_SUFFIX := .a
     SHARED_LIB_PREFIX := lib
@@ -50,7 +54,9 @@ ifeq ($(PLATFORM),linux)
   ifneq ($(TARGET_PLATFORM),linux)
     $(error No cross-compilation support for '$(TARGET_PLATFORM)' on Linux.)
   else
-    CC := gcc
+    ifndef CC
+      CC := gcc
+    endif
     LIB_PREFIX := lib
     LIB_SUFFIX := .a
     SHARED_LIB_PREFIX := lib
