@@ -258,7 +258,7 @@ extern "C" {
    ========================================================================== */
 
 /*! */
-extern AGL_API void agl_initialize();
+extern AGL_API agl_err_t agl_initialize();
 
 /*! */
 extern AGL_API void agl_deinitialize();
@@ -269,8 +269,8 @@ extern AGL_API void agl_deinitialize();
 } /* extern "C" */
 namespace agl {
   /*! See agl_initialize. */
-  static void initialize() {
-    ::agl_initialize();
+  static Error_ initialize() {
+    return (Error_)::agl_initialize();
   }
 
   /*! See agl_deinitialize. */

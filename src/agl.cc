@@ -111,8 +111,9 @@ void agl_free(void *ptr) {
     Initialization & Deinitialization (agl_initialize, agl_deinitialize):
    ========================================================================== */
 
-void agl_initialize()
+agl_err_t agl_initialize()
 {
+  return AGL_EUNKNOWN;
 }
 
 void agl_deinitialize()
