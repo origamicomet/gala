@@ -29,8 +29,7 @@
 #define _AGL_H_
 
 /* ========================================================================== */
-/*!  @file agl.h                                                              */
-/*!    Defines the public C and C++ interfaces for AGL.                       */
+/*!  @file agl.h Defines the public C and C++ interfaces for AGL.             */
 /* ========================================================================== */
 
 #include <agl/config.h>
@@ -681,7 +680,7 @@ namespace agl {
   /*! See agl_command_list_t. */
   class CommandList : public ::agl_command_list_t {
     public:
-      /* See agl_command_list_execute. */
+      /*! See agl_command_list_execute. */
       void execute(Context *context) {
         ::agl_command_list_execute(
           (const ::agl_command_list_t *)this,
@@ -901,8 +900,12 @@ extern "C" {
     Resources > Swap Chains:
    ========================================================================== */
 
-/*! An opaque type for resresenting a platform specific window handle.
-  On Windows this is a HWND. */
+/*! An opaque type for representing a platform specific window handle.
+  @remark On Windows this is a HWND.
+  @remark On Linux and BSD this is a XLib Window.
+  @remark On Mac OS X this is a nsHandle to a NSWindow or NSView.
+  @remark On Anroid this is an ANativeWindow.
+  @remark On iOS this is an UIView. */
 typedef uintptr_t agl_window_hndl_t;
 
 /*! */
