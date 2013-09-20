@@ -1,2 +1,1 @@
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mtwilliams/agl/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
+[![Build Status](https://travis-ci.org/bitbyte-studios/agl.png?branch=master)](http://travis-ci.org/bitbyte-studios/agl) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mtwilliams/agl/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
