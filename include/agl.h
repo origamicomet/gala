@@ -305,7 +305,7 @@ extern "C" {
    ========================================================================== */
 
 /*! */
-extern AGL_API agl_err_t agl_initialize(
+extern AGL_API void agl_initialize(
   const agl_backend_t backend);
 
 /*! */
@@ -317,8 +317,8 @@ extern AGL_API void agl_deinitialize();
 } /* extern "C" */
 namespace agl {
   /*! See agl_initialize. */
-  static Error_ initialize(const agl::Backend_ backend) {
-    return (Error_)::agl_initialize((const ::agl_backend_t)backend);
+  static void initialize(const agl::Backend_ backend) {
+    ::agl_initialize((const ::agl_backend_t)backend);
   }
 
   /*! See agl_deinitialize. */

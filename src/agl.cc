@@ -118,10 +118,10 @@ void agl_free(void *ptr) {
     Initialization & Deinitialization (agl_initialize, agl_deinitialize):
    ========================================================================== */
 
-agl_err_t agl_initialize(
+void agl_initialize(
   const agl_backend_t backend)
 {
-  return AGL_EUNKNOWN;
+  agl_error(AGL_EUNKNOWN);
 }
 
 void agl_deinitialize()
