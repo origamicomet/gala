@@ -40,6 +40,7 @@
 #include <agl/alignof.h>
 #include <agl/assert.h>
 #include <agl/atomic.h>
+#include <agl/shared_lib.h>
 
 #ifdef __cplusplus
 extern "C" {
