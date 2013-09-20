@@ -34,25 +34,13 @@ extern "C" {
 
 /* ========================================================================== */
 /*  Integration:                                                              */
-/*   * Initialization & Deinitalization                                       */
 /*   * Errors & Error Handling                                                */
 /*   * Memory Management                                                      */
+/*   * Initialization & Deinitialization                                      */
 /* ========================================================================== */
 
 /* ==========================================================================
-    Initialization & Deinitalization (agl_initialize, agl_deinitialize):
-   ========================================================================== */
-
-void agl_initialize()
-{
-}
-
-void agl_deinitialize()
-{
-}
-
-/* ==========================================================================
-    Errors (agl_error_t):
+    Errors & Error Handling (agl_error_t):
    ========================================================================== */
 
 static agl_error_handler_fn _agl_error_handler = NULL;
@@ -80,7 +68,7 @@ void agl_error(
 }
 
 /* ==========================================================================
-    Allocator (agl_allocator_t):
+    Memory Management (agl_allocator_t):
    ========================================================================== */
 
 static agl_allocator_t *_agl_allocator = NULL;
@@ -117,6 +105,18 @@ void agl_free(void *ptr) {
   agl_assert(debug, _agl_allocator != NULL);
   agl_assert(paranoid, ptr != NULL);
   _agl_allocator->free(_agl_allocator, ptr);
+}
+
+/* ==========================================================================
+    Initialization & Deinitialization (agl_initialize, agl_deinitialize):
+   ========================================================================== */
+
+void agl_initialize()
+{
+}
+
+void agl_deinitialize()
+{
 }
 
 /* ========================================================================== */

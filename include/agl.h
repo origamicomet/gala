@@ -48,41 +48,13 @@ extern "C" {
 
 /* ========================================================================== */
 /*  Integration:                                                              */
-/*   * Initialization & Deinitalization                                       */
 /*   * Errors & Error Handling                                                */
 /*   * Memory Management                                                      */
+/*   * Initialization & Deinitialization                                      */
 /* ========================================================================== */
 
 /* ==========================================================================
-    Initialization & Deinitalization (agl_initialize, agl_deinitialize):
-   ========================================================================== */
-
-/*! */
-extern AGL_API void agl_initialize();
-
-/*! */
-extern AGL_API void agl_deinitialize();
-
-/* ========================================================================== */
-
-#ifdef __cplusplus
-} /* extern "C" */
-namespace agl {
-  /*! See agl_initialize. */
-  static void initialize() {
-    ::agl_initialize();
-  }
-
-  /*! See agl_deinitialize. */
-  static void deinitialize() {
-    ::agl_deinitialize();
-  }
-} /* agl */
-extern "C" {
-#endif /* __cplusplus */
-
-/* ==========================================================================
-    Errors (agl_err_t):
+    Errors & Error Handling (agl_err_t):
    ========================================================================== */
 
 /*! Represents an error or success. */
@@ -150,7 +122,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* ==========================================================================
-    Allocators (agl_allocator_t):
+    Memory Management (agl_allocator_t):
    ========================================================================== */
 
 /*! A user-defined allocator. */
@@ -276,6 +248,34 @@ namespace agl {
   static void set_allocator(Allocator *allocator) {
     agl_assert(debug, allocator != NULL);
     ::agl_set_allocator(&allocator->_);
+  }
+} /* agl */
+extern "C" {
+#endif /* __cplusplus */
+
+/* ==========================================================================
+    Initialization & Deinitialization (agl_initialize, agl_deinitialize):
+   ========================================================================== */
+
+/*! */
+extern AGL_API void agl_initialize();
+
+/*! */
+extern AGL_API void agl_deinitialize();
+
+/* ========================================================================== */
+
+#ifdef __cplusplus
+} /* extern "C" */
+namespace agl {
+  /*! See agl_initialize. */
+  static void initialize() {
+    ::agl_initialize();
+  }
+
+  /*! See agl_deinitialize. */
+  static void deinitialize() {
+    ::agl_deinitialize();
   }
 } /* agl */
 extern "C" {
