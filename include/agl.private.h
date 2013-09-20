@@ -31,23 +31,6 @@
 #include <agl.h>
 #include <agl.commands.h>
 
-#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
-  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
-    #define WIN32_LEAN_AND_MEAN
-    #define WIN32_EXTRA_LEAN
-    #include <Windows.h>
-    #undef WIN32_EXTRA_LEAN
-    #undef WIN32_LEAN_AND_MEAN
-    #include <GL/GL.h>
-    #include <GL/GLCoreARB.h>
-    #include <GL/WGLExt.h>
-  #else
-    #error ("Unknown or unsupported platform!")
-  #endif
-#else
-  #error ("Unknown or unsupported backend!")
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -140,17 +123,6 @@ extern agl_adapter_t *_agl_adapters;
    ========================================================================== */
 
 struct agl_context {
-#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
-  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
-    HWND hwnd;
-    HDC hdc;
-    HGLRC hglrc;
-  #else
-    #error ("Unknown or unsupported platform!")
-  #endif
-#else
-  #error ("Unknown or unsupported backend!")
-#endif
 };
 
 /* ==========================================================================
@@ -196,6 +168,11 @@ struct agl_resource {
 
 /* ========================================================================== */
 
+/*! */
+void agl_resource_init(agl_resource_t *resource);
+
+/* ========================================================================== */
+
 /*! Enqueues a command to create the internal representation of a resource.
   @param[in] resource The resource.
   @param[in] cmds     The command-list to enqueue the command to. */
@@ -217,6 +194,14 @@ void agl_resource_queue_for_destroy(
 struct agl_swap_chain {
   agl_resource_t resource;
 };
+
+/* ========================================================================== */
+
+/*! */
+agl_swap_chain_t *agl_swap_chain_alloc();
+
+/*! */
+void agl_swap_chain_free(agl_swap_chain_t *swap_chain);
 
 #ifdef __cplusplus
 }

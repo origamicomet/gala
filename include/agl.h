@@ -619,11 +619,26 @@ typedef struct agl_command_list {
 
 /* ========================================================================== */
 
+/*! ... */
+extern AGL_API void agl_command_list_execute(
+  const agl_command_list_t *command_list,
+  agl_context_t *context);
+
+/* ========================================================================== */
+
 #ifdef __cplusplus
 } /* extern "C" */
 namespace agl {
   /*! See agl_command_list_t. */
-  typedef ::agl_command_list_t CommandList;
+  class CommandList : public ::agl_command_list_t {
+    public:
+      /* See agl_command_list_execute. */
+      void execute(Context *context) {
+        ::agl_command_list_execute(
+          (const ::agl_command_list_t *)this,
+          (::agl_context_t *)context);
+      }
+  };
 } /* agl */
 extern "C" {
 #endif /* __cplusplus */
@@ -739,7 +754,8 @@ typedef enum agl_resource_type {
 /*! ... */
 typedef enum agl_resource_flags {
   AGL_RESOURCE_IS_AVAILABLE_BIT = 0,
-  AGL_RESOURCE_IS_AVAILABLE = (1 << AGL_RESOURCE_IS_AVAILABLE_BIT)
+  AGL_RESOURCE_IS_AVAILABLE = (1 << AGL_RESOURCE_IS_AVAILABLE_BIT),
+  AGL_RESOURCE_TYPE_SPECIFIC_FLAGS = 1
 } agl_resource_flags_t;
 
 /*! An opaque handle that represents a resource. */
@@ -839,6 +855,24 @@ extern "C" {
 /*! An opaque type for resresenting a platform specific window handle.
   On Windows this is a HWND. */
 typedef uintptr_t agl_window_hndl_t;
+
+/*! */
+typedef enum agl_swap_chain_flags {
+  AGL_SWAP_CHAIN_IS_WINDOWED_BIT =
+    (AGL_RESOURCE_TYPE_SPECIFIC_FLAGS + 0),
+  AGL_SWAP_CHAIN_IS_WINDOWED =
+    (1 << AGL_SWAP_CHAIN_IS_WINDOWED_BIT),
+
+  AGL_SWAP_CHAIN_IS_FULLSCREEN_BIT =
+    (AGL_RESOURCE_TYPE_SPECIFIC_FLAGS + 1),
+  AGL_SWAP_CHAIN_IS_FULLSCREEN =
+    (1 << AGL_SWAP_CHAIN_IS_FULLSCREEN_BIT),
+
+  AGL_SWAP_CHAIN_IS_VERTICALLY_SYNCHRONIZED_BIT =
+    (AGL_RESOURCE_TYPE_SPECIFIC_FLAGS + 2),
+  AGL_SWAP_CHAIN_IS_VERTICALLY_SYNCHRONIZED =
+    (1 << AGL_SWAP_CHAIN_IS_VERTICALLY_SYNCHRONIZED_BIT)
+} agl_swap_chain_flags_t;
 
 /*! An opaque handle that represents a swap chain. */
 typedef struct agl_swap_chain agl_swap_chain_t;

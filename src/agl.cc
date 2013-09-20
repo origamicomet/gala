@@ -43,226 +43,12 @@ extern "C" {
     Initialization & Deinitalization (agl_initialize, agl_deinitialize):
    ========================================================================== */
 
-#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
-  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
-    typedef struct _agl_adapter {
-      DWORD device_id;
-    } _agl_adapter_t;
-
-    typedef struct _agl_output {
-      DWORD device_id;
-    } _agl_output_t;
-  #else
-    #error ("Unknown or unsupported platform!")
-  #endif
-#else
-  #error ("Unknown or unsupported backend!")
-#endif
-
 void agl_initialize()
 {
-#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
-  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
-    WNDCLASSEXA wcx;
-    memset((void *)&wcx, 0, sizeof(WNDCLASSEXA));
-
-    wcx.cbSize        = sizeof(WNDCLASSEXA);
-    wcx.style         = CS_VREDRAW | CS_HREDRAW;
-    wcx.lpfnWndProc   = DefWindowProc;
-    wcx.hInstance     = GetModuleHandle(NULL);
-    wcx.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wcx.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-    wcx.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
-    wcx.lpszClassName = "agl";
-
-    if (!RegisterClassExA(&wcx))
-      agl_error(AGL_EUNKNOWN);
-
-    _agl_num_of_adapters = 0; {
-      DISPLAY_DEVICE dd;
-      memset((void *)&dd, 0, sizeof(DISPLAY_DEVICE));
-      dd.cb = sizeof(DISPLAY_DEVICE);
-      DWORD device_id = 0;
-
-      while (EnumDisplayDevices(NULL, device_id, &dd, 0)) {
-        _agl_num_of_adapters++;
-        device_id++;
-      }
-    }
-
-    _agl_adapters = (agl_adapter_t *)agl_alloc(
-      _agl_num_of_adapters * sizeof(agl_adapter_t),
-      agl_alignof(agl_adapter_t));
-
-    /* _agl_adapters = */ {
-      DISPLAY_DEVICE dd;
-      memset((void *)&dd, 0, sizeof(DISPLAY_DEVICE));
-      dd.cb = sizeof(DISPLAY_DEVICE);
-      DWORD device_id = 0;
-      size_t adapter_id = 0;
-
-      while (EnumDisplayDevices(NULL, device_id, &dd, 0)) {
-        agl_adapter_t *adapter = &_agl_adapters[adapter_id];
-        _agl_adapter_t *adapter_ = (_agl_adapter_t *)agl_alloc(
-          sizeof(_agl_adapter_t), agl_alignof(agl_adapter_t));
-        adapter_->device_id = device_id;
-        adapter->_internal = (uintptr_t)adapter_;
-
-        /* Only the primary adapter is hardware accelerated in Windows. */
-        if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
-          adapter->primary = true;
-          adapter->type = AGL_HARDWARE;
-        } else {
-          adapter->primary = false;
-          adapter->type = AGL_SOFTWARE;
-        }
-
-        /* So, uhm, Microshaft uses EnumDisplayDevices to also query for
-          monitors. I don't know... */
-
-        adapter->num_of_outputs = 0; {
-          DISPLAY_DEVICE mdd;
-          memset((void *)&mdd, 0, sizeof(DISPLAY_DEVICE));
-          mdd.cb = sizeof(DISPLAY_DEVICE);
-          DWORD device_id_ = 0;
-
-          while (EnumDisplayDevices(&dd.DeviceName[0], device_id_, &mdd, 0)) {
-            if (!(dd.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER))
-              adapter->num_of_outputs++;
-          }
-        }
-
-        adapter->outputs = (agl_output_t *)agl_alloc(
-          adapter->num_of_outputs * sizeof(agl_output_t),
-          agl_alignof(agl_output_t));
-
-        /* adapter->outputs = */ {
-          DISPLAY_DEVICE mdd;
-          memset((void *)&mdd, 0, sizeof(DISPLAY_DEVICE));
-          mdd.cb = sizeof(DISPLAY_DEVICE);
-          DWORD device_id_ = 0;
-          size_t output_id = 0;
-
-          while (EnumDisplayDevices(&dd.DeviceName[0], device_id_, &mdd, 0)) {
-            if (dd.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) {
-              device_id_++;
-              continue;
-            }
-
-            agl_output_t *output = (agl_output_t *)&adapter->outputs[output_id];
-            _agl_output_t *output_ = (_agl_output_t *)agl_alloc(
-              sizeof(_agl_output_t), agl_alignof(_agl_output_t));
-            output_->device_id = device_id_;
-            output->_internal = (uintptr_t)output_;
-
-            output->num_of_display_modes = 0; {
-              DEVMODE dm;
-              memset((void *)&dm, 0, sizeof(DEVMODE));
-              dm.dmSize = sizeof(DEVMODE);
-              DWORD mode_id = 0;
-
-              while (EnumDisplaySettingsEx(&mdd.DeviceName[0], mode_id, &dm, 0)) {
-                if (!(dm.dmDisplayFlags & DM_GRAYSCALE) &&
-                    ((dm.dmBitsPerPel == 24) || (dm.dmBitsPerPel == 32)))
-                  { output->num_of_display_modes++; }
-                mode_id++;
-              }
-            }
-
-            output->display_modes = (agl_display_mode_t *)agl_alloc(
-              output->num_of_display_modes * sizeof(agl_display_mode_t),
-              agl_alignof(agl_display_mode_t));
-
-            /* output->display_modes */ {
-              DEVMODE dm;
-              memset((void *)&dm, 0, sizeof(DEVMODE));
-              dm.dmSize = sizeof(DEVMODE);
-              DWORD mode_id = 0;
-              size_t display_mode_id = 0;
-
-              while (EnumDisplaySettingsEx(&mdd.DeviceName[0], mode_id, &dm, 0)) {
-                if ((dm.dmDisplayFlags & DM_GRAYSCALE) ||
-                    ((dm.dmBitsPerPel != 24) && (dm.dmBitsPerPel != 32)))
-                  { mode_id++; continue; }
-
-                agl_display_mode_t *display_mode =
-                  (agl_display_mode_t *)&output->display_modes[display_mode_id];
-
-                switch (dm.dmBitsPerPel) {
-                  case 24:
-                    display_mode->format = AGL_R8G8B8;
-                    break;
-                  case 32:
-                    display_mode->format = AGL_R8G8B8A8;
-                    break;
-                }
-
-                display_mode->width = dm.dmPelsWidth;
-                display_mode->height = dm.dmPelsHeight;
-
-                switch (dm.dmDisplayFrequency) {
-                  case 0: case 1:
-                    display_mode->refresh_rate = 0;
-                    break;
-                  default:
-                    display_mode->refresh_rate = 0;
-                    break;
-                }
-
-                output->num_of_display_modes++;
-                mode_id++;
-              }
-            }
-
-            output_id++;
-            device_id_++;
-          }
-        }
-
-        adapter_id++;
-        device_id++;
-      }
-    }
-  #else
-    #error ("Unknown or unsupported platform!")
-  #endif
-#else
-  #error ("Unknown or unsupported backend!")
-#endif
 }
 
 void agl_deinitialize()
 {
-#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
-  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
-    UnregisterClassA("agl", GetModuleHandle(NULL));
-  #else
-    #error ("Unknown or unsupported platform!")
-  #endif
-#else
-  #error ("Unknown or unsupported backend!")
-#endif
-
-  for (size_t adapter_id = 0; adapter_id < _agl_num_of_adapters; ++adapter_id) {
-    const agl_adapter_t *adapter = &_agl_adapters[adapter_id];
-
-    for (size_t output_id = 0; output_id < adapter->num_of_outputs; ++output_id) {
-      const agl_output_t *output = &adapter->outputs[output_id];
-
-      agl_free((void *)output->display_modes);
-      if (output->_internal)
-        agl_free((void *)output->_internal);
-    }
-
-    agl_free((void *)adapter->outputs);
-    if (adapter->_internal)
-      agl_free((void *)adapter->_internal);
-  }
-
-  agl_free((void *)_agl_adapters);
-
-  _agl_num_of_adapters = 0;
-  _agl_adapters = NULL;
 }
 
 /* ==========================================================================
@@ -342,39 +128,7 @@ void agl_free(void *ptr) {
     Pixel Formats (agl_pixel_format_t):
    ========================================================================== */
 
-#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
-  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
-    static bool agl_pixel_format_to_pfd(
-      const agl_pixel_format_t format,
-      PIXELFORMATDESCRIPTOR *pfd)
-    {
-      agl_assert(paranoid, pfd != NULL);
-
-      switch (format) {
-        case AGL_R8G8B8:
-        case AGL_R8G8B8A8: {
-          memset((void *)pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
-          pfd->nSize = sizeof(PIXELFORMATDESCRIPTOR);
-          pfd->nVersion = 1;
-          pfd->dwFlags = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
-          pfd->iPixelType = PFD_TYPE_RGBA;
-          pfd->cColorBits = 24;
-          pfd->cAlphaBits = (format == AGL_R8G8B8A8) ? 8 : 0;
-          pfd->cDepthBits = 24;
-          pfd->cStencilBits = 8;
-          pfd->iLayerType = PFD_MAIN_PLANE;
-          return true;
-        } break;
-      }
-
-      return false;
-    }
-  #else
-    #error ("Unknown or unsupported platform!")
-  #endif
-#else
-  #error ("Unknown or unsupported backend!")
-#endif
+/* ... */
 
 /* ========================================================================== */
 /*  Infrastructure:                                                           */
@@ -399,15 +153,13 @@ const agl_adapter_t *agl_adapter_get(
   const size_t adapter_id)
 {
   agl_assert(debug, adapter_id < _agl_num_of_adapters);
+
   return &_agl_adapters[adapter_id];
 }
 
 const agl_adapter_t *agl_adapter_primary()
 {
-  for (size_t adapter_id = 0;
-       adapter_id < _agl_num_of_adapters;
-       ++adapter_id)
-  {
+  for (size_t adapter_id = 0; adapter_id < _agl_num_of_adapters; ++adapter_id) {
     if (_agl_adapters[adapter_id].primary)
       return &_agl_adapters[adapter_id];
   }
@@ -420,10 +172,7 @@ const struct agl_output *agl_adapter_primary_output(
 {
   agl_assert(debug, adapter != NULL);
 
-  for (size_t output_id = 0;
-       output_id < adapter->num_of_outputs;
-       ++output_id)
-  {
+  for (size_t output_id = 0; output_id < adapter->num_of_outputs; ++output_id) {
     if (adapter->outputs[output_id].primary)
       return &adapter->outputs[output_id];
   }
@@ -490,131 +239,6 @@ agl_context_t *agl_context_create(
   const agl_adapter_t *adapter)
 {
   agl_assert(debug, adapter != NULL);
-
-#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
-  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
-    PIXELFORMATDESCRIPTOR pfd;
-
-    if (!agl_pixel_format_to_pfd(AGL_R8G8B8A8, &pfd))
-      return NULL;
-
-    HWND hwnd = CreateWindowExA(
-      WS_EX_APPWINDOW | WS_EX_WINDOWEDGE,
-      "agl", "agl",
-      WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW,
-      0, 0, 1, 1,
-      NULL, NULL,
-      GetModuleHandle(NULL), NULL);
-
-    if (!hwnd)
-      return NULL;
-
-    HDC hdc = GetDC(hwnd);
-
-    int pixel_format = ChoosePixelFormat(hdc, &pfd);
-    if (!pixel_format || !SetPixelFormat(hdc, pixel_format, &pfd)) {
-      DestroyWindow(hwnd);
-      return NULL;
-    }
-
-    HGLRC hglrc = wglCreateContext(hdc);
-
-    if (!hglrc) {
-      DestroyWindow(hwnd);
-      return NULL;
-    }
-
-    wglMakeCurrent(hdc, hglrc);
-
-    GLint major_ver = 0;
-    glGetIntegerv(GL_MAJOR_VERSION, &major_ver);
-
-    GLint minor_ver = 0;
-    glGetIntegerv(GL_MINOR_VERSION, &minor_ver);
-
-    if (major_ver == 3) {
-      if (minor_ver < 1) {
-        wglMakeCurrent(NULL, NULL);
-        wglDeleteContext(hglrc);
-        DestroyWindow(hwnd);
-        return NULL;
-      }
-    } else if (major_ver < 3) {
-      wglMakeCurrent(NULL, NULL);
-      wglDeleteContext(hglrc);
-      DestroyWindow(hwnd);
-      return NULL;
-    }
-
-    PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB =
-      (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress(
-        "wglChoosePixelFormatARB");
-
-    PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB =
-      (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress(
-        "wglCreateContextAttribsARB");
-
-    if (!wglChoosePixelFormatARB || !wglCreateContextAttribsARB) {
-      wglMakeCurrent(NULL, NULL);
-      wglDeleteContext(hglrc);
-      DestroyWindow(hwnd);
-      return NULL;
-    }
-
-    const int pfda[] = {
-      WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-      WGL_ACCELERATION_ARB,   WGL_FULL_ACCELERATION_ARB,
-      WGL_COLOR_BITS_ARB,     pfd.cColorBits,
-      WGL_ALPHA_BITS_ARB,     pfd.cAlphaBits,
-      WGL_DEPTH_BITS_ARB,     pfd.cDepthBits,
-      WGL_STENCIL_BITS_ARB,   pfd.cStencilBits,
-      WGL_DOUBLE_BUFFER_ARB,  GL_TRUE,
-      WGL_SAMPLE_BUFFERS_ARB, GL_FALSE,
-      WGL_SAMPLES_ARB,        0,
-      NULL, NULL
-    };
-
-    const int ca[] = {
-      WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-      WGL_CONTEXT_MINOR_VERSION_ARB, 1,
-      WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-      WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-      NULL, NULL
-    };
-
-    UINT num_of_formats = 0;
-    if (!wglChoosePixelFormatARB(hdc, &pfda[0], 0, 1, &pixel_format, &num_of_formats) || (num_of_formats == 0)) {
-      wglMakeCurrent(NULL, NULL);
-      wglDeleteContext(hglrc);
-      DestroyWindow(hwnd);
-      return NULL;
-    }
-
-    HGLRC hglrc_ = (HGLRC)wglCreateContextAttribsARB(hdc, 0, &ca[0]);
-    if (!hglrc_) {
-      wglMakeCurrent(NULL, NULL);
-      wglDeleteContext(hglrc);
-      DestroyWindow(hwnd);
-      return NULL;
-    }
-
-    wglMakeCurrent(NULL, NULL);
-    wglDeleteContext(hglrc);
-
-    agl_context_t *context = (agl_context_t *)agl_alloc(
-      sizeof(agl_context_t), agl_alignof(agl_context_t));
-    context->hwnd = hwnd;
-    context->hdc = hdc;
-    context->hglrc = hglrc_;
-
-    return context;
-  #else
-    #error ("Unknown or unsupported platform!")
-  #endif
-#else
-  #error ("Unknown or unsupported backend!")
-#endif
-
   return NULL;
 }
 
@@ -622,20 +246,6 @@ void agl_context_destroy(
   agl_context_t *context)
 {
   agl_assert(debug, context != NULL);
-
-#if (AGL_BACKEND == AGL_BACKEND_OPENGL)
-  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
-    wglMakeCurrent(NULL, NULL);
-    wglDeleteContext(context->hglrc);
-    DestroyWindow(context->hwnd);
-
-    agl_free((void *)context);
-  #else
-    #error ("Unknown or unsupported platform!")
-  #endif
-#else
-  #error ("Unknown or unsupported backend!")
-#endif
 }
 
 /* ==========================================================================
@@ -668,6 +278,16 @@ const struct agl_command *agl_command_list_dequeue(
   return ((cmd_ == command_list->current) ? NULL : (const struct agl_command *)cmd_);
 }
 
+/* ========================================================================== */
+
+void agl_command_list_execute(
+  const agl_command_list_t *command_list,
+  agl_context_t *context)
+{
+  agl_assert(debug, command_list != NULL);
+  agl_assert(debug, context != NULL);
+}
+
 /* ==========================================================================
     Requests (agl_request_t):
    ========================================================================== */
@@ -678,22 +298,11 @@ const struct agl_command *agl_command_list_dequeue(
     Resources (agl_resource_t):
    ========================================================================== */
 
-agl_resource_t *agl_resource_create(
-  const agl_resource_type_t type)
-{
-  agl_assert(paranoid, type != AGL_RESOURCE_TYPE_UNKNOWN);
-  agl_resource_t *resource = (agl_resource_t *)agl_alloc(
-    sizeof(agl_resource_t), agl_alignof(agl_resource_t));
-  resource->type = type;
-  resource->ops = 0;
-  return resource;
-}
-
-void agl_resource_destroy(
-  agl_resource_t *resource)
-{
+void agl_resource_init(agl_resource_t *resource) {
   agl_assert(paranoid, resource != NULL);
-  agl_free((void *)resource);
+  resource->type = AGL_RESOURCE_TYPE_UNKNOWN;
+  resource->ops = 0;
+  resource->flags = 0;
 }
 
 /* ========================================================================== */
@@ -762,6 +371,21 @@ bool agl_resource_is_reflective(
 /* ==========================================================================
     Resources > Swap Chains:
    ========================================================================== */
+
+agl_swap_chain_t *agl_swap_chain_alloc() {
+  agl_swap_chain_t *swap_chain = (agl_swap_chain_t *)agl_alloc(
+    sizeof(agl_swap_chain_t), agl_alignof(agl_swap_chain_t));
+  agl_resource_init(&swap_chain->resource);
+  swap_chain->resource.type = AGL_RESOURCE_TYPE_SWAP_CHAIN;
+  return swap_chain;
+}
+
+void agl_swap_chain_free(agl_swap_chain_t *swap_chain) {
+  agl_assert(paranoid, swap_chain != NULL);
+  agl_free((void *)swap_chain);
+}
+
+/* ========================================================================== */
 
 agl_swap_chain_t *agl_swap_chain_create(
   agl_context_t *context,
