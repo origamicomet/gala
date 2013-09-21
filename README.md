@@ -11,14 +11,14 @@ These backends:
  * OpenGL 3.1
  * OpenGL ES 2
  * OpenGL ES 3
- * Direct3D 9
+ * Direct3D 9 ✓
  * Direct3D 11
 
 on these platforms:
 
- * Windows
+ * Windows ✓
  * Mac OS X
- * Linux
+ * Linux ✓
  * Android
  * iOS
 
