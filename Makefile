@@ -84,7 +84,12 @@ clean:
 	@rm -R -f $(OBJ_DIR)
 
 SOURCES := $(shell find $(SRC_DIR) -name '*.cc')
-OBJECTS := $(addprefix $(OBJ_DIR)/, $(subst $(SRC_DIR)/,,$(SOURCES:%.cc=%.o)))
+OBJECTS := $(OBJ_DIR)/agl/atomic.o $(OBJ_DIR)/agl/shared_lib.o $(OBJ_DIR)/agl.o
+# OBJECTS := $(addprefix $(OBJ_DIR)/, $(subst $(SRC_DIR)/,,$(SOURCES:%.cc=%.o)))
+
+ifeq ($(TARGET_PLATFORM),windows)
+  OBJECTS += $(OBJ_DIR)/agl.d3d9.o
+endif
 
 -include $(OBJECTS:.o=.d)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc

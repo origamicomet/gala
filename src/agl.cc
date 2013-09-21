@@ -28,6 +28,10 @@
 #include <agl.h>
 #include <agl.private.h>
 
+#if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+  #include <agl.d3d9.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -127,6 +131,20 @@ void agl_initialize(
   const agl_backend_t backend)
 {
   switch (backend) {
+  #if (AGL_PLATFORM == AGL_PLATFORM_WINDOWS)
+    case AGL_BACKEND_D3D9: {
+      agl_initialize_         = &agl_initialize_d3d9;
+      agl_deinitialize_       = &agl_deinitialize_d3d9;
+      agl_context_alloc_      = &agl_context_alloc_d3d9;
+      agl_context_free_       = &agl_context_free_d3d9;
+      agl_context_create_     = &agl_context_create_d3d9;
+      agl_context_destroy_    = &agl_context_destroy_d3d9;
+      agl_swap_chain_alloc_   = &agl_swap_chain_alloc_d3d9;
+      agl_swap_chain_free_    = &agl_swap_chain_free_d3d9;
+      agl_swap_chain_create_  = &agl_swap_chain_create_d3d9;
+      agl_swap_chain_destroy_ = &agl_swap_chain_destroy_d3d9;
+    } break;
+  #endif
     default: {
       agl_error(AGL_EUNKNOWN);
     } break;
