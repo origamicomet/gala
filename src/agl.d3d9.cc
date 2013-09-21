@@ -578,6 +578,14 @@ void agl_swap_chain_destroy_d3d9(
   IDirect3DSwapChain9_Release(swap_chain_->intf);
 }
 
+void agl_swap_chain_present_d3d9(
+  agl_swap_chain_t *swap_chain,
+  agl_context_t *context)
+{
+  agl_swap_chain_d3d9_t *swap_chain_ = (agl_swap_chain_d3d9_t *)swap_chain;
+  IDirect3DSwapChain9_Present(swap_chain_->intf, NULL, NULL, NULL, NULL, 0);
+}
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -143,6 +143,7 @@ void agl_initialize(
       agl_swap_chain_free_    = &agl_swap_chain_free_d3d9;
       agl_swap_chain_create_  = &agl_swap_chain_create_d3d9;
       agl_swap_chain_destroy_ = &agl_swap_chain_destroy_d3d9;
+      agl_swap_chain_present_ = &agl_swap_chain_present_d3d9;
     } break;
   #endif
     default: {
@@ -167,6 +168,7 @@ void agl_deinitialize()
   agl_swap_chain_free_    = NULL;
   agl_swap_chain_create_  = NULL;
   agl_swap_chain_destroy_ = NULL;
+  agl_swap_chain_present_ = NULL;
 }
 
 /* ========================================================================== */
@@ -343,8 +345,7 @@ void agl_command_list_execute(
           (const agl_resource_create_cmd_t *)cmd;
         switch (cmd_->resource->type) {
           case AGL_RESOURCE_TYPE_SWAP_CHAIN:
-            agl_swap_chain_create_(
-              (agl_swap_chain_t *)cmd_->resource, context); break;
+            agl_swap_chain_create_((agl_swap_chain_t *)cmd_->resource, context); break;
           default:
             agl_error(AGL_EUNKNOWN); break;
         } agl_atomic_decr(&cmd_->resource->ops);
@@ -354,11 +355,16 @@ void agl_command_list_execute(
           (const agl_resource_destroy_cmd_t *)cmd;
         switch (cmd_->resource->type) {
           case AGL_RESOURCE_TYPE_SWAP_CHAIN:
-            agl_swap_chain_destroy_(
-              (agl_swap_chain_t *)cmd_->resource, context); break;
+            agl_swap_chain_destroy_((agl_swap_chain_t *)cmd_->resource, context); break;
           default:
             agl_error(AGL_EUNKNOWN); break;
         } agl_atomic_decr(&cmd_->resource->ops);
+      } break;
+      case AGL_COMMAND_TYPE_SWAP_CHAIN_PRESENT: {
+        const agl_swap_chain_present_cmd_t *cmd_ =
+          (const agl_swap_chain_present_cmd_t *)cmd;
+        agl_swap_chain_create_(cmd_->swap_chain, context);
+        agl_atomic_decr(&cmd_->swap_chain->resource.ops);
       } break;
       default: {
         agl_error(AGL_EUNKNOWN);
@@ -457,6 +463,7 @@ agl_swap_chain_alloc_fn agl_swap_chain_alloc_ = NULL;
 agl_swap_chain_free_fn agl_swap_chain_free_ = NULL;
 agl_swap_chain_create_fn agl_swap_chain_create_ = NULL;
 agl_swap_chain_destroy_fn agl_swap_chain_destroy_ = NULL;
+agl_swap_chain_present_fn agl_swap_chain_present_ = NULL;
 
 /* ========================================================================== */
 
@@ -574,8 +581,20 @@ void agl_swap_chain_vertically_synchronize(
   bool synchronize)
 {
   agl_assert(debug, swap_chain != NULL);
-  agl_assert(debug, cmds != NULL);
   agl_error(AGL_EUNKNOWN);
+}
+
+void agl_swap_chain_present(
+  agl_swap_chain_t *swap_chain,
+  agl_command_list_t *cmds)
+{
+  agl_assert(debug, swap_chain != NULL);
+  agl_assert(debug, cmds != NULL);
+  agl_atomic_incr(&swap_chain->resource.ops);
+  agl_swap_chain_present_cmd_t *cmd = (agl_swap_chain_present_cmd_t *)
+    agl_command_list_enqueue(cmds, sizeof(agl_swap_chain_present_cmd_t));
+  cmd->cmd.type = AGL_COMMAND_TYPE_SWAP_CHAIN_PRESENT;
+  cmd->swap_chain = swap_chain;
 }
 
 /* ========================================================================== */
@@ -619,6 +638,8 @@ size_t agl_command_length(
       return sizeof(agl_resource_create_cmd_t);
     case AGL_COMMAND_TYPE_RESOURCE_DESTROY:
       return sizeof(agl_resource_destroy_cmd_t);
+    case AGL_COMMAND_TYPE_SWAP_CHAIN_PRESENT:
+      return sizeof(agl_swap_chain_present_cmd_t);
     default:
       agl_error(AGL_EUNKNOWN);
   }

@@ -994,6 +994,11 @@ extern AGL_API void agl_swap_chain_vertically_synchronize(
   agl_command_list_t *cmds,
   bool synchronize);
 
+/*! ... */
+extern AGL_API void agl_swap_chain_present(
+  agl_swap_chain_t *swap_chain,
+  agl_command_list_t *cmds);
+
 /* ========================================================================== */
 
 /*! ... */

@@ -267,6 +267,13 @@ typedef void (*agl_swap_chain_destroy_fn)(
 /*! ... */
 extern agl_swap_chain_destroy_fn agl_swap_chain_destroy_;
 
+typedef void (*agl_swap_chain_present_fn)(
+  agl_swap_chain_t *swap_chain,
+  agl_context_t *context);
+
+/*! ... */
+extern agl_swap_chain_present_fn agl_swap_chain_present_;
+
 /* ========================================================================== */
 
 /*! ... */

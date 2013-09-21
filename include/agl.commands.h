@@ -36,7 +36,8 @@ extern "C" {
 
 /* ========================================================================== */
 /*  Commands:                                                                 */
-/*   * Resource Commands                                                      */
+/*   * Resource                                                               */
+/*     * Swap Chain                                                           */
 /* ========================================================================== */
 
 /* ==========================================================================
@@ -44,8 +45,9 @@ extern "C" {
    ========================================================================== */
 
 typedef enum agl_command_type {
-  AGL_COMMAND_TYPE_RESOURCE_CREATE  = 1,
-  AGL_COMMAND_TYPE_RESOURCE_DESTROY = 2,
+  AGL_COMMAND_TYPE_RESOURCE_CREATE    = 1,
+  AGL_COMMAND_TYPE_RESOURCE_DESTROY   = 2,
+  AGL_COMMAND_TYPE_SWAP_CHAIN_PRESENT = 3
 } agl_command_type_t;
 
 typedef struct agl_command {
@@ -59,7 +61,7 @@ extern AGL_API size_t agl_command_length(
   const agl_command_t *cmd);
 
 /* ==========================================================================
-    Resource Commands:
+    Commands > Resource:
    ========================================================================== */
 
 typedef struct agl_resource_create_cmd {
@@ -71,6 +73,15 @@ typedef struct agl_resource_destroy_cmd {
   agl_command_t cmd;
   agl_resource_t *resource;
 } agl_resource_destroy_cmd_t;
+
+/* ==========================================================================
+    Commands > Resource > Swap Chain:
+   ========================================================================== */
+
+typedef struct agl_swap_chain_present_cmd {
+  agl_command_t cmd;
+  agl_swap_chain_t *swap_chain;
+} agl_swap_chain_present_cmd_t;
 
 #ifdef __cplusplus
 }

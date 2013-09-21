@@ -186,6 +186,11 @@ extern void agl_swap_chain_destroy_d3d9(
   agl_swap_chain_t *swap_chain,
   agl_context_t *context);
 
+/*! ... */
+extern void agl_swap_chain_present_d3d9(
+  agl_swap_chain_t *swap_chain,
+  agl_context_t *context);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
