@@ -937,7 +937,6 @@ typedef struct agl_swap_chain agl_swap_chain_t;
 
 /*! ... */
 extern AGL_API agl_swap_chain_t *agl_swap_chain_create(
-  agl_context_t *context,
   agl_command_list_t *cmds,
   agl_surface_hndl_t surface,
   agl_pixel_format_t format,
@@ -1037,23 +1036,21 @@ namespace agl {
     public:
       /*! See agl_swap_chain_create. */
       static SwapChain *create(
-        Context *context,
         CommandList &cmds,
         SurfaceHndl surface,
         PixelFormat_ format,
         uint32_t width,
         uint32_t height,
         bool fullscreen,
-        bool verical_sync)
+        bool vertical_sync)
       {
         return (SwapChain *)::agl_swap_chain_create(
-          (::agl_context_t *)context,
           (::agl_command_list_t *)&cmds,
           (::agl_surface_hndl_t)surface,
           (::agl_pixel_format_t)format,
           width, height,
           fullscreen,
-          verical_sync);
+          vertical_sync);
       }
 
       /*! See agl_swap_chain_destroy. */

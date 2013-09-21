@@ -425,7 +425,7 @@ void agl_context_create_d3d9(
 {
   agl_context_d3d9_t *context_ = (agl_context_d3d9_t *)context;
 
-  context_->hwnd = CreateWindowEx(
+  context_->hwnd = CreateWindowExA(
     WS_EX_APPWINDOW | WS_EX_WINDOWEDGE,
     "agl", "",
     WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW,

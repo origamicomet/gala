@@ -29,6 +29,7 @@ ifeq ($(PLATFORM),windows)
     ifndef CC
       CC := gcc
     endif
+    EXE_SUFFIX := .exe
     LIB_PREFIX :=
     LIB_SUFFIX := .lib
     SHARED_LIB_PREFIX :=
@@ -43,6 +44,7 @@ ifeq ($(PLATFORM),macosx)
     ifndef CC
       CC := clang
     endif
+    EXE_SUFFIX :=
     LIB_PREFIX := lib
     LIB_SUFFIX := .a
     SHARED_LIB_PREFIX := lib
@@ -57,9 +59,18 @@ ifeq ($(PLATFORM),linux)
     ifndef CC
       CC := gcc
     endif
+    EXE_SUFFIX :=
     LIB_PREFIX := lib
     LIB_SUFFIX := .a
     SHARED_LIB_PREFIX := lib
     SHARED_LIB_SUFFIX := .so
   endif
+endif
+
+ifeq ($(CC),gcc)
+  CC := g++
+endif
+
+ifeq ($(CC),clang)
+  CC := clang++
 endif

@@ -60,29 +60,33 @@ endif
 
 ifeq ($(TARGET_PLATFORM),windows)
   CFLAGS += -D_WIN32 -DWINVER=0x500
+  DEPENDENCIES += -lkernel32 -luser32 -lgdi32
 endif
 
 ################################################################################
 
-SRC_DIR := src
-BIN_DIR := bin
-LIB_DIR := lib
-OBJ_DIR := obj
+SRC_DIR     := src
+BIN_DIR     := bin
+LIB_DIR     := lib
+OBJ_DIR     := obj
+SAMPLES_DIR := samples
+
 COMMIT  := $(shell git rev-parse HEAD)
 
 ################################################################################
 
-AGL := $(BIN_DIR)/$(SHARED_LIB_PREFIX)agl$(SHARED_LIB_SUFFIX)
+AGL := $(SHARED_LIB_PREFIX)agl$(SHARED_LIB_SUFFIX)
+EIGENGRAU := eigengrau$(EXE_SUFFIX)
 
-all: $(AGL)
+all: $(BIN_DIR)/$(AGL) $(BIN_DIR)/$(EIGENGRAU)
 
 clean:
 	@rm -R -f $(BIN_DIR)
 	@rm -R -f $(LIB_DIR)
 	@rm -R -f $(OBJ_DIR)
 
-SOURCES := $(shell find $(SRC_DIR) -name '*.cc')
 OBJECTS := $(OBJ_DIR)/agl/atomic.o $(OBJ_DIR)/agl/shared_lib.o $(OBJ_DIR)/agl.o
+# SOURCES := $(shell find $(SRC_DIR) -name '*.cc')
 # OBJECTS := $(addprefix $(OBJ_DIR)/, $(subst $(SRC_DIR)/,,$(SOURCES:%.cc=%.o)))
 
 ifeq ($(TARGET_PLATFORM),windows)
@@ -96,7 +100,23 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
 	@$(CC) $(CFLAGS) $(INCLUDES) -DAGL_COMPILING -c $< -o $@
 	@$(CC) $(CFLAGS) $(INCLUDES) -DAGL_COMPILING -MM -MT $@ -c $< > $(patsubst %.o,%.d,$@)
 
-$(AGL): $(OBJECTS)
+$(BIN_DIR)/$(AGL): $(OBJECTS)
 	@echo "[LD] $@"
 	@mkdir -p ${@D}
 	@$(CC) $(LDFLAGS) -shared -o $@ $^ $(DEPENDENCIES)
+
+################################################################################
+
+OBJECTS := $(OBJ_DIR)/$(SAMPLES_DIR)/framework.o $(OBJ_DIR)/$(SAMPLES_DIR)/eigengrau.o
+
+-include $(OBJECTS:.o=.d)
+$(OBJ_DIR)/$(SAMPLES_DIR)/%.o: $(SAMPLES_DIR)/%.cc
+	@echo "[CC] $<"
+	@mkdir -p ${@D}
+	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	@$(CC) $(CFLAGS) $(INCLUDES) -MM -MT $@ -c $< > $(patsubst %.o,%.d,$@)
+
+$(BIN_DIR)/$(EIGENGRAU): $(OBJECTS)
+	@echo "[LD] $@"
+	@mkdir -p ${@D}
+	@$(CC) $(LDFLAGS) -L$(LIB_DIR) -o $@ $^ $(BIN_DIR)/$(AGL)
