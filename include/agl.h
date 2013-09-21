@@ -29,7 +29,7 @@
 #define _AGL_H_
 
 /* ========================================================================== */
-/*!  @file agl.h Defines the public C and C++ interfaces for AGL.             */
+/*! @file agl.h Defines the public C and C++ interfaces for AGL.              */
 /* ========================================================================== */
 
 #include <agl/config.h>
