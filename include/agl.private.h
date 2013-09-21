@@ -47,7 +47,7 @@ extern "C" {
     Errors & Error Handling (agl_error_t):
    ========================================================================== */
 
-/*! */
+/*! ... */
 void agl_error(
   const agl_err_t error);
 
@@ -77,7 +77,15 @@ void agl_free(
     Initialization & Deinitialization (agl_initialize, agl_deinitialize):
    ========================================================================== */
 
-/* ... */
+typedef void (*agl_initialize_fn)();
+
+/*! ... */
+extern agl_initialize_fn agl_initialize_;
+
+typedef void (*agl_deinitialize_fn)();
+
+/*! ... */
+extern agl_deinitialize_fn agl_deinitialize_;
 
 /* ========================================================================== */
 /*  Common/Types:                                                             */
@@ -102,7 +110,7 @@ void agl_free(
    ========================================================================== */
 
 extern size_t _agl_num_of_adapters;
-extern agl_adapter_t *_agl_adapters;
+extern const agl_adapter_t *_agl_adapters;
 
 /* ==========================================================================
     Outputs (agl_output_t):
@@ -130,7 +138,33 @@ extern agl_adapter_t *_agl_adapters;
    ========================================================================== */
 
 struct agl_context {
+  const agl_adapter_t *adapter;
 };
+
+/* ========================================================================== */
+
+typedef agl_context_t *(*agl_context_alloc_fn)();
+
+/*! ... */
+extern agl_context_alloc_fn agl_context_alloc_;
+
+typedef void (*agl_context_free_fn)(
+  agl_context_t *context);
+
+/*! ... */
+extern agl_context_free_fn agl_context_free_;
+
+typedef void (*agl_context_create_fn)(
+  agl_context_t *context);
+
+/*! ... */
+extern agl_context_create_fn agl_context_create_;
+
+typedef void (*agl_context_destroy_fn)(
+  agl_context_t *context);
+
+/*! ... */
+extern agl_context_destroy_fn agl_context_destroy_;
 
 /* ==========================================================================
     Command Lists (agl_command_list_t):
@@ -175,7 +209,7 @@ struct agl_resource {
 
 /* ========================================================================== */
 
-/*! */
+/*! ... */
 void agl_resource_init(agl_resource_t *resource);
 
 /* ========================================================================== */
@@ -200,14 +234,45 @@ void agl_resource_queue_for_destroy(
 
 struct agl_swap_chain {
   agl_resource_t resource;
+  agl_surface_hndl_t surface;
+  agl_pixel_format_t format;
+  uint32_t width;
+  uint32_t height;
 };
 
 /* ========================================================================== */
 
-/*! */
+typedef agl_swap_chain_t *(*agl_swap_chain_alloc_fn)();
+
+/*! ... */
+extern agl_swap_chain_alloc_fn agl_swap_chain_alloc_;
+
+typedef void (*agl_swap_chain_free_fn)(
+  agl_swap_chain_t *swap_chain);
+
+/*! ... */
+extern agl_swap_chain_free_fn agl_swap_chain_free_;
+
+typedef void (*agl_swap_chain_create_fn)(
+  agl_swap_chain_t *swap_chain,
+  agl_context_t *context);
+
+/*! ... */
+extern agl_swap_chain_create_fn agl_swap_chain_create_;
+
+typedef void (*agl_swap_chain_destroy_fn)(
+  agl_swap_chain_t *swap_chain,
+  agl_context_t *context);
+
+/*! ... */
+extern agl_swap_chain_destroy_fn agl_swap_chain_destroy_;
+
+/* ========================================================================== */
+
+/*! ... */
 agl_swap_chain_t *agl_swap_chain_alloc();
 
-/*! */
+/*! ... */
 void agl_swap_chain_free(agl_swap_chain_t *swap_chain);
 
 #ifdef __cplusplus

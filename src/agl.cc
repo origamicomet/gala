@@ -118,14 +118,37 @@ void agl_free(void *ptr) {
     Initialization & Deinitialization (agl_initialize, agl_deinitialize):
    ========================================================================== */
 
+agl_initialize_fn agl_initialize_ = NULL;
+agl_deinitialize_fn agl_deinitialize_ = NULL;
+
+/* ========================================================================== */
+
 void agl_initialize(
   const agl_backend_t backend)
 {
-  agl_error(AGL_EUNKNOWN);
+  switch (backend) {
+    default: {
+      agl_error(AGL_EUNKNOWN);
+    } break;
+  }
+
+  agl_initialize_();
 }
 
 void agl_deinitialize()
 {
+  agl_deinitialize_();
+
+  agl_initialize_         = NULL;
+  agl_deinitialize_       = NULL;
+  agl_context_alloc_      = NULL;
+  agl_context_free_       = NULL;
+  agl_context_create_     = NULL;
+  agl_context_destroy_    = NULL;
+  agl_swap_chain_alloc_   = NULL;
+  agl_swap_chain_free_    = NULL;
+  agl_swap_chain_create_  = NULL;
+  agl_swap_chain_destroy_ = NULL;
 }
 
 /* ========================================================================== */
@@ -151,7 +174,7 @@ void agl_deinitialize()
    ========================================================================== */
 
 size_t _agl_num_of_adapters = 0;
-agl_adapter_t *_agl_adapters = NULL;
+const agl_adapter_t *_agl_adapters = NULL;
 
 size_t agl_adapter_count()
 {
@@ -162,7 +185,6 @@ const agl_adapter_t *agl_adapter_get(
   const size_t adapter_id)
 {
   agl_assert(debug, adapter_id < _agl_num_of_adapters);
-
   return &_agl_adapters[adapter_id];
 }
 
@@ -171,22 +193,17 @@ const agl_adapter_t *agl_adapter_primary()
   for (size_t adapter_id = 0; adapter_id < _agl_num_of_adapters; ++adapter_id) {
     if (_agl_adapters[adapter_id].primary)
       return &_agl_adapters[adapter_id];
-  }
-
-  return NULL;
+  } return NULL;
 }
 
 const struct agl_output *agl_adapter_primary_output(
   const agl_adapter_t *adapter)
 {
   agl_assert(debug, adapter != NULL);
-
   for (size_t output_id = 0; output_id < adapter->num_of_outputs; ++output_id) {
     if (adapter->outputs[output_id].primary)
       return &adapter->outputs[output_id];
-  }
-
-  return NULL;
+  } return NULL;
 }
 
 /* ==========================================================================
@@ -199,14 +216,9 @@ const struct agl_display_mode *agl_output_find_closest_matching_display_mode(
 {
   agl_assert(debug, output != NULL);
   agl_assert(debug, templ != NULL);
-
-  for (size_t display_mode_id = 0;
-       display_mode_id < output->num_of_display_modes;
-       ++display_mode_id)
-  {
+  for (size_t display_mode_id = 0; display_mode_id < output->num_of_display_modes; ++display_mode_id) {
     const struct agl_display_mode *display_mode =
       &output->display_modes[display_mode_id];
-
     if ((templ->format != AGL_PIXEL_FORMAT_UNKNOWN) &&
         (display_mode->format != templ->format))
       { continue; }
@@ -219,11 +231,8 @@ const struct agl_display_mode *agl_output_find_closest_matching_display_mode(
     if ((templ->refresh_rate != 0) &&
         (display_mode->refresh_rate != templ->refresh_rate))
       { continue; }
-
     return display_mode;
-  }
-
-  return NULL;
+  } return NULL;
 }
 
 /* ==========================================================================
@@ -244,17 +253,29 @@ const struct agl_display_mode *agl_output_find_closest_matching_display_mode(
     Contexts (agl_context_t):
    ========================================================================== */
 
+agl_context_alloc_fn agl_context_alloc_ = NULL;
+agl_context_free_fn agl_context_free_ = NULL;
+agl_context_create_fn agl_context_create_ = NULL;
+agl_context_destroy_fn agl_context_destroy_ = NULL;
+
+/* ========================================================================== */
+
 agl_context_t *agl_context_create(
   const agl_adapter_t *adapter)
 {
   agl_assert(debug, adapter != NULL);
-  return NULL;
+  agl_context_t *context = agl_context_alloc_();
+  context->adapter = adapter;
+  agl_context_create_(context);
+  return context;
 }
 
 void agl_context_destroy(
   agl_context_t *context)
 {
   agl_assert(debug, context != NULL);
+  agl_context_destroy_(context);
+  agl_context_free_(context);
 }
 
 /* ==========================================================================
@@ -295,6 +316,7 @@ void agl_command_list_execute(
 {
   agl_assert(debug, command_list != NULL);
   agl_assert(debug, context != NULL);
+  agl_error(AGL_EUNKNOWN);
 }
 
 /* ==========================================================================
@@ -381,18 +403,10 @@ bool agl_resource_is_reflective(
     Resources > Swap Chains:
    ========================================================================== */
 
-agl_swap_chain_t *agl_swap_chain_alloc() {
-  agl_swap_chain_t *swap_chain = (agl_swap_chain_t *)agl_alloc(
-    sizeof(agl_swap_chain_t), agl_alignof(agl_swap_chain_t));
-  agl_resource_init(&swap_chain->resource);
-  swap_chain->resource.type = AGL_RESOURCE_TYPE_SWAP_CHAIN;
-  return swap_chain;
-}
-
-void agl_swap_chain_free(agl_swap_chain_t *swap_chain) {
-  agl_assert(paranoid, swap_chain != NULL);
-  agl_free((void *)swap_chain);
-}
+agl_swap_chain_alloc_fn agl_swap_chain_alloc_ = NULL;
+agl_swap_chain_free_fn agl_swap_chain_free_ = NULL;
+agl_swap_chain_create_fn agl_swap_chain_create_ = NULL;
+agl_swap_chain_destroy_fn agl_swap_chain_destroy_ = NULL;
 
 /* ========================================================================== */
 
@@ -411,7 +425,26 @@ agl_swap_chain_t *agl_swap_chain_create(
   agl_assert(debug, surface != ((agl_surface_hndl_t)0));
   agl_assert(debug, width > 0);
   agl_assert(debug, height > 0);
-  return NULL;
+
+  agl_swap_chain_t *swap_chain = agl_swap_chain_alloc_();
+  agl_resource_init(&swap_chain->resource);
+  swap_chain->resource.type = AGL_RESOURCE_TYPE_SWAP_CHAIN;
+
+  swap_chain->surface = surface;
+  swap_chain->format = format;
+  swap_chain->width = width;
+  swap_chain->height = height;
+
+  if (fullscreen)
+    swap_chain->resource.flags |= AGL_SWAP_CHAIN_IS_FULLSCREEN;
+  else
+    swap_chain->resource.flags |= AGL_SWAP_CHAIN_IS_WINDOWED;
+
+  if (verical_sync)
+    swap_chain->resource.flags |= AGL_SWAP_CHAIN_IS_VERTICALLY_SYNCHRONIZED;
+
+  agl_resource_queue_for_create(&swap_chain->resource, cmds);
+  return swap_chain;
 }
 
 void agl_swap_chain_destroy(
@@ -420,6 +453,8 @@ void agl_swap_chain_destroy(
 {
   agl_assert(debug, swap_chain != NULL);
   agl_assert(debug, cmds != NULL);
+
+  agl_resource_queue_for_destroy(&swap_chain->resource, cmds);
 }
 
 /* ========================================================================== */
@@ -428,28 +463,28 @@ agl_surface_hndl_t agl_swap_chain_surface(
 const agl_swap_chain_t *swap_chain)
 {
   agl_assert(debug, swap_chain != NULL);
-  return 0;
+  return swap_chain->surface;
 }
 
 agl_pixel_format_t agl_swap_chain_format(
   const agl_swap_chain_t *swap_chain)
 {
   agl_assert(debug, swap_chain != NULL);
-  return AGL_PIXEL_FORMAT_UNKNOWN;
+  return swap_chain->format;
 }
 
 uint32_t agl_swap_chain_width(
   const agl_swap_chain_t *swap_chain)
 {
   agl_assert(debug, swap_chain != NULL);
-  return 0;
+  return swap_chain->width;
 }
 
 uint32_t agl_swap_chain_height(
   const agl_swap_chain_t *swap_chain)
 {
   agl_assert(debug, swap_chain != NULL);
-  return 0;
+  return swap_chain->height;
 }
 
 /* ========================================================================== */
@@ -462,6 +497,7 @@ void agl_swap_chain_resize(
 {
   agl_assert(debug, swap_chain != NULL);
   agl_assert(debug, cmds != NULL);
+  agl_error(AGL_EUNKNOWN);
 }
 
 void agl_swap_chain_window(
@@ -470,6 +506,7 @@ void agl_swap_chain_window(
 {
   agl_assert(debug, swap_chain != NULL);
   agl_assert(debug, cmds != NULL);
+  agl_error(AGL_EUNKNOWN);
 }
 
 void agl_swap_chain_fullscreen(
@@ -478,6 +515,7 @@ void agl_swap_chain_fullscreen(
 {
   agl_assert(debug, swap_chain != NULL);
   agl_assert(debug, cmds != NULL);
+  agl_error(AGL_EUNKNOWN);
 }
 
 void agl_swap_chain_vertically_synchronize(
@@ -487,6 +525,7 @@ void agl_swap_chain_vertically_synchronize(
 {
   agl_assert(debug, swap_chain != NULL);
   agl_assert(debug, cmds != NULL);
+  agl_error(AGL_EUNKNOWN);
 }
 
 /* ========================================================================== */
@@ -494,19 +533,22 @@ void agl_swap_chain_vertically_synchronize(
 bool agl_swap_chain_is_windowed(
   const agl_swap_chain_t *swap_chain)
 {
-  return false;
+  agl_assert(debug, swap_chain != NULL);
+  return !!(swap_chain->resource.flags & AGL_SWAP_CHAIN_IS_WINDOWED);
 }
 
 bool agl_swap_chain_is_fullscreen(
   const agl_swap_chain_t *swap_chain)
 {
-  return false;
+  agl_assert(debug, swap_chain != NULL);
+  return !!(swap_chain->resource.flags & AGL_SWAP_CHAIN_IS_FULLSCREEN);
 }
 
 bool agl_swap_chain_is_vertically_synchronized(
   const agl_swap_chain_t *swap_chain)
 {
-  return false;
+  agl_assert(debug, swap_chain != NULL);
+  return !!(swap_chain->resource.flags & AGL_SWAP_CHAIN_IS_VERTICALLY_SYNCHRONIZED);
 }
 
 /* ========================================================================== */
@@ -521,6 +563,7 @@ bool agl_swap_chain_is_vertically_synchronized(
 size_t agl_command_length(
   const agl_command_t *cmd)
 {
+  agl_assert(paranoid, cmd != NULL);
   switch (cmd->type) {
     case AGL_COMMAND_TYPE_RESOURCE_CREATE:
       return sizeof(agl_resource_create_cmd_t);
