@@ -54,10 +54,8 @@ endif
 
 ifeq ($(DEBUG),yes)
   CFLAGS += -g -DAGL_DEBUG -D_DEBUG
-  SUFFIX := -dbg-$(ARCH)
 else
   CFLAGS += -O3 -DAGL_RELEASE -DNDEBUG
-  SUFFIX := -$(ARCH)
 endif
 
 ifeq ($(TARGET_PLATFORM),windows)
@@ -74,7 +72,7 @@ COMMIT  := $(shell git rev-parse HEAD)
 
 ################################################################################
 
-AGL := $(BIN_DIR)/$(SHARED_LIB_PREFIX)agl$(SUFFIX)$(SHARED_LIB_SUFFIX)
+AGL := $(BIN_DIR)/$(SHARED_LIB_PREFIX)agl$(SHARED_LIB_SUFFIX)
 
 all: $(AGL)
 
