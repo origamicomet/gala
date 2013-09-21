@@ -334,7 +334,39 @@ void agl_command_list_execute(
 {
   agl_assert(debug, command_list != NULL);
   agl_assert(debug, context != NULL);
-  agl_error(AGL_EUNKNOWN);
+
+  const agl_command_t *cmd = agl_command_list_dequeue(command_list, NULL);
+  while (cmd) {
+    switch (cmd->type) {
+      case AGL_COMMAND_TYPE_RESOURCE_CREATE: {
+        const agl_resource_create_cmd_t *cmd_ =
+          (const agl_resource_create_cmd_t *)cmd;
+        switch (cmd_->resource->type) {
+          case AGL_RESOURCE_TYPE_SWAP_CHAIN:
+            agl_swap_chain_create_(
+              (agl_swap_chain_t *)cmd_->resource, context); break;
+          default:
+            agl_error(AGL_EUNKNOWN); break;
+        } agl_atomic_decr(&cmd_->resource->ops);
+      } break;
+      case AGL_COMMAND_TYPE_RESOURCE_DESTROY: {
+        const agl_resource_destroy_cmd_t *cmd_ =
+          (const agl_resource_destroy_cmd_t *)cmd;
+        switch (cmd_->resource->type) {
+          case AGL_RESOURCE_TYPE_SWAP_CHAIN:
+            agl_swap_chain_destroy_(
+              (agl_swap_chain_t *)cmd_->resource, context); break;
+          default:
+            agl_error(AGL_EUNKNOWN); break;
+        } agl_atomic_decr(&cmd_->resource->ops);
+      } break;
+      default: {
+        agl_error(AGL_EUNKNOWN);
+      } break;
+    }
+
+    cmd = agl_command_list_dequeue(command_list, cmd);
+  }
 }
 
 /* ==========================================================================
