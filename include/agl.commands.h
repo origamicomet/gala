@@ -45,9 +45,9 @@ extern "C" {
    ========================================================================== */
 
 typedef enum agl_command_type {
-  AGL_COMMAND_TYPE_RESOURCE_CREATE    = 1,
-  AGL_COMMAND_TYPE_RESOURCE_DESTROY   = 2,
-  AGL_COMMAND_TYPE_SWAP_CHAIN_PRESENT = 3
+  AGL_RESOURCE_CREATE_CMD    = 1,
+  AGL_RESOURCE_DESTROY_CMD   = 2,
+  AGL_SWAP_CHAIN_PRESENT_CMD = 3
 } agl_command_type_t;
 
 typedef struct agl_command {

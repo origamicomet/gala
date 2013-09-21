@@ -1130,6 +1130,15 @@ namespace agl {
           synchronize);
       }
 
+      /*! See agl_swap_chain_present. */
+      void present(
+        CommandList &cmds)
+      {
+        ::agl_swap_chain_present(
+          (::agl_swap_chain_t *)this,
+          (::agl_command_list_t *)&cmds);
+      }
+
     public:
       /*! See agl_swap_chain_is_windowed. */
       bool is_windowed() const {

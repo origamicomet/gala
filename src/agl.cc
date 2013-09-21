@@ -340,7 +340,7 @@ void agl_command_list_execute(
   const agl_command_t *cmd = agl_command_list_dequeue(command_list, NULL);
   while (cmd) {
     switch (cmd->type) {
-      case AGL_COMMAND_TYPE_RESOURCE_CREATE: {
+      case AGL_RESOURCE_CREATE_CMD: {
         const agl_resource_create_cmd_t *cmd_ =
           (const agl_resource_create_cmd_t *)cmd;
         switch (cmd_->resource->type) {
@@ -350,7 +350,7 @@ void agl_command_list_execute(
             agl_error(AGL_EUNKNOWN); break;
         } agl_atomic_decr(&cmd_->resource->ops);
       } break;
-      case AGL_COMMAND_TYPE_RESOURCE_DESTROY: {
+      case AGL_RESOURCE_DESTROY_CMD: {
         const agl_resource_destroy_cmd_t *cmd_ =
           (const agl_resource_destroy_cmd_t *)cmd;
         switch (cmd_->resource->type) {
@@ -360,7 +360,7 @@ void agl_command_list_execute(
             agl_error(AGL_EUNKNOWN); break;
         } agl_atomic_decr(&cmd_->resource->ops);
       } break;
-      case AGL_COMMAND_TYPE_SWAP_CHAIN_PRESENT: {
+      case AGL_SWAP_CHAIN_PRESENT_CMD: {
         const agl_swap_chain_present_cmd_t *cmd_ =
           (const agl_swap_chain_present_cmd_t *)cmd;
         agl_swap_chain_create_(cmd_->swap_chain, context);
@@ -419,7 +419,7 @@ void agl_resource_queue_for_create(
   agl_atomic_incr(&resource->ops);
   agl_resource_create_cmd_t *cmd = (agl_resource_create_cmd_t *)
     agl_command_list_enqueue(cmds, sizeof(agl_resource_create_cmd_t));
-  cmd->cmd.type = AGL_COMMAND_TYPE_RESOURCE_CREATE;
+  cmd->cmd.type = AGL_RESOURCE_CREATE_CMD;
   cmd->resource = resource;
 }
 
@@ -432,7 +432,7 @@ void agl_resource_queue_for_destroy(
   agl_atomic_incr(&resource->ops);
   agl_resource_destroy_cmd_t *cmd = (agl_resource_destroy_cmd_t *)
     agl_command_list_enqueue(cmds, sizeof(agl_resource_destroy_cmd_t));
-  cmd->cmd.type = AGL_COMMAND_TYPE_RESOURCE_DESTROY;
+  cmd->cmd.type = AGL_RESOURCE_DESTROY_CMD;
   cmd->resource = resource;
 }
 
@@ -593,7 +593,7 @@ void agl_swap_chain_present(
   agl_atomic_incr(&swap_chain->resource.ops);
   agl_swap_chain_present_cmd_t *cmd = (agl_swap_chain_present_cmd_t *)
     agl_command_list_enqueue(cmds, sizeof(agl_swap_chain_present_cmd_t));
-  cmd->cmd.type = AGL_COMMAND_TYPE_SWAP_CHAIN_PRESENT;
+  cmd->cmd.type = AGL_SWAP_CHAIN_PRESENT_CMD;
   cmd->swap_chain = swap_chain;
 }
 
@@ -634,11 +634,11 @@ size_t agl_command_length(
 {
   agl_assert(paranoid, cmd != NULL);
   switch (cmd->type) {
-    case AGL_COMMAND_TYPE_RESOURCE_CREATE:
+    case AGL_RESOURCE_CREATE_CMD:
       return sizeof(agl_resource_create_cmd_t);
-    case AGL_COMMAND_TYPE_RESOURCE_DESTROY:
+    case AGL_RESOURCE_DESTROY_CMD:
       return sizeof(agl_resource_destroy_cmd_t);
-    case AGL_COMMAND_TYPE_SWAP_CHAIN_PRESENT:
+    case AGL_SWAP_CHAIN_PRESENT_CMD:
       return sizeof(agl_swap_chain_present_cmd_t);
     default:
       agl_error(AGL_EUNKNOWN);
