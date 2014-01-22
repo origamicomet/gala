@@ -98,15 +98,15 @@ endif
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "[CXX] $<"
 	@mkdir -p ${@D}
-	@$(call c++) $(INCLUDES) $(DEFINES) $(call cc-input,$<) $(call cc-output,$@)
+	$(call c++) $(INCLUDES) $(DEFINES) $(call cc-input,$<) $(call cc-output,$@)
 	@$(call c++) $(INCLUDES) $(DEFINES) $(call cc-input,$<) -MM -MT $@ >$(patsubst %.o,%.d,$@)
 
 $(AGL): $(OBJECTS)
 	@echo "[LD] $@"
 	@mkdir -p ${@D}
 ifeq ($(LINKAGE),static)
-	@$(call ar++) $(call ld-output,$@) $(foreach input,$(OBJECTS),$(call ar-input,$(input)))
+	$(call ar++) $(call ld-output,$@) $(foreach input,$(OBJECTS),$(call ar-input,$(input)))
 endif
 ifeq ($(LINKAGE),dynamic)
-	@$(call ld++) $(call ld-shared) $(call ld-output,$@) $(foreach input,$(OBJECTS),$(call ld-input,$(input))) $(DEPENDENCIES)
+	$(call ld++) $(call ld-shared) $(call ld-output,$@) $(foreach input,$(OBJECTS),$(call ld-input,$(input))) $(DEPENDENCIES)
 endif
