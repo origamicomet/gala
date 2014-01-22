@@ -9,7 +9,7 @@ A public domain library that abstracts rendering through an asynchronous API.
 | Windows   | Microsoft Visual Studio | <span>&#10003;</span> |
 | Windows   | MinGW/MSYS              | <span>&#10003;</span> |
 | Windows   | Cygwin                  |         Never         |
-| Mac OSX   | GCC or Clang            |        Planned        |
+| Mac OS X  | GCC or Clang            |        Planned        |
 | Linux     | GCC or Clang            | <span>&#10003;</span> |
 | BSD       | GCC or Clang            |        Planned        |
 | Android   | GCC or Clang            |        Planned        |
@@ -23,8 +23,10 @@ A public domain library that abstracts rendering through an asynchronous API.
 | Windows   | `AGL_BACKEND_D3D11`     |        Planned        |
 | Windows   | `AGL_BACKEND_OPENGL`    |        Planned        |
 | Windows   | `AGL_BACKEND_MANTLE`    |        Planned        |
-| Mac OSX   | `AGL_BACKEND_OPENGL`    |        Planned        |
+| Mac OS X  | `AGL_BACKEND_OPENGL`    |        Planned        |
+| Mac OS X  | `AGL_BACKEND_MANTLE`    |       Hopefully       |
 | Linux     | `AGL_BACKEND_OPENGL`    |        Planned        |
+| Linux     | `AGL_BACKEND_MANTLE`    |       Hopefully       |
 | Android   | `AGL_BACKEND_GLES`      |         Never         |
 | Android   | `AGL_BACKEND_GLES2`     |        Planned        |
 | Android   | `AGL_BACKEND_GLES3`     |        Planned        |
