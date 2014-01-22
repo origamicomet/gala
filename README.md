@@ -1,5 +1,7 @@
 # Abstract Graphics Library
 
+[![Build Status](https://travis-ci.org/mtwilliams/agl.png?branch=master)](http://travis-ci.org/mtwilliams/agl) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mtwilliams/agl/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
 A public domain library that abstracts rendering through an asynchronous API.
 
 ## Supports
