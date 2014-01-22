@@ -1,50 +1,91 @@
 # Abstract Graphics Library
 
-[![Build Status](https://travis-ci.org/mtwilliams/agl.png?branch=master)](http://travis-ci.org/mtwilliams/agl) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mtwilliams/agl/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
-Abstracts rendering through an asynchronous, cross-platform [API](https://github.com/mtwilliams/agl/blob/master/include/agl.h).
+A public domain library that abstracts rendering through an asynchronous API.
 
 ## Supports
 
-These backends:
+| Platform  | Toolchain               | Supported             |
+|:--------- |:----------------------- |:---------------------:|
+| Windows   | Microsoft Visual Studio | <span>&#10003;</span> |
+| Windows   | MinGW/MSYS              | <span>&#10003;</span> |
+| Windows   | Cygwin                  |         Never         |
+| Mac OSX   | GCC or Clang            |        Planned        |
+| Linux     | GCC or Clang            | <span>&#10003;</span> |
+| BSD       | GCC or Clang            |        Planned        |
+| Android   | GCC or Clang            |        Planned        |
+| iOS       | GCC or Clang            |        Planned        |
+| Web       | Native Client (PNaCl)   |        Planned        |
+| Web       | emscripten              |        Planned        |
 
- * OpenGL 3.1
- * OpenGL ES 2
- * OpenGL ES 3
- * Direct3D 9 ✓
- * Direct3D 11
+| Platform  | Backend                 | Supported             |
+|:--------- |:----------------------- |:---------------------:|
+| Windows   | `AGL_BACKEND_D3D9`      |        Planned        |
+| Windows   | `AGL_BACKEND_D3D11`     |        Planned        |
+| Windows   | `AGL_BACKEND_OPENGL`    |        Planned        |
+| Windows   | `AGL_BACKEND_MANTLE`    |        Planned        |
+| Mac OSX   | `AGL_BACKEND_OPENGL`    |        Planned        |
+| Linux     | `AGL_BACKEND_OPENGL`    |        Planned        |
+| Android   | `AGL_BACKEND_GLES`      |         Never         |
+| Android   | `AGL_BACKEND_GLES2`     |        Planned        |
+| Android   | `AGL_BACKEND_GLES3`     |        Planned        |
+| iOS       | `AGL_BACKEND_GLES`      |         Never         |
+| iOS       | `AGL_BACKEND_GLES2`     |        Planned        |
+| iOS       | `AGL_BACKEND_GLES3`     |        Planned        |
+| Web       | `AGL_BACKEND_GLES2`     |        Planned        |
+| Web       | `AGL_BACKEND_GLES3`     |        Planned        |
 
-on these platforms:
+## Building
 
- * Windows ✓
- * Mac OS X
- * Linux ✓
- * Android
- * iOS
+### Windows
 
-## License ([unlicense.org](http://unlicense.org/))
+TODO
 
-This is free and unencumbered software released into the public domain.
+### Mac OSX
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+TODO
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+### Linux
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+TODO
 
-For more information, please refer to <http://unlicense.org/>
+### BSD
+
+TODO
+
+### Android
+
+TODO
+
+### iOS
+
+TODO
+
+### Web
+
+#### via [Native Client (PNaCl)](https://developers.google.com/native-client/)
+
+TODO
+
+#### via [emscripten](https://github.com/kripken/emscripten)
+
+TODO
+
+## Configuring
+
+AGL's compile-, link-, and runtime behaviour is controlled by `./configure` switches and options, as well as various pre-processor defines (which are documented in `include/agl/config.h`).
+
+### via switches and options
+
+TODO
+
+## License
+
+Author(s):
+
+  * Michael Williams <devbug@bitbyte.ca>
+
+This is free and unencumbered software released into the public domain. Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
+
+In jurisdictions that recognize copyright laws, the author or authors of this software dedicate any and all copyright interest in the software to the public domain. We make this dedication for the benefit of the public large and to the detriment of our heirs and successors. We intend this dedication to be an overt act of relinquishment in perpetuity of all present and future rights to this software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
