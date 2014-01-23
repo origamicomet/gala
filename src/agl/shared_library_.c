@@ -95,8 +95,22 @@ void agl_shared_library_close(
   agl_assert(debug, shared_library != NULL);
 #if defined(_WIN32)
   FreeLibrary((HMODULE)shared_library);
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
   dlclose((void *)shared_library);
+#endif
+}
+
+/* ========================================================================== */
+/*  agl_shared_library_extension:                                             */
+/* ========================================================================== */
+
+const char *agl_shared_library_extension(void) {
+#if defined(_WIN32)
+  return "dll";
+#elif defined(__linux__)
+  return "so";
+#elif defined(__APPLE__)
+  return "dylib";
 #endif
 }
 
@@ -105,3 +119,5 @@ void agl_shared_library_close(
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+/* ========================================================================== */

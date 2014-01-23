@@ -49,6 +49,7 @@ extern "C" {
 /*   * agl_shared_library_open                                                */
 /*   * agl_shared_library_symbol                                              */
 /*   * agl_shared_library_close                                               */
+/*   * agl_shared_library_extension                                           */
 /* ========================================================================== */
 
 /* ========================================================================== */
@@ -78,9 +79,16 @@ extern AGL_EXPORT void *agl_shared_library_symbol(
 /*  agl_shared_library_close:                                                  */
 /* ========================================================================== */
 
-#define agl_shared_library_close agl_shared_library_close
+#define agl_shared_lib_close agl_shared_library_close
 extern AGL_EXPORT void agl_shared_library_close(
   agl_shared_library_t *shared_library);
+
+/* ========================================================================== */
+/*  agl_shared_library_extension:                                             */
+/* ========================================================================== */
+
+#define agl_shared_lib_extension agl_shared_library_extension
+extern AGL_EXPORT const char *agl_shared_library_extension(void);
 
 /* ========================================================================== */
 
