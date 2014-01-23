@@ -33,17 +33,10 @@
  #  include <agl/context.h>
 /* ========================================================================== */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <malloc.h>
-
-#ifdef _MSC_VER
-  #define alloca _alloca
-#endif
-
 #include <agl/log.h>
 #include <agl/assert.h>
-#include <agl/shared_library_.h>
+
+#include <malloc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,46 +49,18 @@ extern "C" {
 /* ========================================================================== */
 
 struct agl_context {
-  agl_shared_lib_t *shared_lib_associated_with_backend;
+  agl_backend_t *backend;
 };
 
 /* ========================================================================== */
 /*  agl_context_create:                                                       */
 /* ========================================================================== */
 
-static const char *backend_to_associated_shared_lib(const agl_backend_t backend) {
-  switch (backend) {
-    case AGL_BACKEND_D3D9:
-      return "agl_backend_d3d9";
-    case AGL_BACKEND_D3D11:
-      return "agl_backend_d3d11";
-    case AGL_BACKEND_OPENGL:
-      return "agl_backend_opengl";
-    case AGL_BACKEND_MANTLE:
-      return "agl_backend_mantle";
-    case AGL_BACKEND_GLES2:
-      return "agl_backend_gles2";
-    case AGL_BACKEND_GLES3:
-      return "agl_backend_gles3";
-  }
-}
-
-agl_context_t *agl_context_create(const agl_backend_t backend) {
-  const char *name; {
-    const size_t len = snprintf(
-      NULL, 0, "%s.%s",
-      backend_to_associated_shared_lib(backend),
-      agl_shared_lib_extension()) + 1;
-    name = (const char *)alloca(len);
-    snprintf(
-      (char *)name, len, "%s.%s",
-      backend_to_associated_shared_lib(backend),
-      agl_shared_lib_extension()); }
-  agl_shared_lib_t *shared_lib = agl_shared_lib_open(name);
-  if (!shared_lib)
-    return NULL;
+agl_context_t *agl_context_create(agl_backend_t *backend) {
+  agl_assert(debug, backend != NULL);
+  // FIXME(mtwilliams): Use a user-specified allocator.
   agl_context_t *context = (agl_context_t *)malloc(sizeof(agl_context_t));
-  context->shared_lib_associated_with_backend = shared_lib;
+  context->backend = backend;
   return context;
 }
 
@@ -105,7 +70,7 @@ agl_context_t *agl_context_create(const agl_backend_t backend) {
 
 void agl_context_destroy(agl_context_t *context) {
   agl_assert(debug, context != NULL);
-  agl_shared_lib_close(context->shared_lib_associated_with_backend);
+  agl_assert(paranoid, context->backend != NULL);
   free((void *)context);
 }
 

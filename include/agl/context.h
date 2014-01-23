@@ -57,7 +57,7 @@ typedef struct agl_context agl_context_t;
 /*  agl_context_create:                                                       */
 /* ========================================================================== */
 
-extern AGL_EXPORT agl_context_t *agl_context_create(const agl_backend_t backend);
+extern AGL_EXPORT agl_context_t *agl_context_create(agl_backend_t *backend);
 
 /* ========================================================================== */
 /*  agl_context_destroy:                                                      */

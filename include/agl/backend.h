@@ -45,14 +45,11 @@ extern "C" {
 
 /* ========================================================================== */
 /*  Backend:                                                                  */
-/*   * agl_backend_t                                                          */
+/*   * agl_backend_create                                                     */
+/*   * agl_backend_destroy                                                    */
 /* ========================================================================== */
 
-/* ========================================================================== */
-/*  agl_backend_t:                                                            */
-/* ========================================================================== */
-
-typedef enum agl_backend {
+typedef enum agl_backend_id {
   /* Direct3D 9 */
   AGL_BACKEND_D3D9   = 1,
   /* Direct3D 11 */
@@ -65,7 +62,21 @@ typedef enum agl_backend {
   AGL_BACKEND_GLES2  = 5,
   /* OpenGL ES 3 */
   AGL_BACKEND_GLES3  = 6
-} agl_backend_t;
+} agl_backend_id_t;
+
+typedef struct agl_backend agl_backend_t;
+
+/* ========================================================================== */
+/*  agl_backend_create:                                                       */
+/* ========================================================================== */
+
+extern AGL_EXPORT agl_backend_t *agl_backend_create(const agl_backend_id_t id);
+
+/* ========================================================================== */
+/*  agl_backend_destroy:                                                      */
+/* ========================================================================== */
+
+extern AGL_EXPORT void agl_backend_destroy(agl_backend_t *backend);
 
 /* ========================================================================== */
 
