@@ -86,7 +86,6 @@ INCLUDES     := $(call cc-includes,include)
 DEPENDENCIES :=
 
 DEFINES      := $(call cc-define,AGL_COMPILING)
-DEFINES      := $(call cc-define-str,AGL_BUILD,$(BUILD))
 ifeq ($(LINKAGE),static)
   DEFINES    += $(call cc-define,AGL_LINKAGE=1)
 endif

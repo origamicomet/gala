@@ -30,94 +30,106 @@
 /* For more information, please refer to <http://unlicense.org/>              */
 /*                                                                            */
 /* ========================================================================== */
-/*! @file include/agl/config.h
-     Documents a collection of pre-processor defines used for the
-     configuration of AGL's compile-, link-, and runtime behaviour.           */
+/*! @file include/agl/assert.h
+     Provides configuration dependent and independent assertion macros.       */
 /* ========================================================================== */
 
-#ifndef _AGL_CONFIG_H_
-#define _AGL_CONFIG_H_
+#ifndef _AGL_ASSERT_H_
+#define _AGL_ASSERT_H_
+
+#include <agl/config.h>
+#include <agl/preprocessor.h>
+#include <agl/log.h>
+
+#include <signal.h>
 
 /* ========================================================================== */
-/*  Configuration:                                                            */
-/*   * Compiler, architecture, and platform autodetection;                    */
-/*   * Paranoid and/or debug, development, and release selection;             */
-/*   * Linkage.                                                               */
+/*  Assertion:                                                                */
+/*   * Independent                                                            */
+/*   * Dependent                                                              */
 /* ========================================================================== */
 
 /* ========================================================================== */
-/*  Compiler, architecture, and platform autodetection:                       */
+/*  Independent:                                                              */
 /* ========================================================================== */
 
-/*! @def AGL_DONT_AUTODETECT_COMPILER
-  AGL won't attempt to detect the current compiler based on pre-processor defines, if defined.
-  See include/agl/detect/compiler.h for more details. */
+/*! @def agl_assertf_
+  Logs a message based on `_Format` and aborts if `_Condition` fails. */
+#define agl_assertf_(_Condition, _Format, ...) \
+  do { \
+    if (!(_Condition)) { \
+      agl_log(AGL_LOG_ERROR, _Format "\n", ## __VA_ARGS__); \
+      raise(SIGABRT); \
+    } \
+  } while (0)
 
-/*! @def AGL_DONT_AUTODETECT_PLATFORM
-  AGL won't attempt to detect the current platform based on pre-processor defines, if defined.
-  See include/agl/detect/platform.h for more details. */
-
-/*! @def AGL_DONT_AUTODETECT_ARCHITECTURE
-  AGL won't attempt to detect the current architecture based on pre-processor defines, if defined.
-  See include/agl/detect/architecture.h for more details. */
+/*! @def agl_assert_
+  Logs a message and aborts if `_Condition` fails. */
+#define agl_assert_(_Condition) \
+  agl_assertf_(_Condition, \
+    "An assertion failed!\n" \
+    "\n" \
+    "  '%s' in %s on line %u\n" \
+    "\n", \
+    agl_stringificate(_Condition), \
+    agl_stringificate(__FILE__), \
+    ((unsigned)__LINE__) \
+  )
 
 /* ========================================================================== */
-/*  Paranoid and/or debug, development, and release selection:                */
+/*  Dependent:                                                                */
 /* ========================================================================== */
 
-/*! @def AGL_PARANOID
-  Specifies how paranoid AGL is; if defined AGL will perform more sanity checks. */
+/*! @def agl_assertf
+  @copydoc agl_assert_f If, and only if, `_Level` is <= AGL_CONFIGURATION. */
+#define agl_assertf(_Level, _Condition, _Format, ...) \
+  agl_assertf_##_Level(_Condition, _Format, ## __VA_ARGS__)
 
-/*! @def AGL_DEBUG
-  Enables debugging (and higher) checks and profiling. */
-#define AGL_DEBUG 1
-
-/*! @def AGL_DEVELOPMENT
-  Enables development (and higher) checks and profiling. */
-#define AGL_DEVELOPMENT 2
-
-/*! @def AGL_RELEASE
-  Enables release checks. */
-#define AGL_RELEASE 3
-
-/*! @def AGL_CONFIGURATION
-  Specifies how "loose and fast" AGL is. */
-#ifndef AGL_CONFIGURATION
-  #error ("Please specify a configuration by defining `AGL_CONFIGURATION`.")
+#ifdef AGL_PARANOID
+  #define agl_assertf_paranoid(_Condition, _Format, ...) \
+    agl_assertf_(_Condition, _Format, ## __VA_ARGS__)
+#else
+  #define agl_assertf_paranoid(_Condition, _Format, ...) \
+    do { (void)sizeof((_Condition)); } while (0)
 #endif
 
-/* ========================================================================== */
-/*  Linkage:                                                                  */
-/* ========================================================================== */
-
-/*! @def AGL_LINK_STATICALLY
-  Linking to AGL statically, e.g., using libagl.a. */
-#define AGL_LINK_STATICALLY 1
-
-/*! @def AGL_LINK_DYNAMICALLY
-  Linking to AGL dynamically, e.g., using libagl.so. */
-#define AGL_LINK_DYNAMICALLY 2
-
-/*! @def AGL_LINKAGE
-  Specifies if AGL is being linked to statically, or dynamically. */
-#ifndef AGL_LINKAGE
-  #error ("Please specify how you are linking to AGL by defining `AGL_LINKAGE`.")
+#if (AGL_CONFIGURATION <= AGL_DEBUG)
+  #define agl_assertf_debug(_Condition, _Format, ...) \
+    agl_assertf_(_Condition, _Format, ## __VA_ARGS__)
+#else
+  #define agl_assertf_debug(_Condition, _Format, ...) \
+    do { (void)sizeof((_Condition)); } while (0)
 #endif
 
-#if (AGL_LINKAGE == AGL_LINK_STATICALLY)
-  #define AGL_EXPORT
-#elif (AGL_LINKAGE == AGL_LINK_DYNAMICALLY)
-  #ifdef _MSC_VER
-    #ifdef AGL_COMPILING
-      #define AGL_EXPORT __declspec(dllexport)
-    #else
-      #define AGL_EXPORT __declspec(dllimport)
-    #endif
-  #else
-    #define AGL_EXPORT
-  #endif
+#if (AGL_CONFIGURATION <= AGL_DEVELOPMENT)
+  #define agl_assertf_development(_Condition, _Format, ...) \
+    agl_assertf_(_Condition, _Format, ## __VA_ARGS__)
+#else
+  #define agl_assertf_development(_Condition, _Format, ...) \
+    do { (void)sizeof((_Condition)); } while (0)
 #endif
+
+#if (AGL_CONFIGURATION <= AGL_RELEASE)
+  #define agl_assertf_release(_Condition, _Format, ...) \
+    agl_assertf_(_Condition, _Format, ## __VA_ARGS__)
+#else
+  #define agl_assertf_release(_Condition, _Format, ...) \
+    do { (void)sizeof((_Condition)); } while (0)
+#endif
+
+/*! @def agl_assert
+  @copydoc agl_assert_ If, and only if, `_Level` is <= AGL_CONFIGURATION. */
+#define agl_assert(_Level, _Condition) \
+  agl_assertf(_Level, _Condition, \
+    "An assertion failed!\n" \
+    "\n" \
+    "  '%s' in %s on line %u\n" \
+    "\n", \
+    agl_stringificate(_Condition), \
+    agl_stringificate(__FILE__), \
+    ((unsigned)__LINE__) \
+  )
 
 /* ========================================================================== */
 
-#endif /* _AGL_CONFIG_H_ */
+#endif /* _AGL_ASSERT_H_ */

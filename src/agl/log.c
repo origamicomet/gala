@@ -30,94 +30,62 @@
 /* For more information, please refer to <http://unlicense.org/>              */
 /*                                                                            */
 /* ========================================================================== */
-/*! @file include/agl/config.h
-     Documents a collection of pre-processor defines used for the
-     configuration of AGL's compile-, link-, and runtime behaviour.           */
+ #  include <agl/log.h>
 /* ========================================================================== */
 
-#ifndef _AGL_CONFIG_H_
-#define _AGL_CONFIG_H_
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /* ========================================================================== */
 /*  Configuration:                                                            */
-/*   * Compiler, architecture, and platform autodetection;                    */
-/*   * Paranoid and/or debug, development, and release selection;             */
-/*   * Linkage.                                                               */
+/*   * agl_log                                                                */
+/*   * agl_get_log_level                                                      */
+/*   * agl_set_log_level                                                      */
 /* ========================================================================== */
 
-/* ========================================================================== */
-/*  Compiler, architecture, and platform autodetection:                       */
-/* ========================================================================== */
-
-/*! @def AGL_DONT_AUTODETECT_COMPILER
-  AGL won't attempt to detect the current compiler based on pre-processor defines, if defined.
-  See include/agl/detect/compiler.h for more details. */
-
-/*! @def AGL_DONT_AUTODETECT_PLATFORM
-  AGL won't attempt to detect the current platform based on pre-processor defines, if defined.
-  See include/agl/detect/platform.h for more details. */
-
-/*! @def AGL_DONT_AUTODETECT_ARCHITECTURE
-  AGL won't attempt to detect the current architecture based on pre-processor defines, if defined.
-  See include/agl/detect/architecture.h for more details. */
+static agl_log_level_t log_level_ = AGL_LOG_NOTHING;
 
 /* ========================================================================== */
-/*  Paranoid and/or debug, development, and release selection:                */
+/*  agl_log:                                                                  */
 /* ========================================================================== */
 
-/*! @def AGL_PARANOID
-  Specifies how paranoid AGL is; if defined AGL will perform more sanity checks. */
-
-/*! @def AGL_DEBUG
-  Enables debugging (and higher) checks and profiling. */
-#define AGL_DEBUG 1
-
-/*! @def AGL_DEVELOPMENT
-  Enables development (and higher) checks and profiling. */
-#define AGL_DEVELOPMENT 2
-
-/*! @def AGL_RELEASE
-  Enables release checks. */
-#define AGL_RELEASE 3
-
-/*! @def AGL_CONFIGURATION
-  Specifies how "loose and fast" AGL is. */
-#ifndef AGL_CONFIGURATION
-  #error ("Please specify a configuration by defining `AGL_CONFIGURATION`.")
-#endif
+void agl_log(const agl_log_level_t level, const char *format, ...) {
+  if (level > log_level_)
+    return;
+  /* TODO(mtwilliams): Expose a ogger interface. */
+  va_list va;
+  va_start(va, format);
+  vfprintf(stdout, format, va);
+  va_end(va);
+}
 
 /* ========================================================================== */
-/*  Linkage:                                                                  */
+/*  agl_get_log_level:                                                        */
 /* ========================================================================== */
 
-/*! @def AGL_LINK_STATICALLY
-  Linking to AGL statically, e.g., using libagl.a. */
-#define AGL_LINK_STATICALLY 1
+agl_log_level_t agl_get_log_level(void) {
+  return log_level_;
+}
 
-/*! @def AGL_LINK_DYNAMICALLY
-  Linking to AGL dynamically, e.g., using libagl.so. */
-#define AGL_LINK_DYNAMICALLY 2
+/* ========================================================================== */
+/*  agl_set_log_level:                                                        */
+/* ========================================================================== */
 
-/*! @def AGL_LINKAGE
-  Specifies if AGL is being linked to statically, or dynamically. */
-#ifndef AGL_LINKAGE
-  #error ("Please specify how you are linking to AGL by defining `AGL_LINKAGE`.")
-#endif
-
-#if (AGL_LINKAGE == AGL_LINK_STATICALLY)
-  #define AGL_EXPORT
-#elif (AGL_LINKAGE == AGL_LINK_DYNAMICALLY)
-  #ifdef _MSC_VER
-    #ifdef AGL_COMPILING
-      #define AGL_EXPORT __declspec(dllexport)
-    #else
-      #define AGL_EXPORT __declspec(dllimport)
-    #endif
-  #else
-    #define AGL_EXPORT
-  #endif
-#endif
+agl_log_level_t agl_set_log_level(const agl_log_level_t level) {
+  const agl_log_level_t previous = log_level_;
+  log_level_ = level;
+  return previous;
+}
 
 /* ========================================================================== */
 
-#endif /* _AGL_CONFIG_H_ */
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+/* ========================================================================== */
