@@ -37,6 +37,8 @@
 
 #if defined(_WIN32)
   #include <windows.h>
+#elif defined(__linux__) || defined(__APPLE__)
+  #include <dlfcn.h>
 #endif
 
 #ifdef __cplusplus
@@ -60,6 +62,9 @@ agl_shared_library_t *agl_shared_library_open(
 #if defined(_WIN32)
   return (agl_shared_library_t *)
     LoadLibraryA(name);
+#elif defined(__linux__) || defined(__APPLE__)
+  return (agl_shared_library_t *)
+    dlopen(name, RTLD_NOW|RTLD_LOCAL);
 #endif
 }
 
@@ -75,6 +80,8 @@ void *agl_shared_library_symbol(
   agl_assert(debug, name != NULL);
 #if defined(_WIN32)
   return (void *)GetProcAddress((HMODULE)shared_library, name);
+#elif defined(__linux__) || defined(__APPLE__)
+  return dlsym((void *)shared_library, name);
 #endif
 }
 
@@ -88,6 +95,8 @@ void agl_shared_library_close(
   agl_assert(debug, shared_library != NULL);
 #if defined(_WIN32)
   FreeLibrary((HMODULE)shared_library);
+#elif defined(__linux__)
+  dlclose((void *)shared_library);
 #endif
 }
 
