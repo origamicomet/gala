@@ -62,6 +62,7 @@ ifeq ($(LINKAGE),static)
 endif
 ifeq ($(LINKAGE),dynamic)
   AGL := $(BIN_DIR)/$(SHARED_LIB_PREFIX)agl$(SHARED_LIB_SUFFIX)$(SHARED_LIB_EXTENSION)
+  CFLAGS += $(call cc-position-independent-code)
 endif
 
 .PHONY: all docs clean
