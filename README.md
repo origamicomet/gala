@@ -1,8 +1,9 @@
 # Abstract Graphics Library
 
-[![Build Status](https://travis-ci.org/mtwilliams/agl.png?branch=master)](http://travis-ci.org/mtwilliams/agl) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mtwilliams/agl/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+[![Build Status](https://travis-ci.org/mtwilliams/agl.png?branch=master)](http://travis-ci.org/mtwilliams/agl)
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mtwilliams/agl/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
-A public domain library that abstracts rendering through an asynchronous API.
+Abstracts rendering through an asynchronous cross-platform API.
 
 ## Supports
 
@@ -12,7 +13,7 @@ A public domain library that abstracts rendering through an asynchronous API.
 | Windows   | MinGW/MSYS              | <span>&#10003;</span> |
 | Windows   | Cygwin                  |         Never         |
 | Mac OS X  | GCC or Clang            |        Planned        |
-| Linux     | GCC or Clang            | <span>&#10003;</span> |
+| Linux     | GCC or Clang            |        Planned        |
 | BSD       | GCC or Clang            |        Planned        |
 | Android   | GCC or Clang            |        Planned        |
 | iOS       | GCC or Clang            |        Planned        |
@@ -23,60 +24,48 @@ A public domain library that abstracts rendering through an asynchronous API.
 |:--------- |:----------------------- |:---------------------:|
 | Windows   | `AGL_BACKEND_D3D9`      |        Planned        |
 | Windows   | `AGL_BACKEND_D3D11`     |        Planned        |
-| Windows   | `AGL_BACKEND_OPENGL`    |        Planned        |
+| Windows   | `AGL_BACKEND_GL21`      |        Planned        |
+| Windows   | `AGL_BACKEND_GL31`      |        Planned        |
 | Windows   | `AGL_BACKEND_MANTLE`    |        Planned        |
-| Mac OS X  | `AGL_BACKEND_OPENGL`    |        Planned        |
+
+| Platform  | Backend                 | Supported             |
+|:--------- |:----------------------- |:---------------------:|
+| Mac OS X  | `AGL_BACKEND_GL21`      |        Planned        |
+| Mac OS X  | `AGL_BACKEND_GL31`      |        Planned        |
 | Mac OS X  | `AGL_BACKEND_MANTLE`    |       Hopefully       |
-| Linux     | `AGL_BACKEND_OPENGL`    |        Planned        |
+
+| Platform  | Backend                 | Supported             |
+|:--------- |:----------------------- |:---------------------:|
+| Linux     | `AGL_BACKEND_GL21`      |        Planned        |
+| Linux     | `AGL_BACKEND_GL31`      |        Planned        |
 | Linux     | `AGL_BACKEND_MANTLE`    |       Hopefully       |
+
+| Platform  | Backend                 | Supported             |
+|:--------- |:----------------------- |:---------------------:|
 | Android   | `AGL_BACKEND_GLES`      |         Never         |
 | Android   | `AGL_BACKEND_GLES2`     |        Planned        |
 | Android   | `AGL_BACKEND_GLES3`     |        Planned        |
+
+| Platform  | Backend                 | Supported             |
+|:--------- |:----------------------- |:---------------------:|
 | iOS       | `AGL_BACKEND_GLES`      |         Never         |
 | iOS       | `AGL_BACKEND_GLES2`     |        Planned        |
 | iOS       | `AGL_BACKEND_GLES3`     |        Planned        |
-| Web       | `AGL_BACKEND_GLES2`     |        Planned        |
-| Web       | `AGL_BACKEND_GLES3`     |        Planned        |
+
+| Platform  | Backend                 | Supported             |
+|:--------- |:----------------------- |:---------------------:|
+| NaCl      | `AGL_BACKEND_GLES2`     |        Planned        |
+| NaCl      | `AGL_BACKEND_GLES3`     |        Planned        |
 
 ## Building
-
-### Windows
-
-TODO
-
-### Mac OSX
-
-TODO
-
-### Linux
-
-TODO
-
-### BSD
-
-TODO
-
-### Android
-
-TODO
-
-### iOS
-
-TODO
-
-### Web
-
-#### via [Native Client (PNaCl)](https://developers.google.com/native-client/)
-
-TODO
-
-#### via [emscripten](https://github.com/kripken/emscripten)
 
 TODO
 
 ## Configuring
 
-AGL's compile-, link-, and runtime behaviour is controlled by `./configure` switches and options, as well as various pre-processor defines (which are documented in `include/agl/config.h`).
+Compile-time, link-time, and runtime behaviour is controlled by `./configure`
+switches and options, as well as various pre-processor defines (which are
+documented in "`include/agl/config.h`).
 
 ### via switches and options
 
@@ -84,12 +73,30 @@ TODO
 
 ## License
 
+Public domain.
+
+### in legalese
+
 Author(s):
 
-  * Michael Williams <devbug@bitbyte.ca>
+  * Michael Williams <mtwilliams@bitbyte.ca>
 
-This is free and unencumbered software released into the public domain. Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
+This is free and unencumbered software released into the public domain. Anyone
+is free to copy, modify, publish, use, compile, sell, or distribute this
+software, either in source code form or as a compiled binary, for any purpose,
+commercial or non-commercial, and by any means.
 
-In jurisdictions that recognize copyright laws, the author or authors of this software dedicate any and all copyright interest in the software to the public domain. We make this dedication for the benefit of the public large and to the detriment of our heirs and successors. We intend this dedication to be an overt act of relinquishment in perpetuity of all present and future rights to this software under copyright law.
+In jurisdictions that recognize copyright laws, the author or authors of this
+software dedicate any and all copyright interest in the software to the public
+domain. We make this dedication for the benefit of the public large and to the
+detriment of our heirs and successors. We intend this dedication to be an
+overt act of relinquishment in perpetuity of all present and future rights to
+this software under copyright law.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
