@@ -8,7 +8,7 @@ Abstracts rendering through an asynchronous cross-platform API.
 ## Supports
 
 | Platform  | Toolchain               | Supported             |
-|:--------- |:----------------------- |:---------------------:|
+|:---------:|:-----------------------:|:---------------------:|
 | Windows   | Microsoft Visual Studio | <span>&#10003;</span> |
 | Windows   | MinGW/MSYS              | <span>&#10003;</span> |
 | Windows   | Cygwin                  |         Never         |
@@ -21,39 +21,29 @@ Abstracts rendering through an asynchronous cross-platform API.
 | Web       | emscripten              |        Planned        |
 
 | Platform  | Backend                 | Supported             |
-|:--------- |:----------------------- |:---------------------:|
+|:---------:|:-----------------------:|:---------------------:|
 | Windows   | `AGL_BACKEND_D3D9`      |        Planned        |
 | Windows   | `AGL_BACKEND_D3D11`     |        Planned        |
 | Windows   | `AGL_BACKEND_GL21`      |        Planned        |
 | Windows   | `AGL_BACKEND_GL31`      |        Planned        |
 | Windows   | `AGL_BACKEND_MANTLE`    |        Planned        |
-
-| Platform  | Backend                 | Supported             |
-|:--------- |:----------------------- |:---------------------:|
+|           |                         |                       |
 | Mac OS X  | `AGL_BACKEND_GL21`      |        Planned        |
 | Mac OS X  | `AGL_BACKEND_GL31`      |        Planned        |
 | Mac OS X  | `AGL_BACKEND_MANTLE`    |       Hopefully       |
-
-| Platform  | Backend                 | Supported             |
-|:--------- |:----------------------- |:---------------------:|
+|           |                         |                       |
 | Linux     | `AGL_BACKEND_GL21`      |        Planned        |
 | Linux     | `AGL_BACKEND_GL31`      |        Planned        |
 | Linux     | `AGL_BACKEND_MANTLE`    |       Hopefully       |
-
-| Platform  | Backend                 | Supported             |
-|:--------- |:----------------------- |:---------------------:|
+|           |                         |                       |
 | Android   | `AGL_BACKEND_GLES`      |         Never         |
 | Android   | `AGL_BACKEND_GLES2`     |        Planned        |
 | Android   | `AGL_BACKEND_GLES3`     |        Planned        |
-
-| Platform  | Backend                 | Supported             |
-|:--------- |:----------------------- |:---------------------:|
+|           |                         |                       |
 | iOS       | `AGL_BACKEND_GLES`      |         Never         |
 | iOS       | `AGL_BACKEND_GLES2`     |        Planned        |
 | iOS       | `AGL_BACKEND_GLES3`     |        Planned        |
-
-| Platform  | Backend                 | Supported             |
-|:--------- |:----------------------- |:---------------------:|
+|           |                         |                       |
 | NaCl      | `AGL_BACKEND_GLES2`     |        Planned        |
 | NaCl      | `AGL_BACKEND_GLES3`     |        Planned        |
 
