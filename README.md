@@ -43,6 +43,7 @@ Abstracts rendering through an asynchronous cross-platform API.
 | iOS       | `AGL_BACKEND_GLES`      |         Never         |
 | iOS       | `AGL_BACKEND_GLES2`     |        Planned        |
 | iOS       | `AGL_BACKEND_GLES3`     |        Planned        |
+| iOS       | `AGL_BACKEND_METAL`     |       Hopefully       |
 |           |                         |                       |
 | NaCl      | `AGL_BACKEND_GLES2`     |        Planned        |
 | NaCl      | `AGL_BACKEND_GLES3`     |        Planned        |
@@ -55,7 +56,7 @@ TODO
 
 Compile-time, link-time, and runtime behaviour is controlled by `./configure`
 switches and options, as well as various pre-processor defines (which are
-documented in "`include/agl/config.h`).
+documented in `include/agl/config.h`).
 
 ### via switches and options
 
