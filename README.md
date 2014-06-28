@@ -17,7 +17,7 @@ Abstracts rendering through an asynchronous cross-platform API.
 | BSD       | GCC or Clang            |        Planned        |
 | Android   | GCC or Clang            |        Planned        |
 | iOS       | GCC or Clang            |        Planned        |
-| Web       | Native Client (PNaCl)   |        Planned        |
+| Web       | Native Client           |        Planned        |
 | Web       | emscripten              |        Planned        |
 
 | Platform  | Backend                 | Supported             |
@@ -47,6 +47,9 @@ Abstracts rendering through an asynchronous cross-platform API.
 |           |                         |                       |
 | NaCl      | `AGL_BACKEND_GLES2`     |        Planned        |
 | NaCl      | `AGL_BACKEND_GLES3`     |        Planned        |
+|           |                         |                       |
+| Web       | `AGL_BACKEND_GLES2`     |        Planned        |
+| Web       | `AGL_BACKEND_GLES3`     |        Planned        |
 
 ## Building
 
@@ -54,9 +57,8 @@ TODO
 
 ## Configuring
 
-Compile-time, link-time, and runtime behaviour is controlled by `./configure`
-switches and options, as well as various pre-processor defines (which are
-documented in `include/agl/config.h`).
+Compile-time, link-time, and runtime behaviour is controlled by `./configure` switches and options as well as various pre-processor defines (which are documented in `include/agl/config.h`).
+
 
 ### via switches and options
 
@@ -70,7 +72,7 @@ Public domain.
 
 Author(s):
 
-  * Michael Williams <mtwilliams@bitbyte.ca>
+  * Michael Williams <mwilliams@bitbyte.ca>
 
 This is free and unencumbered software released into the public domain. Anyone
 is free to copy, modify, publish, use, compile, sell, or distribute this
