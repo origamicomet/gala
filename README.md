@@ -1,7 +1,6 @@
 # Abstract Graphics Library
 
-[![Build Status](https://travis-ci.org/mtwilliams/agl.png?branch=master)](http://travis-ci.org/mtwilliams/agl)
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mtwilliams/agl/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+[![Build Status](https://travis-ci.org/bitbytestudios/agl.png?branch=master)](http://travis-ci.org/bitbytestudios/agl)
 
 Abstracts rendering through an asynchronous cross-platform API.
 
