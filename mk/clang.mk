@@ -58,10 +58,9 @@ endif
 # Define CFLAGS, LDFLAGS, and ARFLAGS
 #
 
-CFLAGS  := -Wall -Wextra -Wfloat-equal -Wshadow -Wunsafe-loop-optimizations \
-           -Wpointer-arith -Wcast-qual -Wcast-align \
-           -Wmissing-field-initializers -Wpacked -Wpadded -Wredundant-decls \
-           -Wunreachable-code -Winline
+CFLAGS  := -Wall -Wextra -Wfloat-equal -Wshadow -Wpointer-arith -Wcast-qual \
+           -Wcast-align -Wmissing-field-initializers -Wpacked -Wpadded \
+           -Wredundant-decls -Wunreachable-code -Winline
 
 LDFLAGS :=
 
