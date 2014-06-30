@@ -2,8 +2,15 @@ language: cpp
 compiler:
   - gcc
   - clang
+os:
+  - linux
+  - osx
 before_install:
-  - sudo apt-get update -qq
+  linux:
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq make
+    - sudo apt-get install -qq gcc-multilib g++-multilib
+  # osx:
 script:
   - ./configure
   - make all
@@ -13,19 +20,27 @@ env:
   global:
     - AGL_CONFIG_PARANOID=yes
   matrix:
-    # - AGL_CONFIG_CONFIGURATION=debug AGL_CONFIG_LINKAGE=static AGL_CONFIG_ARCHITECTURE=x86
-    # - AGL_CONFIG_CONFIGURATION=development AGL_CONFIG_LINKAGE=static AGL_CONFIG_ARCHITECTURE=x86
-    # - AGL_CONFIG_CONFIGURATION=release AGL_CONFIG_LINKAGE=static AGL_CONFIG_ARCHITECTURE=x86
-    # - AGL_CONFIG_CONFIGURATION=debug AGL_CONFIG_LINKAGE=dynamic AGL_CONFIG_ARCHITECTURE=x86
-    # - AGL_CONFIG_CONFIGURATION=development AGL_CONFIG_LINKAGE=dynamic AGL_CONFIG_ARCHITECTURE=x86
-    # - AGL_CONFIG_CONFIGURATION=release AGL_CONFIG_LINKAGE=dynamic AGL_CONFIG_ARCHITECTURE=x86
+    - AGL_CONFIG_CONFIGURATION=debug AGL_CONFIG_LINKAGE=static AGL_CONFIG_ARCHITECTURE=x86
+    - AGL_CONFIG_CONFIGURATION=development AGL_CONFIG_LINKAGE=static AGL_CONFIG_ARCHITECTURE=x86
+    - AGL_CONFIG_CONFIGURATION=release AGL_CONFIG_LINKAGE=static AGL_CONFIG_ARCHITECTURE=x86
+    - AGL_CONFIG_CONFIGURATION=debug AGL_CONFIG_LINKAGE=dynamic AGL_CONFIG_ARCHITECTURE=x86
+    - AGL_CONFIG_CONFIGURATION=development AGL_CONFIG_LINKAGE=dynamic AGL_CONFIG_ARCHITECTURE=x86
+    - AGL_CONFIG_CONFIGURATION=release AGL_CONFIG_LINKAGE=dynamic AGL_CONFIG_ARCHITECTURE=x86
     - AGL_CONFIG_CONFIGURATION=debug AGL_CONFIG_LINKAGE=static AGL_CONFIG_ARCHITECTURE=x86-64
     - AGL_CONFIG_CONFIGURATION=development AGL_CONFIG_LINKAGE=static AGL_CONFIG_ARCHITECTURE=x86-64
     - AGL_CONFIG_CONFIGURATION=release AGL_CONFIG_LINKAGE=static AGL_CONFIG_ARCHITECTURE=x86-64
     - AGL_CONFIG_CONFIGURATION=debug AGL_CONFIG_LINKAGE=dynamic AGL_CONFIG_ARCHITECTURE=x86-64
     - AGL_CONFIG_CONFIGURATION=development AGL_CONFIG_LINKAGE=dynamic AGL_CONFIG_ARCHITECTURE=x86-64
     - AGL_CONFIG_CONFIGURATION=release AGL_CONFIG_LINKAGE=dynamic AGL_CONFIG_ARCHITECTURE=x86-64
+  allow_failures:
+    - os: osx
 notifications:
+  irc:
+    channels:
+      - "chat.freenode.net##enginedev"
+    on_success: change
+    on_failure: always
+    use_notice: true
   email:
     recipients:
       - developers@bitbyte.ca
