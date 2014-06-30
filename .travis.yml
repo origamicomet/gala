@@ -6,11 +6,10 @@ os:
   - linux
   - osx
 before_install:
-  linux:
-    - sudo apt-get update -qq
-    - sudo apt-get install -qq make
-    - sudo apt-get install -qq gcc-multilib g++-multilib
-  # osx:
+  # this is going to break on osx, use a shell script?
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq make
+  - sudo apt-get install -qq gcc-multilib g++-multilib
 script:
   - ./configure
   - make all
