@@ -80,8 +80,8 @@ endif
 # Implement the standardized interface
 #
 
-cc                           = gcc --std=gnu99 --pedantic $(CFLAGS)
-c++                          = g++ --std=gnu++0x --pedantic $(CFLAGS)
+cc                           = gcc -std=gnu99 -pedantic $(CFLAGS)
+c++                          = g++ -std=gnu++0x -pedantic $(CFLAGS)
 cc-input                     = -c "$(1)"
 cc-output                    = -o "$(1)"
 cc-includes                  = -I"$(1)"
