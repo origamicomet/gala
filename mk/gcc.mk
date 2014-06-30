@@ -68,10 +68,10 @@ LDFLAGS :=
 ARFLAGS :=
 
 ifeq ($(TARGET_ARCHITECTURE),x86)
-  CFLAGS += -march=i686
+  CFLAGS += -m32
 endif
 ifeq ($(TARGET_ARCHITECTURE),x86-64)
-  CFLAGS += -march=x86-64
+  CFLAGS += -m64
 endif
 
 #===------------------------------------------------------------------------===#
