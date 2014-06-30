@@ -68,9 +68,11 @@ ARFLAGS :=
 
 ifeq ($(TARGET_ARCHITECTURE),x86)
   CFLAGS += -m32
+  LDFLAGS += -m32
 endif
 ifeq ($(TARGET_ARCHITECTURE),x86-64)
   CFLAGS += -m64
+  LDFLAGS += -m64
 endif
 
 #===------------------------------------------------------------------------===#
