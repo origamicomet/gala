@@ -4,4 +4,3 @@ set -e
 
 scripts/configure-debug-win64.sh
 make clean && make all
-rm build/agl-debug-win64.ilk || true
