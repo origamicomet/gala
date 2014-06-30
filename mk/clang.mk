@@ -1,4 +1,4 @@
-#===-- mk/gcc.mk -----------------------------------------------------------===#
+#===-- mk/clang.mk ---------------------------------------------------------===#
 #
 #  Abstract Graphics Library (AGL)
 #
@@ -10,12 +10,12 @@
 #
 #===------------------------------------------------------------------------===#
 
-## \file mk/gcc.mk
-## \brief Provides the standardized toolchain interface for GCC.
+## \file mk/clang.mk
+## \brief Provides the standardized toolchain interface for Clang.
 ##
 
-ifndef _AGL_BUILD_GCC_MK_
-_AGL_BUILD_GCC_MK_ := 1
+ifndef _AGL_BUILD_CLANG_MK_
+_AGL_BUILD_CLANG_MK_ := 1
 
 include mk/detect/platform.mk
 include mk/detect/architecture.mk
@@ -26,13 +26,13 @@ include mk/detect/architecture.mk
 
 # Check that the host platform supports the toolchain.
 ifeq ($(HOST_PLATFORM),windows-cygwin)
-  $(error Compilation on 'windows-cygwin' with 'gcc' is not supported.)
+  $(error Compilation on 'windows-cygwin' with 'clang' is not supported.)
 endif
 ifeq ($(HOST_PLATFORM),windows-mingw)
   # Supported.
 endif
 ifeq ($(HOST_PLATFORM),macosx)
-  $(error Compilation on 'macosx' with 'gcc' is not supported.)
+  # Supported.
 endif
 ifeq ($(HOST_PLATFORM),linux)
   # Supported.
@@ -40,7 +40,7 @@ endif
 
 # And check that the toolchain can compile for the target platform.
 ifneq ($(TARGET_PLATFORM),$(HOST_PLATFORM))
-  $(error Cross-compilation support on '$(HOST_PLATFORM)' with 'gcc' to '$(TARGET_PLATFORM)' is not supported.)
+  $(error Cross-compilation support on '$(HOST_PLATFORM)' with 'clang' to '$(TARGET_PLATFORM)' is not supported.)
 endif
 
 # And check that we can target the specified architecture.
@@ -51,7 +51,7 @@ ifeq ($(TARGET_ARCHITECTURE),x86-64)
   # Supported.
 endif
 ifeq ($(TARGET_ARCHITECTURE),arm)
-  $(error Compilation on '$(HOST_PLATFORM)' with 'gcc' targeting 'arm' is not supported.)
+  $(error Compilation on '$(HOST_PLATFORM)' with 'clang' targeting 'arm' is not supported.)
 endif
 
 #===------------------------------------------------------------------------===#
@@ -78,8 +78,8 @@ endif
 # Implement the standardized interface
 #
 
-cc                           = gcc --std=gnu99 --pedantic $(CFLAGS)
-c++                          = g++ --std=gnu++0x --pedantic $(CFLAGS)
+cc                           = clang --std=gnu99 --pedantic $(CFLAGS)
+c++                          = clang++ --std=gnu++0x --pedantic $(CFLAGS)
 cc-input                     = -c "$(1)"
 cc-output                    = -o "$(1)"
 cc-includes                  = -I"$(1)"
@@ -99,8 +99,8 @@ ar-debug                     =
 ar-development               =
 ar-release                   =
 
-ld                           = gcc $(LDFLAGS)
-ld++                         = g++ $(LDFLAGS)
+ld                           = clang $(LDFLAGS)
+ld++                         = clang++ $(LDFLAGS)
 ld-input                     = "$(1)"
 ld-output                    = -o "$(1)"
 ld-libraries                 = -L"$(1)"
@@ -110,4 +110,4 @@ ld-debug                     =
 ld-development               =
 ld-release                   =
 
-endif # _AGL_BUILD_GCC_MK_
+endif # _AGL_BUILD_CLANG_MK_
