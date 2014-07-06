@@ -18,7 +18,7 @@
 
 AGL_CONFIGURATION := $(CONFIGURATION)
 AGL_LINKAGE       := $(LINKAGE)
-AGL_CFLAGS        :=
+AGL_CFLAGS        := $(call cc-position-independent-code)
 AGL_LDFLAGS       := $(call ld-libraries,bin) $(call ld-libraries,lib)
 AGL_ARFLAGS       :=
 
