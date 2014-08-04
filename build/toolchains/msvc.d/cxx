@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -e
+echo " "
+build/toolchains/msvc.d/cl -TP $@ 2>&1 | xargs -L1 echo " "
