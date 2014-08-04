@@ -40,12 +40,6 @@ env:
 cache:
   - apt
 notifications:
-  irc:
-    channels:
-      - "chat.freenode.net##enginedev"
-    on_success: change
-    on_failure: always
-    use_notice: false
   email:
     recipients:
       - developers@bitbyte.ca
