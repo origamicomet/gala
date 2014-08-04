@@ -1,4 +1,8 @@
 language: cpp
+branches:
+  only:
+    - master
+    - devel
 compiler:
   - gcc
   - clang
@@ -33,6 +37,8 @@ env:
     - AGL_CONFIG_CONFIGURATION=release AGL_CONFIG_LINKAGE=dynamic AGL_CONFIG_ARCHITECTURE=x86-64
   allow_failures:
     - os: osx
+cache:
+  - apt
 notifications:
   irc:
     channels:
