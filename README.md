@@ -12,7 +12,7 @@ Abstracts rendering through an asynchronous cross-platform API.
 | Windows   | MinGW/MSYS              | <span>&#10003;</span> |
 | Windows   | Cygwin                  |         Never         |
 | Mac OS X  | GCC or Clang            |        Planned        |
-| Linux     | GCC or Clang            |        Planned        |
+| Linux     | GCC or Clang            | <span>&#10003;</span> |
 | BSD       | GCC or Clang            |        Planned        |
 | Android   | GCC or Clang            |        Planned        |
 | iOS       | GCC or Clang            |        Planned        |
