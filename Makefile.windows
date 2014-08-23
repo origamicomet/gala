@@ -29,6 +29,10 @@
 #
 # ===----------------------------------------------------------------------=== #
 
+ifneq ($(shell ./build/platform.sh),mingw)
+  $(error Cannot cross-compile to 'windows' from '$(shell ./build/platform.sh)')
+endif
+
 ifeq ($(shell ./build/toolchains/msvc.d/available),0)
   $(error Compiliation with 'msvc' is not available on '$(shell ./build/platform.sh)'. \
           The build system was unable to auto-detect Microsoft Visual C/C++ and/or the Windows SDK. \
