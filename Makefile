@@ -51,7 +51,7 @@ endif
 
 .PHONY: all
 
-all:
+all: agl
 
 test:
 	# TODO: Add unit testing.
