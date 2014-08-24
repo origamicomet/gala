@@ -29,41 +29,37 @@
 #
 # ===----------------------------------------------------------------------=== #
 
-ifndef (ROOT)
+ifndef ROOT
   ROOT := .
 endif
 
-ifndef (BUILD)
+ifndef BUILD
   BUILD := ./_build
 endif
 
-ifndef (PLATFORM)
+ifndef PLATFORM
   PLATFORM := $(shell ./build/platform.sh)
-  ifeq ($(PLATFORM),mingw)
-    PLATFORM := windows
-  endif
-  ifeq ($(PLATFORM),cygwin)
-    $(error Cygwin is not supported!)
-  endif
   $(warning No target platform specified, assuming host platform '$(PLATFORM)'.)
-else
-  ifeq ($(PLATFORM),mingw)
-    PLATFORM := windows
-  endif
-  ifeq ($(PLATFORM),cygwin)
-    $(error Cygwin is not supported!)
-  endif
 endif
 
-ifndef (ARCHITECTURE)
+ifeq ($(PLATFORM),mingw)
+  PLATFORM := windows
+endif
+ifeq ($(PLATFORM),cygwin)
+  $(error Cygwin is not supported!)
+endif
+
+ifndef ARCHITECTURE
   ARCHITECTURE := $(shell ./build/architecture.sh)
   $(warning No target architecture specified, assuming host architecture '$(ARCHITECTURE)'.)
 endif
 
-ifndef (CONFIGURATION)
+ifndef CONFIGURATION
   CONFIGURATION := debug
   $(warning No configuration specified, assuming default configuration '$(CONFIGURATION)'.)
 endif
+
+export
 
 .PHONY: all
 
