@@ -117,3 +117,23 @@ ifeq ($(CONFIGURATION),release)
   LDFLAGS += -LTCG
   ARFLAGS += -LTCG
 endif
+
+#
+# Rules:
+#
+
+$(ROOT)/_build/obj/agl.o: $(ROOT)/src/agl.c
+	@echo "[CC] $<"
+	@mkdir -p ${@D}
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D"__AGL_IS_BEING_COMPILED__=1" -Fo"$@" -Fd"$(patsubst %.o,%.pdb,$@)" "$<"
+	$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
+
+SOURCES := $(shell find $(ROOT)/src -name '*.c')
+OBJECTS := $(subst $(ROOT)/src/,$(ROOT)/_build/obj/,$(SOURCES:%.c=%.o))
+
+$(ROOT)/_build/lib/agl.lib: $(OBJECTS)
+	@echo "[LD] $@"
+	@mkdir -p ${@D}
+	@lib $(ARFLAGS) -OUT:"$@" $(foreach obj,$(OBJECTS),"$(obj)")
+
+agl: $(ROOT)/_build/lib/agl.lib
