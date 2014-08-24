@@ -130,7 +130,7 @@ if M_OR_MM
 
   SOURCE = ARGV.grep(/^[^\-].+?/).first
 
-  print "#{TARGET}: #{SOURCE}"
+  print "$(ROOT)/#{TARGET}: $(ROOT)/#{SOURCE}"
 
   DEPENDENCIES = COMMAND[:output].lines.to_a.select { |line|
     line.start_with? "Note: including file: "
