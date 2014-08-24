@@ -33,6 +33,10 @@ ifndef (ROOT)
   ROOT := .
 endif
 
+ifndef (BUILD)
+  BUILD := ./_build
+endif
+
 ifndef (PLATFORM)
   PLATFORM := $(shell ./build/platform.sh)
   ifeq ($(PLATFORM),mingw)
@@ -73,11 +77,11 @@ docs:
 	@doxygen Doxyfile
 
 clean:
-	@echo "[RM] $(ROOT)/_build/obj"
-	@rm -R -f $(ROOT)/_build/obj
-	@echo "[RM] $(ROOT)/_build/lib"
-	@rm -R -f $(ROOT)/_build/lib
-	@echo "[RM] $(ROOT)/_build/bin"
-	@rm -R -f $(ROOT)/_build/bin
+	@echo "[RM] $(BUILD)/obj"
+	@rm -R -f $(BUILD)/obj
+	@echo "[RM] $(BUILD)/lib"
+	@rm -R -f $(BUILD)/lib
+	@echo "[RM] $(BUILD)/bin"
+	@rm -R -f $(BUILD)/bin
 
 include Makefile.$(PLATFORM)
