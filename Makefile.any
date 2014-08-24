@@ -30,18 +30,25 @@
 # ===----------------------------------------------------------------------=== #
 
 ifndef (ROOT)
-	ROOT := .
+  ROOT := .
 endif
 
 ifndef (PLATFORM)
   PLATFORM := $(shell ./build/platform.sh)
   ifeq ($(PLATFORM),mingw)
-  	PLATFORM := windows
+    PLATFORM := windows
   endif
   ifeq ($(PLATFORM),cygwin)
-  	$(error Cygwin is not supported!)
+    $(error Cygwin is not supported!)
   endif
   $(warning No target platform specified, assuming host platform '$(PLATFORM)'.)
+else
+  ifeq ($(PLATFORM),mingw)
+    PLATFORM := windows
+  endif
+  ifeq ($(PLATFORM),cygwin)
+    $(error Cygwin is not supported!)
+  endif
 endif
 
 ifndef (ARCHITECTURE)
@@ -50,7 +57,7 @@ ifndef (ARCHITECTURE)
 endif
 
 ifndef (CONFIGURATION)
-	CONFIGURATION := debug
+  CONFIGURATION := debug
   $(warning No configuration specified, assuming default configuration '$(CONFIGURATION)'.)
 endif
 
