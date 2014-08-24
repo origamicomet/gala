@@ -1,0 +1,146 @@
+# ===----------------------------------------------------------------------=== #
+#
+#  Abstract Graphics Library (AGL)
+#
+#  This is free and unencumbered software released into the public domain.
+#
+#  Anyone is free to copy, modify, publish, use, compile, sell, or
+#  distribute this software, either in source code form or as a compiled
+#  binary, for any purpose, commercial or non-commercial, and by any
+#  means.
+#
+#  In jurisdictions that recognize copyright laws, the author or authors
+#  of this software dedicate any and all copyright interest in the
+#  software to the public domain. We make this dedication for the benefit
+#  of the public at large and to the detriment of our heirs and
+#  successors. We intend this dedication to be an overt act of
+#  relinquishment in perpetuity of all present and future rights to this
+#  software under copyright law.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+#  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+#  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+#  IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+#  For more information, please refer to <http://unlicense.org/>
+#
+# ===----------------------------------------------------------------------=== #
+
+#
+# Convenience helpers:
+#
+
+windows-to-posix = $(shell echo "$1" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
+posix-to-windows = $(shell echo "$1" | sed 's/^\///' | sed 's/\//\\/g' | sed 's/^.\:/\0:/')
+
+#
+# Verify that Windows is targetable:
+#
+
+ifneq ($(shell $(ROOT)/build/platform.sh),mingw)
+  $(error Cannot cross-compile to 'windows' from '$(shell $(ROOT)/build/platform.sh)')
+endif
+
+#
+# Verify that Microsoft Visual C/C++ exists:
+#
+
+ifeq ($(shell $(ROOT)/build/toolchains/msvc.d/available),0)
+  $(error Compiliation with 'msvc' is not available on '$(shell $(ROOT)/build/platform.sh)'. \
+          The build system was unable to auto-detect Microsoft Visual C/C++ and/or the Windows SDK. \
+          Try defining VCInstallDir and/or WindowsSdkDir)
+endif
+
+#
+# Inject Microsoft Visual C/C++ and the Windows SDK into PATH:
+#
+
+VCInstallDir := $(shell $(ROOT)/build/platforms/windows/mingw/VCInstallDir.sh)
+WindowsSdkDir := $(shell $(ROOT)/build/platforms/windows/mingw/WindowsSdkDir.sh)
+
+VCInstallDir_ := $(call windows-to-posix,$(VCInstallDir))
+WindowsSdkDir_ := $(call windows-to-posix,$(WindowsSdkDir))
+
+# HACK: The Common7/IDE path might not exist in older versions of Microsoft Visual Studio.
+CommonTools_ := $(shell readlink -f "$(VCInstallDir_)/../Common7")
+
+ifeq ($(ARCHITECTURE),x86)
+  export PATH := $(WindowsSdkDir_)/bin:$(CommonTools_)/IDE:$(VCInstallDir_)/bin:$(PATH)
+endif
+ifeq ($(ARCHITECTURE),x86-64)
+  # export PATH := $(WindowsSdkDir_)/bin/x64:CommonTools_:$(VCInstallDir_)/bin/x86_amd64:$(VCInstallDir_)/bin:$(PATH)
+endif
+
+#
+# Define CFLAGS, LDFLAGS, and ARFLAGS:
+#
+
+CFLAGS  := -nologo -c -favor:blend -GF -GR- -W4
+LDFLAGS := -nologo -manifest:embed
+ARFLAGS := -nologo
+
+ifeq ($(ARCHITECTURE),x86)
+  CFLAGS += -arch:IA32
+  LDFLAGS += -machine:X86
+  ARFLAGS += -machine:X86
+endif
+ifeq ($(ARCHITECTURE),x86-64)
+  LDFLAGS += -machine:X64
+  ARFLAGS += -machine:X64
+endif
+
+ifeq ($(ARCHITECTURE),x86)
+  CFLAGS += -I"$(WindowsSdkDir)/Include" -I"$(VCInstallDir)/include"
+  LDFLAGS += -LIBPATH:"$(WindowsSdkDir)/Lib" -LIBPATH:"$(VCInstallDir)/Lib"
+endif
+ifeq ($(ARCHITECTURE),x86-64)
+  CFLAGS += -I"$(WindowsSdkDir)/Include" -I"$(VCInstallDir)/include"
+  LDFLAGS += -LIBPATH:"$(WindowsSdkDir)/Lib/x64" -LIBPATH:"$(VCInstallDir)/Lib/amd64"
+endif
+
+# See http://stackoverflow.com/questions/14363929.
+ifeq ($(findstring 12.0,$(VCInstallDir)),12.0)
+  CFLAGS += -D"_USING_V110_SDK71_=1"
+endif
+
+ifeq ($(CONFIGURATION),debug)
+  CFLAGS += -MDd -Od -Zi -RTCsu -fp:precise -fp:except -D_DEBUG
+  CFLAGS += -D"__AGL_CONFIGURATION__=__AGL_CONFIGURATION_DEBUG__"
+  LDFLAGS += -DEBUG
+  ARFLAGS +=
+endif
+ifeq ($(CONFIGURATION),development)
+  CFLAGS += -MD -Zi -fp:fast -fp:except- -D_NDEBUG
+  CFLAGS += -D"__AGL_CONFIGURATION__=__AGL_CONFIGURATION_DEVELOPMENT__"
+  LDFLAGS += -DEBUG
+  ARFLAGS +=
+endif
+ifeq ($(CONFIGURATION),release)
+  CFLAGS += -MD -GL -Ox -fp:fast -fp:except- -D_NDEBUG
+  CFLAGS += -D"__AGL_CONFIGURATION__=__AGL_CONFIGURATION_RELEASE__"
+  LDFLAGS += -LTCG
+  ARFLAGS += -LTCG
+endif
+
+#
+# Rules:
+#
+
+$(BUILD)/obj/agl.o: $(ROOT)/src/agl.c
+	@echo "[CC] $<"
+	@mkdir -p ${@D}
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D"__AGL_IS_BEING_COMPILED__=1" -Fo"$(call posix-to-windows,$@)" -Fd"$(call posix-to-windows,$(patsubst %.o,%.pdb,$@))" "$<"
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
+
+SOURCES := $(shell find $(ROOT)/src -name '*.c')
+OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(SOURCES:%.c=%.o))
+
+$(BUILD)/lib/agl.lib: $(OBJECTS)
+	@echo "[LD] $@"
+	@mkdir -p ${@D}
+	@lib $(ARFLAGS) -OUT:"$(call posix-to-windows,$@)" $(foreach obj,$(OBJECTS),"$(call posix-to-windows,$(obj))")
+
+agl: $(BUILD)/lib/agl.lib
