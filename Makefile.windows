@@ -51,8 +51,8 @@ endif
 # Inject Microsoft Visual C/C++ and the Windows SDK into PATH:
 #
 
-VCInstallDir := $(shell build/platforms/windows/mingw/VCInstallDir.sh)
-WindowsSdkDir := $(shell build/platforms/windows/mingw/WindowsSdkDir.sh)
+VCInstallDir := $(shell $(ROOT)/build/platforms/windows/mingw/VCInstallDir.sh)
+WindowsSdkDir := $(shell $(ROOT)/build/platforms/windows/mingw/WindowsSdkDir.sh)
 
 VCInstallDir_ := $(shell echo "$(VCInstallDir)" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
 WindowsSdkDir_ := $(shell echo "$(WindowsSdkDir)" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
@@ -122,10 +122,12 @@ endif
 # Rules:
 #
 
+posix-to-windows = $(shell echo "$1" | sed 's/^\///' | sed 's/\//\\/g' | sed 's/^.\:/\0:/')
+
 $(BUILD)/obj/agl.o: $(ROOT)/src/agl.c
 	@echo "[CC] $<"
 	@mkdir -p ${@D}
-	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D"__AGL_IS_BEING_COMPILED__=1" -Fo"$@" -Fd"$(patsubst %.o,%.pdb,$@)" "$<"
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D"__AGL_IS_BEING_COMPILED__=1" -Fo"$(call posix-to-windows,$@)" -Fd"$(call posix-to-windows,$(patsubst %.o,%.pdb,$@))" "$<"
 	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
 
 SOURCES := $(shell find $(ROOT)/src -name '*.c')
@@ -134,6 +136,6 @@ OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(SOURCES:%.c=%.o))
 $(BUILD)/lib/agl.lib: $(OBJECTS)
 	@echo "[LD] $@"
 	@mkdir -p ${@D}
-	@lib $(ARFLAGS) -OUT:"$@" $(foreach obj,$(OBJECTS),"$(obj)")
+	@lib $(ARFLAGS) -OUT:"$(call posix-to-windows,$@)" $(foreach obj,$(OBJECTS),"$(call posix-to-windows,$(obj))")
 
 agl: $(BUILD)/lib/agl.lib
