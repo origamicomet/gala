@@ -30,6 +30,13 @@
 # ===----------------------------------------------------------------------=== #
 
 #
+# Convenience helpers:
+#
+
+windows-to-posix = $(shell echo "$1" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
+posix-to-windows = $(shell echo "$1" | sed 's/^\///' | sed 's/\//\\/g' | sed 's/^.\:/\0:/')
+
+#
 # Verify that Windows is targetable:
 #
 
@@ -53,8 +60,6 @@ endif
 
 VCInstallDir := $(shell $(ROOT)/build/platforms/windows/mingw/VCInstallDir.sh)
 WindowsSdkDir := $(shell $(ROOT)/build/platforms/windows/mingw/WindowsSdkDir.sh)
-
-windows-to-posix = $(shell echo "$1" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
 
 VCInstallDir_ := $(call windows-to-posix,$(VCInstallDir))
 WindowsSdkDir_ := $(call windows-to-posix,$(WindowsSdkDir))
@@ -123,8 +128,6 @@ endif
 #
 # Rules:
 #
-
-posix-to-windows = $(shell echo "$1" | sed 's/^\///' | sed 's/\//\\/g' | sed 's/^.\:/\0:/')
 
 $(BUILD)/obj/agl.o: $(ROOT)/src/agl.c
 	@echo "[CC] $<"
