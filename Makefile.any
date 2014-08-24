@@ -84,4 +84,4 @@ clean:
 	@echo "[RM] $(BUILD)/bin"
 	@rm -R -f $(BUILD)/bin
 
-include Makefile.$(PLATFORM)
+include $(ROOT)/Makefile.$(PLATFORM)
