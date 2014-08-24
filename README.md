@@ -65,7 +65,7 @@ How do I build it?
 How do I contribute?
 --------------------
 
-See our contribution here.
+See our contribution guide here.
 
 How is it licensed?
 -------------------
