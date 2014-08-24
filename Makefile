@@ -49,6 +49,11 @@ ifndef (ARCHITECTURE)
   $(warning No target architecture specified, assuming host architecture '$(ARCHITECTURE)'.)
 endif
 
+ifndef (CONFIGURATION)
+	CONFIGURATION := debug
+  $(warning No configuration specified, assuming default configuration '$(CONFIGURATION)'.)
+endif
+
 .PHONY: all
 
 all: agl
