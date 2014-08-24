@@ -4,7 +4,8 @@
 
 Abstracts rendering through an asynchronous cross-platform API.
 
-## Supports
+What platforms does it support?
+-------------------------------
 
 | Platform  | Toolchain               | Supported             |
 |:---------:|:-----------------------:|:---------------------:|
@@ -19,56 +20,59 @@ Abstracts rendering through an asynchronous cross-platform API.
 | Web       | Native Client           |        Planned        |
 | Web       | emscripten              |        Planned        |
 
-| Platform  | Backend                 | Supported             |
-|:---------:|:-----------------------:|:---------------------:|
-| Windows   | `AGL_BACKEND_D3D9`      |        Planned        |
-| Windows   | `AGL_BACKEND_D3D11`     |        Planned        |
-| Windows   | `AGL_BACKEND_GL21`      |        Planned        |
-| Windows   | `AGL_BACKEND_GL31`      |        Planned        |
-| Windows   | `AGL_BACKEND_MANTLE`    |        Planned        |
-|           |                         |                       |
-| Mac OS X  | `AGL_BACKEND_GL21`      |        Planned        |
-| Mac OS X  | `AGL_BACKEND_GL31`      |        Planned        |
-| Mac OS X  | `AGL_BACKEND_MANTLE`    |       Hopefully       |
-|           |                         |                       |
-| Linux     | `AGL_BACKEND_GL21`      |        Planned        |
-| Linux     | `AGL_BACKEND_GL31`      |        Planned        |
-| Linux     | `AGL_BACKEND_MANTLE`    |       Hopefully       |
-|           |                         |                       |
-| Android   | `AGL_BACKEND_GLES`      |         Never         |
-| Android   | `AGL_BACKEND_GLES2`     |        Planned        |
-| Android   | `AGL_BACKEND_GLES3`     |        Planned        |
-|           |                         |                       |
-| iOS       | `AGL_BACKEND_GLES`      |         Never         |
-| iOS       | `AGL_BACKEND_GLES2`     |        Planned        |
-| iOS       | `AGL_BACKEND_GLES3`     |        Planned        |
-| iOS       | `AGL_BACKEND_METAL`     |       Hopefully       |
-|           |                         |                       |
-| NaCl      | `AGL_BACKEND_GLES2`     |        Planned        |
-| NaCl      | `AGL_BACKEND_GLES3`     |        Planned        |
-|           |                         |                       |
-| Web       | `AGL_BACKEND_GLES2`     |        Planned        |
-| Web       | `AGL_BACKEND_GLES3`     |        Planned        |
+What backends does it provide?
+------------------------------
 
-## Building
+| Platform   | Backend                 | Supported             |
+|:----------:|:-----------------------:|:---------------------:|
+| Windows    | `AGL_BACKEND_D3D9`      |        Planned        |
+| Windows    | `AGL_BACKEND_D3D11`     |        Planned        |
+| Windows    | `AGL_BACKEND_GL21`      |        Planned        |
+| Windows    | `AGL_BACKEND_GL31`      |        Planned        |
+| Windows    | `AGL_BACKEND_MANTLE`    |        Planned        |
+|            |                         |                       |
+| Mac OS X   | `AGL_BACKEND_GL21`      |        Planned        |
+| Mac OS X   | `AGL_BACKEND_GL31`      |        Planned        |
+| Mac OS X   | `AGL_BACKEND_MANTLE`    |       Hopefully       |
+|            |                         |                       |
+| Linux      | `AGL_BACKEND_GL21`      |        Planned        |
+| Linux      | `AGL_BACKEND_GL31`      |        Planned        |
+| Linux      | `AGL_BACKEND_MANTLE`    |       Hopefully       |
+|            |                         |                       |
+| Android    | `AGL_BACKEND_GLES`      |         Never         |
+| Android    | `AGL_BACKEND_GLES2`     |        Planned        |
+| Android    | `AGL_BACKEND_GLES3`     |        Planned        |
+|            |                         |                       |
+| iOS        | `AGL_BACKEND_GLES`      |         Never         |
+| iOS        | `AGL_BACKEND_GLES2`     |        Planned        |
+| iOS        | `AGL_BACKEND_GLES3`     |        Planned        |
+| iOS        | `AGL_BACKEND_METAL`     |       Hopefully       |
+|            |                         |                       |
+| NaCl       | `AGL_BACKEND_GLES2`     |        Planned        |
+| NaCl       | `AGL_BACKEND_GLES3`     |        Planned        |
+|            |                         |                       |
+| emscripten | `AGL_BACKEND_GLES2`     |        Planned        |
+| emscripten | `AGL_BACKEND_GLES3`     |        Planned        |
 
-TODO
+How do I build it?
+------------------
 
-## Configuring
+    $ git clone https://github.com/bitbytestudios/agl.git
+    $ cd agl
+    $ ./configure
+    $ make
 
-Compile-time, link-time, and runtime behaviour is controlled by `./configure` switches and options as well as various pre-processor defines (which are documented in `include/agl/config.h`).
+How do I contribute?
+--------------------
 
+See our contribution here.
 
-### via switches and options
-
-TODO
-
-## License
+How is it licensed?
+-------------------
 
 Public domain.
 
-### in legalese
-
+```
 Author(s):
 
   * Michael Williams <mwilliams@bitbyte.ca>
@@ -92,3 +96,4 @@ AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
