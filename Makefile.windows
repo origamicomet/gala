@@ -126,7 +126,7 @@ $(ROOT)/_build/obj/agl.o: $(ROOT)/src/agl.c
 	@echo "[CC] $<"
 	@mkdir -p ${@D}
 	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D"__AGL_IS_BEING_COMPILED__=1" -Fo"$@" -Fd"$(patsubst %.o,%.pdb,$@)" "$<"
-	$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
 
 SOURCES := $(shell find $(ROOT)/src -name '*.c')
 OBJECTS := $(subst $(ROOT)/src/,$(ROOT)/_build/obj/,$(SOURCES:%.c=%.o))
