@@ -46,3 +46,23 @@ ifeq ($(shell ./build/toolchains/msvc.d/available),0)
           The build system was unable to auto-detect Microsoft Visual C/C++ and/or the Windows SDK. \
           Try defining VCInstallDir and/or WindowsSdkDir)
 endif
+
+#
+# Inject Microsoft Visual C/C++ and the Windows SDK into PATH:
+#
+
+VCInstallDir := $(shell build/platforms/windows/mingw/VCInstallDir.sh)
+WindowsSdkDir := $(shell build/platforms/windows/mingw/WindowsSdkDir.sh)
+
+VCInstallDir_ := $(shell echo "$(VCInstallDir)" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
+WindowsSdkDir_ := $(shell echo "$(WindowsSdkDir)" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
+
+# HACK: The Common7/IDE path might not exist in older versions of Microsoft Visual Studio.
+CommonTools_ := $(shell readlink -f "$(VCInstallDir_)/../Common7")
+
+ifeq ($(ARCHITECTURE),x86)
+  export PATH := $(WindowsSdkDir_)/bin:$(CommonTools_)/IDE:$(VCInstallDir_)/bin:$(PATH)
+endif
+ifeq ($(ARCHITECTURE),x86-64)
+  # export PATH := $(WindowsSdkDir_)/bin/x64:CommonTools_:$(VCInstallDir_)/bin/x86_amd64:$(VCInstallDir_)/bin:$(PATH)
+endif
