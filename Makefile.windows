@@ -29,9 +29,17 @@
 #
 # ===----------------------------------------------------------------------=== #
 
+#
+# Verify that Windows is targetable:
+#
+
 ifneq ($(shell ./build/platform.sh),mingw)
   $(error Cannot cross-compile to 'windows' from '$(shell ./build/platform.sh)')
 endif
+
+#
+# Verify that Microsoft Visual C/C++ exists:
+#
 
 ifeq ($(shell ./build/toolchains/msvc.d/available),0)
   $(error Compiliation with 'msvc' is not available on '$(shell ./build/platform.sh)'. \
