@@ -54,8 +54,10 @@ endif
 VCInstallDir := $(shell $(ROOT)/build/platforms/windows/mingw/VCInstallDir.sh)
 WindowsSdkDir := $(shell $(ROOT)/build/platforms/windows/mingw/WindowsSdkDir.sh)
 
-VCInstallDir_ := $(shell echo "$(VCInstallDir)" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
-WindowsSdkDir_ := $(shell echo "$(WindowsSdkDir)" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
+windows-to-posix = $(shell echo "$1" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
+
+VCInstallDir_ := $(call windows-to-posix,$(VCInstallDir))
+WindowsSdkDir_ := $(call windows-to-posix,$(WindowsSdkDir))
 
 # HACK: The Common7/IDE path might not exist in older versions of Microsoft Visual Studio.
 CommonTools_ := $(shell readlink -f "$(VCInstallDir_)/../Common7")
