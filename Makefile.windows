@@ -34,7 +34,7 @@
 #
 
 windows-to-posix = $(shell echo "$1" | sed 's/\\/\//g' | sed 's/://' | sed 's/^/\//')
-posix-to-windows = $(shell echo "$1" | sed 's/^\///' | sed 's/\//\\/g' | sed 's/^.\:/\0:/')
+posix-to-windows = $(shell echo "$1" | sed 's/^\/./\0:/' | sed 's/^\///' | sed 's/\//\\/g')
 
 #
 # Verify that Windows is targetable:
@@ -132,8 +132,8 @@ endif
 $(BUILD)/obj/agl.o: $(ROOT)/src/agl.c
 	@echo "[CC] $<"
 	@mkdir -p ${@D}
-	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D"__AGL_IS_BEING_COMPILED__=1" -Fo"$(call posix-to-windows,$@)" -Fd"$(call posix-to-windows,$(patsubst %.o,%.pdb,$@))" "$<"
-	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D"__AGL_IS_BEING_COMPILED__=1" -Fo"$(call posix-to-windows,$@)" -Fd"$(call posix-to-windows,$(patsubst %.o,%.pdb,$@))" "$<"
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D__AGL_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
 
 SOURCES := $(shell find $(ROOT)/src -name '*.c')
 OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(SOURCES:%.c=%.o))
