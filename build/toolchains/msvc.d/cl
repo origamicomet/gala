@@ -130,7 +130,19 @@ if M_OR_MM
 
   SOURCE = ARGV.grep(/^[^\-].+?/).first
 
-  print "#{TARGET}: #{SOURCE}"
+  if TARGET =~ /^[a-z]:\/.+?\z/i
+    target = "/#{TARGET[0]}/#{TARGET[3..-1]}"
+  else
+    target = TARGET
+  end
+
+  if SOURCE =~ /^[a-z]:\/.+?\z/i
+    source = "/#{SOURCE[0]}/#{SOURCE[3..-1]}"
+  else
+    source = SOURCE
+  end
+
+  print "#{target}: #{source}"
 
   DEPENDENCIES = COMMAND[:output].lines.to_a.select { |line|
     line.start_with? "Note: including file: "
@@ -139,10 +151,12 @@ if M_OR_MM
   }.map { |line|
     if line =~ /^[a-z]:\/.+?\z/i
       if line.start_with? Dir.pwd
-        line.sub(/^#{Dir.pwd}/, '')[1..-1]
+        "$(ROOT)/#{line.sub(/^#{Dir.pwd}/, '')[1..-1]}"
+      else
+        "/#{line[0]}/#{line[3..-1]}"
       end
     else
-      line
+      "$(ROOT)/#{line}"
     end
   }.compact.map { |line|
     line.gsub("\\", "/")
