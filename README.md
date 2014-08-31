@@ -62,6 +62,8 @@ How do I build it?
     $ ./configure
     $ make
 
+For more details please go [here](https://github.com/bitbytestudios/agl/wiki/Building).
+
 How do I contribute?
 --------------------
 
