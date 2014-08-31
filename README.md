@@ -70,7 +70,7 @@ See our contribution guide here.
 How is it licensed?
 -------------------
 
-Public domain.
+Under the public domain with licensing agreements for closed platforms.
 
 ```
 Author(s):
