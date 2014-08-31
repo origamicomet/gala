@@ -67,7 +67,7 @@ For more details please go [here](https://github.com/bitbytestudios/agl/wiki/Bui
 How do I contribute?
 --------------------
 
-See our contribution guide here.
+See our contribution guide [here](https://github.com/bitbytestudios/meta/wiki/Contributing).
 
 How is it licensed?
 -------------------
