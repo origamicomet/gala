@@ -61,7 +61,7 @@ endif
 
 export
 
-.PHONY: all
+.PHONY: all test docs clean
 
 all: agl
 
