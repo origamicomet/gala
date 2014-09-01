@@ -4,11 +4,14 @@
 		{
 			"path": ".",
 
+			"file_exclude_patterns": [
+				"*.sublime-project",
+				"VERSION"
+			],
+
 			"folder_exclude_patterns": [
-				"bin",
-				"lib",
-				"obj",
-				"docs"
+				"_build",
+				"docs",
 			]
 		}
 	]
