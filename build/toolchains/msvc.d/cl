@@ -153,11 +153,14 @@ if M_OR_MM
       if line.start_with? Dir.pwd
         "$(ROOT)/#{line.sub(/^#{Dir.pwd}/, '')[1..-1]}"
       else
-        "/#{line[0]}/#{line[3..-1]}"
+        # Ignore system includes.
+        # "/#{line[0]}/#{line[3..-1]}"
       end
     else
       "$(ROOT)/#{line}"
     end
+  }.reject { |line|
+    line.nil? || line.empty?
   }.compact.map { |line|
     line.gsub("\\", "/")
   }.uniq
