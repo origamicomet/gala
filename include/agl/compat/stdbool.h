@@ -1,4 +1,4 @@
-//===-- agl/compat.h --------------------------------------------*- C++ -*-===//
+//===-- agl/compat/inttypes.h -----------------------------------*- C++ -*-===//
 //
 //  Abstract Graphics Library (AGL)
 //
@@ -11,22 +11,29 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Documents and defines the pre-processor macros that control AGL's
-/// compile-time, link-time, and runtime behaviour.
+/// \brief Enforces an ISO C9x compliant stdbool.h.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _AGL_COMPAT_H_
-#define _AGL_COMPAT_H_
+#ifndef _AGL_COMPAT_STDBOOL_H_
+#define _AGL_COMPAT_STDBOOL_H_
 
 //============================================================================//
 
-#include <agl/compat/stdint.h>
-#include <agl/compat/inttypes.h>
-#include <agl/compat/stdbool.h>
+#if defined(_MSC_VER)
+  #ifndef __cplusplus
+    typedef unsigned char _Bool;
+    typedef _Bool bool;
+    #define true ((_Bool)1)
+    #define false ((_Bool)0)
+    #define __bool_true_false_are_defined 1
+  #endif
+#else
+  #include <stdbool.h>
+#endif
 
 //============================================================================//
 
-#endif // _AGL_COMPAT_H_
+#endif // _AGL_COMPAT_STDBOOL_H_
 
 //============================================================================//
