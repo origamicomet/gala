@@ -164,8 +164,7 @@ $(BUILD)/bin/agl.dll: $(OBJECTS)
 $(BUILD)/lib/agl.lib: $(BUILD)/bin/agl.dll
 	@echo "[AR] $@"
 	@mkdir -p ${@D}
-	@mv $(basename $<).lib $@
-	@mv $(basename $<).ilk $(basename $@).ilk
+	@-mv -f -u $(basename $<).lib $@
 
 agl: $(BUILD)/bin/agl.dll $(BUILD)/lib/agl.lib
 endif
