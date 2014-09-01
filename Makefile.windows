@@ -125,6 +125,13 @@ ifeq ($(CONFIGURATION),release)
   ARFLAGS += -LTCG
 endif
 
+ifeq ($(LINKAGE),static)
+  CFLAGS += -DAGL_LINKAGE=AGL_LINKAGE_STATIC
+endif
+ifeq ($(LINKAGE),dynamic)
+  CFLAGS += -DAGL_LINKAGE=AGL_LINKAGE_DYNAMIC
+endif
+
 #
 # Rules:
 #
@@ -137,12 +144,28 @@ OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(SOURCES:%.c=%.o))
 $(BUILD)/obj/%.o: $(ROOT)/src/%.c
 	@echo "[CC] $<"
 	@mkdir -p ${@D}
-	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -DAGL_LINKAGE=AGL_LINKAGE_STATIC -D__AGL_IS_BEING_COMPILED__=1 -Fo"$(call posix-to-windows,$@)" -Fd"$(call posix-to-windows,$(patsubst %.o,%.pdb,$@))" "$<"
-	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -DAGL_LINKAGE=AGL_LINKAGE_STATIC -D__AGL_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D__AGL_IS_BEING_COMPILED__=1 -Fo"$(call posix-to-windows,$@)" -Fd"$(call posix-to-windows,$(patsubst %.o,%.pdb,$@))" "$<"
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D__AGL_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
 
+ifeq ($(LINKAGE),static)
 $(BUILD)/lib/agl.lib: $(OBJECTS)
-	@echo "[LD] $@"
+	@echo "[AR] $@"
 	@mkdir -p ${@D}
 	@lib $(ARFLAGS) -OUT:"$(call posix-to-windows,$@)" $(foreach obj,$(OBJECTS),"$(call posix-to-windows,$(obj))")
 
 agl: $(BUILD)/lib/agl.lib
+endif
+ifeq ($(LINKAGE),dynamic)
+$(BUILD)/bin/agl.dll: $(OBJECTS)
+	@echo "[LD] $@"
+	@mkdir -p ${@D}
+	@link -DLL $(LDFLAGS) -OUT:"$(call posix-to-windows,$@)" $(foreach obj,$(OBJECTS),"$(call posix-to-windows,$(obj))")
+
+$(BUILD)/lib/agl.lib: $(BUILD)/bin/agl.dll
+	@echo "[AR] $@"
+	@mkdir -p ${@D}
+	@mv $(basename $<).lib $@
+	@mv $(basename $<).ilk $(basename $@).ilk
+
+agl: $(BUILD)/bin/agl.dll $(BUILD)/lib/agl.lib
+endif

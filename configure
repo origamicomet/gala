@@ -10,6 +10,7 @@ if [[ "$ROOT" == "$BUILD" ]]; then
 fi
 
 configuration=debug
+linkage=static
 platform=`$ROOT/build/platform.sh`
 architecture=`$ROOT/build/architecture.sh`
 
@@ -19,6 +20,9 @@ function usage {
   echo ""
   echo "  --configuration [configuration]   Specify a configuration to use: debug,"
   echo "  --configuration=[configuration]   development, and release."
+  echo ""
+  echo "  --linkage [linkage]               Specify linkage: dynamic, static. "
+  echo "  --linkage=[linkage]"
   echo ""
   echo "  --platform [platform]             Specify a platform to target: windows,"
   echo "  --platform=[platform]             macosx, linux, bsd, etc."
@@ -46,6 +50,13 @@ while [[ $# > 0 ]]; do
       ;;
     --configuration=*)
       configuration=`echo "$1" | sed 's/^--configuration=//'`
+      ;;
+    --linkage)
+      shift;
+      linkage=$1
+      ;;
+    --linkage=*)
+      linkage=`echo "$1" | sed 's/^--linkage=//'`
       ;;
     --platform)
       shift;
@@ -77,6 +88,18 @@ case "$configuration" in
     ;;
   *)
     echo "Unknown configuration '$configuration'!"
+    echo ""
+    usage
+    ;;
+esac
+
+case "$linkage" in
+  static)
+    ;;
+  dynamic)
+    ;;
+  *)
+    echo "Unknown linkage '$linkage'!"
     echo ""
     usage
     ;;
@@ -130,6 +153,7 @@ export ROOT := ${ROOT}
 export BUILD := ${BUILD}
 
 export CONFIGURATION := ${configuration}
+export LINKAGE := ${linkage}
 export PLATFORM := ${platform}
 export ARCHITECTURE := ${architecture}
 
