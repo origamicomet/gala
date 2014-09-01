@@ -59,6 +59,8 @@
 #include <agl/config/linkage.inl>
 #include <agl/config/visibility.inl>
 
+//===----------------------------------------------------------------------===//
+
 #include <agl/config/argument_and_error_checking.inl>
 
 //============================================================================//
