@@ -26,6 +26,7 @@
 #include <agl/compat/stdbool.h>
 #include <agl/compat/alignof.h>
 #include <agl/compat/malloc.h>
+#include <agl/compat/stdio.h>
 
 //============================================================================//
 
