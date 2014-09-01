@@ -1,4 +1,4 @@
-//===-- agl/compat.h --------------------------------------------*- C++ -*-===//
+//===-- agl/compat/malloc.h -------------------------------------*- C++ -*-===//
 //
 //  Abstract Graphics Library (AGL)
 //
@@ -11,24 +11,27 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Documents and defines the pre-processor macros that control AGL's
-/// compile-time, link-time, and runtime behaviour.
+/// \brief Enforces the existence of alloca in malloc.h.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _AGL_COMPAT_H_
-#define _AGL_COMPAT_H_
+#ifndef _AGL_COMPAT_MALLOC_H_
+#define _AGL_COMPAT_MALLOC_H_
 
 //============================================================================//
 
-#include <agl/compat/stdint.h>
-#include <agl/compat/inttypes.h>
-#include <agl/compat/stdbool.h>
-#include <agl/compat/alignof.h>
-#include <agl/compat/malloc.h>
+#if defined(__APPLE__) || defined(__linux__)
+  #include <malloc.h>
+  #include <alloca.h>
+#elif defined(__GNUC__) || defined(__clang__)
+  #include <malloc.h>
+#elif defined(_MSC_VER)
+  #include <malloc.h>
+  #define alloca _alloca
+#endif
 
 //============================================================================//
 
-#endif // _AGL_COMPAT_H_
+#endif // _AGL_COMPAT_MALLOC_H_
 
 //============================================================================//
