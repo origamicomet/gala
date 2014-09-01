@@ -1,4 +1,4 @@
-//===-- agl.h ---------------------------------------------------*- C++ -*-===//
+//===-- agl/compat.h --------------------------------------------*- C++ -*-===//
 //
 //  Abstract Graphics Library (AGL)
 //
@@ -11,20 +11,21 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Abstract Graphics Library.
+/// \brief Documents and defines the pre-processor macros that control AGL's
+/// compile-time, link-time, and runtime behaviour.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _AGL_H_
-#define _AGL_H_
+#ifndef _AGL_COMPAT_H_
+#define _AGL_COMPAT_H_
 
 //============================================================================//
 
-#include <agl/config.h>
-#include <agl/compat.h>
+#include <agl/compat/stdint.h>
+#include <agl/compat/inttypes.h>
 
 //============================================================================//
 
-#endif // _AGL_H_
+#endif // _AGL_COMPAT_H_
 
 //============================================================================//
