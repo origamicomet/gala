@@ -24,6 +24,7 @@
 #include <agl/compat/stdint.h>
 #include <agl/compat/inttypes.h>
 #include <agl/compat/stdbool.h>
+#include <agl/compat/alignof.h>
 
 //============================================================================//
 
