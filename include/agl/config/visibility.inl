@@ -68,7 +68,7 @@
         #endif
       #elif defined(__clang__)
         #define AGL_PUBLIC __attribute__ ((visibility ("hidden")))
-      #elif defined(_MSC_VER)
+      #elif defined(_MSC_VER) || defined(__CYGWIN__)
         #define AGL_PUBLIC __declspec(dllexport)
       #else
         #error ("Unknown or unsupported toolchain!")
