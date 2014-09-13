@@ -99,8 +99,8 @@ OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(SOURCES:%.c=%.o))
 $(BUILD)/obj/%.o: $(ROOT)/src/%.c
 	@echo "[CC] $<"
 	@mkdir -p ${@D}
-	@gcc -std=gnu99 -pedantic $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 -o "$@" -c "$<"
-	@gcc -std=gnu99 -pedantic $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 -c "$<" -MM -MT"$@" >$(patsubst %.o,%.d,$@)
+	@g++ -std=gnu++0x -pedantic $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 -o "$@" -c "$<"
+	@g++ -std=gnu++0x -pedantic $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 -c "$<" -MM -MT"$@" >$(patsubst %.o,%.d,$@)
 
 ifeq ($(LINKAGE),static)
 $(BUILD)/lib/libagl.a: $(OBJECTS)
@@ -114,7 +114,7 @@ ifeq ($(LINKAGE),dynamic)
 $(BUILD)/bin/libagl.so: $(OBJECTS)
 	@echo "[LD] $@"
 	@mkdir -p ${@D}
-	@gcc -shared $(LDFLAGS) -o "$@" $(foreach obj,$(OBJECTS),"$(obj)")
+	@g++ -shared $(LDFLAGS) -o "$@" $(foreach obj,$(OBJECTS),"$(obj)")
 
 agl: $(BUILD)/bin/libagl.so
 endif
