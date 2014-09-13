@@ -51,28 +51,11 @@
     #define _Alignof __alignof
   #endif
 #else
-  #if defined(__cplusplus)
-    #if (__cplusplus < 201103L) && (!defined(__GXX_EXPERIMENTAL_CXX0X__))
-      #define alignof __agl_alignof__
-      #define _Alignof __agl_alignof__
-    #else
-      #include <stdalign.h>
-    #endif
-  #elif defined(__STDC_VERSION__)
-    #if __STDC_VERSION__ < 201112L
-      #if !defined(__GNUC__)
-        #define alignof __agl_alignof__
-        #define _Alignof __agl_alignof__
-      #else
-        #include <stdalign.h>
-      #endif
-    #else
-      #include <stdalign.h>
-      #define alignof _Alignof
-    #endif
-  #else
+  #ifndef __alignof_is_defined
     #define alignof __agl_alignof__
     #define _Alignof __agl_alignof__
+    #define __alignof_is_defined 1
+  #else // ifdef __alignof_is_defined
   #endif
 #endif
 
