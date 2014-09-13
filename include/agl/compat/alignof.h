@@ -59,8 +59,10 @@
     #endif
   #elif defined(__STDC_VERSION__)
     #if __STDC_VERSION__ < 201112L
-      #define alignof __agl_alignof__
-      #define _Alignof __agl_alignof__
+      #if !defined(__GNUC__)
+        #define alignof __agl_alignof__
+        #define _Alignof __agl_alignof__
+      #endif
     #else
       #define alignof _Alignof
     #endif
