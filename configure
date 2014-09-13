@@ -9,10 +9,10 @@ if [[ "$ROOT" == "$BUILD" ]]; then
   BUILD=$ROOT/_build
 fi
 
-configuration=debug
-linkage=static
-platform=`$ROOT/build/platform.sh`
-architecture=`$ROOT/build/architecture.sh`
+configuration=${AGL_CONFIG_CONFIGURATION:-debug}
+linkage=${AGL_CONFIG_LINKAGE:-static}
+platform=${AGL_CONFIG_PLATFORM:-`$ROOT/build/platform.sh`}
+architecture=${AGL_CONFIG_ARCHITECTURE:-`$ROOT/build/architecture.sh`}
 
 function usage {
   echo "Usage: configure [OPTIONS]"
