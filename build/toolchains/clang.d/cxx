@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -e
-echo " "
-clang++ -std=gnu++0x -pedantic $@ 2>&1 | xargs -L1 echo " "
