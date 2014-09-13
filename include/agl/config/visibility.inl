@@ -62,12 +62,12 @@
     #ifdef __AGL_IS_BEING_COMPILED__
       #if defined(__GNUC__)
         #if __GNUC__ >= 4
-          #define AGL_PUBLIC __attribute__ ((visibility ("hidden")))
+          #define AGL_PUBLIC __attribute__ ((visibility ("default")))
         #else
           #define AGL_PUBLIC
         #endif
       #elif defined(__clang__)
-        #define AGL_PUBLIC __attribute__ ((visibility ("hidden")))
+        #define AGL_PUBLIC __attribute__ ((visibility ("default")))
       #elif defined(_MSC_VER) || defined(__CYGWIN__)
         #define AGL_PUBLIC __declspec(dllexport)
       #else
@@ -75,9 +75,9 @@
       #endif
     #else // #ifndef __AGL_IS_BEING_COMPILED__
       #if (defined(__GNUC__) && (__GNUC__ >= 4))
-        #define AGL_PUBLIC __attribute__ ((visibility ("default")))
+        #define AGL_PUBLIC
       #elif defined(__clang__)
-        #define AGL_PUBLIC __attribute__ ((visibility ("default")))
+        #define AGL_PUBLIC
       #elif defined(_MSC_VER) || defined(__CYGWIN__)
         #define AGL_PUBLIC __declspec(dllimport)
       #else
