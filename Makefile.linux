@@ -1,0 +1,120 @@
+# ===----------------------------------------------------------------------=== #
+#
+#  Abstract Graphics Library (AGL)
+#
+#  This is free and unencumbered software released into the public domain.
+#
+#  Anyone is free to copy, modify, publish, use, compile, sell, or
+#  distribute this software, either in source code form or as a compiled
+#  binary, for any purpose, commercial or non-commercial, and by any
+#  means.
+#
+#  In jurisdictions that recognize copyright laws, the author or authors
+#  of this software dedicate any and all copyright interest in the
+#  software to the public domain. We make this dedication for the benefit
+#  of the public at large and to the detriment of our heirs and
+#  successors. We intend this dedication to be an overt act of
+#  relinquishment in perpetuity of all present and future rights to this
+#  software under copyright law.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+#  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+#  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+#  IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+#  For more information, please refer to <http://unlicense.org/>
+#
+# ===----------------------------------------------------------------------=== #
+
+#
+# Verify that Linux is targetable:
+#
+
+ifneq ($(shell $(ROOT)/build/platform.sh),linux)
+  $(error Cannot cross-compile to 'linux' from '$(shell $(ROOT)/build/platform.sh)')
+endif
+
+#
+# Verify that GCC exists:
+#
+
+ifeq ($(shell $(ROOT)/build/toolchains/gcc.d/available),0)
+  $(error Compiliation with 'gcc' is not available on '$(shell $(ROOT)/build/platform.sh)'. \
+          The build system was unable to auto-detect GNU Compiler Toolchain.)
+endif
+
+#
+# Define CFLAGS, LDFLAGS, and ARFLAGS:
+#
+
+CFLAGS  := -Wall -Wextra -Wfloat-equal -Wshadow -Wunsafe-loop-optimizations \
+           -Wpointer-arith -Wcast-qual -Wcast-align \
+           -Wmissing-field-initializers -Wpacked -Wpadded -Wredundant-decls \
+           -Wunreachable-code -Winline
+LDFLAGS :=
+ARFLAGS :=
+
+ifeq ($(ARCHITECTURE),x86)
+  CFLAGS += -m32
+  LDFLAGS += -m32
+endif
+ifeq ($(ARCHITECTURE),x86-64)
+  CFLAGS += -m64
+  LDFLAGS += -m64
+endif
+
+ifeq ($(CONFIGURATION),debug)
+  CFLAGS += -g
+  CFLAGS += -DAGL_CONFIGURATION=AGL_CONFIGURATION_DEBUG
+endif
+ifeq ($(CONFIGURATION),development)
+  CFLAGS += -g
+  CFLAGS += -DAGL_CONFIGURATION=AGL_CONFIGURATION_DEVELOPMENT
+endif
+ifeq ($(CONFIGURATION),release)
+  CFLAGS += -O3
+  CFLAGS += -DAGL_CONFIGURATION=AGL_CONFIGURATION_RELEASE
+endif
+
+ifeq ($(LINKAGE),static)
+  CFLAGS += -DAGL_LINKAGE=AGL_LINKAGE_STATIC
+endif
+ifeq ($(LINKAGE),dynamic)
+  CFLAGS += -fPIC
+  CFLAGS += -DAGL_LINKAGE=AGL_LINKAGE_DYNAMIC
+endif
+
+#
+# Rules:
+#
+
+SOURCES := $(shell find $(ROOT)/src -name '*.c')
+OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(SOURCES:%.c=%.o))
+
+-include $(OBJECTS:%.o=%.d)
+
+$(BUILD)/obj/%.o: $(ROOT)/src/%.c
+	@echo "[CC] $<"
+	@mkdir -p ${@D}
+	@gcc -std=gnu99 -pedantic $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 -o "$@" -c "$<"
+	@gcc -std=gnu99 -pedantic $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 -c "$<" -MM -MT"$@" >$(patsubst %.o,%.d,$@)
+
+ifeq ($(LINKAGE),static)
+$(BUILD)/lib/libagl.a: $(OBJECTS)
+	@echo "[AR] $@"
+	@mkdir -p ${@D}
+	@ar -rcs $(ARFLAGS) -o "$@" $(foreach obj,$(OBJECTS),"$(obj)")
+
+agl: $(BUILD)/lib/libagl.a
+endif
+ifeq ($(LINKAGE),dynamic)
+$(BUILD)/bin/libagl.so: $(OBJECTS)
+	@echo "[LD] $@"
+	@mkdir -p ${@D}
+	@gcc -shared $(LDFLAGS) -o "$@" $(foreach obj,$(OBJECTS),"$(obj)")
+
+agl: $(BUILD)/bin/libagl.so
+endif
