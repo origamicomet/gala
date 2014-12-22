@@ -9,11 +9,11 @@ What platforms does it support?
 
 | Platform  | Toolchain               | Supported             |
 |:---------:|:-----------------------:|:---------------------:|
-| Windows   | Microsoft Visual Studio | <span>&#10003;</span> |
+| Windows   | Microsoft Visual Studio |        Planned        |
 | Windows   | MinGW/MSYS              |        Planned        |
 | Windows   | Cygwin                  |         Never         |
 | Mac OS X  | GCC or Clang            |        Planned        |
-| Linux     | GCC or Clang            | <span>&#10003;</span> |
+| Linux     | GCC or Clang            |        Planned        |
 | BSD       | GCC or Clang            |        Planned        |
 | Android   | GCC or Clang            |        Planned        |
 | iOS       | GCC or Clang            |        Planned        |
