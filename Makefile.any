@@ -1,6 +1,6 @@
 # ===----------------------------------------------------------------------=== #
 #
-#  Abstract Graphics Library (AGL)
+#  Gala
 #
 #  This is free and unencumbered software released into the public domain.
 #
@@ -63,7 +63,7 @@ export
 
 .PHONY: all test docs clean
 
-all: agl
+all: gala
 
 test:
 	# TODO: Add unit testing.

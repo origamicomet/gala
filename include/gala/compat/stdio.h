@@ -1,12 +1,12 @@
-//===-- agl/compat/stdio.h --------------------------------------*- C++ -*-===//
+//===-- gala/compat/stdio.h -------------------------------------*- C++ -*-===//
 //
-//  Abstract Graphics Library (AGL)
+//  Gala
 //
 //  This file is distributed under the terms described in LICENSE.
 //
 //  Author(s):
 //
-//    * Michael Williams <mwilliams@bitbyte.ca>
+//    * Michael Williams <mike@origamicomet.com>
 //
 //===----------------------------------------------------------------------===//
 ///
@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _AGL_COMPAT_STDIO_H_
-#define _AGL_COMPAT_STDIO_H_
+#ifndef _GALA_COMPAT_STDIO_H_
+#define _GALA_COMPAT_STDIO_H_
 
 //============================================================================//
 
@@ -26,8 +26,8 @@
 //============================================================================//
 
 #if defined(_MSC_VER)
-  #define vsnprintf __agl_vsnprintf
-  inline int __agl_vsnprintf(
+  #define vsnprintf __gala_vsnprintf
+  inline int __gala_vsnprintf(
     char *buf, size_t sz, const char *fmt, va_list ap)
   {
     int count = -1;
@@ -38,18 +38,18 @@
     return count;
   }
 
-  #define snprintf __agl_snprintf
-  inline int __agl_snprintf(
+  #define snprintf __gala_snprintf
+  inline int __gala_snprintf(
     char *buf, size_t sz, const char *fmt, ...)
   {
     va_list ap;
     va_start(ap, fmt);
-    return __agl_vsnprintf(buf, sz, fmt, ap);
+    return __gala_vsnprintf(buf, sz, fmt, ap);
   }
 #endif
 
 //============================================================================//
 
-#endif // _AGL_COMPAT_STDIO_H_
+#endif // _GALA_COMPAT_STDIO_H_
 
 //============================================================================//

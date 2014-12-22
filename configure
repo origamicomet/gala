@@ -9,10 +9,10 @@ if [[ "$ROOT" == "$BUILD" ]]; then
   BUILD=$ROOT/_build
 fi
 
-configuration=${AGL_CONFIG_CONFIGURATION:-debug}
-linkage=${AGL_CONFIG_LINKAGE:-static}
-platform=${AGL_CONFIG_PLATFORM:-`$ROOT/build/platform.sh`}
-architecture=${AGL_CONFIG_ARCHITECTURE:-`$ROOT/build/architecture.sh`}
+configuration=${GALA_CONFIG_CONFIGURATION:-debug}
+linkage=${GALA_CONFIG_LINKAGE:-static}
+platform=${GALA_CONFIG_PLATFORM:-`$ROOT/build/platform.sh`}
+architecture=${GALA_CONFIG_ARCHITECTURE:-`$ROOT/build/architecture.sh`}
 
 function usage {
   echo "Usage: configure [OPTIONS]"
@@ -32,7 +32,7 @@ function usage {
   echo ""
   echo "  --help, --usage                   Displays this."
   echo ""
-  echo "Report bugs on our issue tracker at github.com/bitbytestudios/agl/issues."
+  echo "Report bugs on our issue tracker at github.com/origamicomet/gala/issues."
   exit 1
 }
 
@@ -123,7 +123,7 @@ case "$platform" in
     echo "Unknown or unsupported platform '$platform'!"
     echo ""
     echo "If you're trying to target closed platforms, like consoles, please do contact"
-    echo "us at <licensing@bitbyte.ca> as we may support it, but for obvious reasons"
+    echo "us at <licensing@origamicomet.com> as we may support it, but for obvious reasons"
     echo "cannot open-source the relevant code."
     echo ""
     usage
@@ -139,7 +139,7 @@ case "$architecture" in
     echo "Unknown or unsupported architecture '$architecture'!"
     echo ""
     echo "If you're trying to target closed architectures, like larrabee, please do"
-    echo "contact us at <licensing@bitbyte.ca> as we may support it, but for obvious"
+    echo "contact us at <licensing@origamicomet.com> as we may support it, but for obvious"
     echo "reasons cannot open-source the relevant code."
     echo ""
     usage

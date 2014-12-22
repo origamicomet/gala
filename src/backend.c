@@ -1,16 +1,16 @@
-//===-- agl/backend.c -------------------------------------------*- C++ -*-===//
+//===-- gala/backend.c ------------------------------------------*- C++ -*-===//
 //
-//  Abstract Graphics Library (AGL)
+//  Gala
 //
 //  This file is distributed under the terms described in LICENSE.
 //
 //  Author(s):
 //
-//    * Michael Williams <mwilliams@bitbyte.ca>
+//    * Michael Williams <mike@origamicomet.com>
 //
 //===----------------------------------------------------------------------===//
 
-#include <agl/backend.h>
+#include <gala/backend.h>
 
 //============================================================================//
 
@@ -20,35 +20,35 @@ extern "C" {
 
 //===----------------------------------------------------------------------===//
 
-agl_bool_t agl_backend_available(
-  const agl_backend_t backend)
+gala_bool_t gala_backend_available(
+  const gala_backend_t backend)
 {
   switch (backend) {
-    case AGL_BACKEND_D3D9:
-      return AGL_FALSE;
-    case AGL_BACKEND_D3D10:
-      return AGL_FALSE;
-    case AGL_BACKEND_D3D11:
-      return AGL_FALSE;
-    case AGL_BACKEND_D3D12:
-      return AGL_FALSE;
-    case AGL_BACKEND_GL2:
-      return AGL_FALSE;
-    case AGL_BACKEND_GL3:
-      return AGL_FALSE;
-    case AGL_BACKEND_GL4:
-      return AGL_FALSE;
-    case AGL_BACKEND_GLES:
-      return AGL_FALSE;
-    case AGL_BACKEND_GLES2:
-      return AGL_FALSE;
-    case AGL_BACKEND_GLES3:
-      return AGL_FALSE;
+    case GALA_BACKEND_D3D9:
+      return GALA_FALSE;
+    case GALA_BACKEND_D3D10:
+      return GALA_FALSE;
+    case GALA_BACKEND_D3D11:
+      return GALA_FALSE;
+    case GALA_BACKEND_D3D12:
+      return GALA_FALSE;
+    case GALA_BACKEND_GL2:
+      return GALA_FALSE;
+    case GALA_BACKEND_GL3:
+      return GALA_FALSE;
+    case GALA_BACKEND_GL4:
+      return GALA_FALSE;
+    case GALA_BACKEND_GLES:
+      return GALA_FALSE;
+    case GALA_BACKEND_GLES2:
+      return GALA_FALSE;
+    case GALA_BACKEND_GLES3:
+      return GALA_FALSE;
     default:
       break;
   }
 
-  return AGL_FALSE;
+  return GALA_FALSE;
 }
 
 //===----------------------------------------------------------------------===//
@@ -61,23 +61,23 @@ agl_bool_t agl_backend_available(
 
 //===----------------------------------------------------------------------===//
 
-namespace agl {
+namespace gala {
 
 //===----------------------------------------------------------------------===//
 
 namespace Backend {
 
-agl_bool_t available(
-  const agl::Backends::__Enum__ backend)
+gala_bool_t available(
+  const gala::Backends::__Enum__ backend)
 {
-  return !!(::agl_backend_available((::agl_backend_t)backend));
+  return !!(::gala_backend_available((::gala_backend_t)backend));
 }
 
 } // Backend
 
 //===----------------------------------------------------------------------===//
 
-} // agl
+} // gala
 
 //===----------------------------------------------------------------------===//
 

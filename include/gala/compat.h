@@ -1,35 +1,35 @@
-//===-- agl/compat.h --------------------------------------------*- C++ -*-===//
+//===-- gala/compat.h -------------------------------------------*- C++ -*-===//
 //
-//  Abstract Graphics Library (AGL)
+//  Gala
 //
 //  This file is distributed under the terms described in LICENSE.
 //
 //  Author(s):
 //
-//    * Michael Williams <mwilliams@bitbyte.ca>
+//    * Michael Williams <mike@origamicomet.com>
 //
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Documents and defines the pre-processor macros that control AGL's
+/// \brief Documents and defines the pre-processor macros that control GALA's
 /// compile-time, link-time, and runtime behaviour.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _AGL_COMPAT_H_
-#define _AGL_COMPAT_H_
+#ifndef _GALA_COMPAT_H_
+#define _GALA_COMPAT_H_
 
 //============================================================================//
 
-#include <agl/compat/stdint.h>
-#include <agl/compat/inttypes.h>
-#include <agl/compat/stdbool.h>
-#include <agl/compat/alignof.h>
-#include <agl/compat/malloc.h>
-#include <agl/compat/stdio.h>
+#include <gala/compat/stdint.h>
+#include <gala/compat/inttypes.h>
+#include <gala/compat/stdbool.h>
+#include <gala/compat/alignof.h>
+#include <gala/compat/malloc.h>
+#include <gala/compat/stdio.h>
 
 //============================================================================//
 
-#endif // _AGL_COMPAT_H_
+#endif // _GALA_COMPAT_H_
 
 //============================================================================//

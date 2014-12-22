@@ -1,70 +1,70 @@
-//===-- agl/config.h --------------------------------------------*- C++ -*-===//
+//===-- gala/config.h -------------------------------------------*- C++ -*-===//
 //
-//  Abstract Graphics Library (AGL)
+//  Gala
 //
 //  This file is distributed under the terms described in LICENSE.
 //
 //  Author(s):
 //
-//    * Michael Williams <mwilliams@bitbyte.ca>
+//    * Michael Williams <mike@origamicomet.com>
 //
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Documents and defines the pre-processor macros that control AGL's
+/// \brief Documents and defines the pre-processor macros that control GALA's
 /// compile-time, link-time, and runtime behaviour.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _AGL_CONFIG_H_
-#define _AGL_CONFIG_H_
+#ifndef _GALA_CONFIG_H_
+#define _GALA_CONFIG_H_
 
 //============================================================================//
 
-/// \def AGL_CONFIGURATION_DEBUG
+/// \def GALA_CONFIGURATION_DEBUG
 /// \brief Self explanatory.
 ///
-#define AGL_CONFIGURATION_DEBUG 1
+#define GALA_CONFIGURATION_DEBUG 1
 
-/// \def AGL_CONFIGURATION_DEVELOPMENT
+/// \def GALA_CONFIGURATION_DEVELOPMENT
 /// \brief Self explanatory.
 ///
-#define AGL_CONFIGURATION_DEVELOPMENT 2
+#define GALA_CONFIGURATION_DEVELOPMENT 2
 
-/// \def AGL_CONFIGURATION_RELEASE
+/// \def GALA_CONFIGURATION_RELEASE
 /// \brief Self explanatory.
 ///
-#define AGL_CONFIGURATION_RELEASE 3
+#define GALA_CONFIGURATION_RELEASE 3
 
-/// \def AGL_CONFIGURATION
+/// \def GALA_CONFIGURATION
 /// \brief Self explanatory.
 ///
 #ifdef DOXYGEN
-  #define AGL_CONFIGURATION
+  #define GALA_CONFIGURATION
 #else // #ifndef DOXYGEN
-  #ifdef AGL_CONFIGURATION
-    #if (AGL_CONFIGURATION != AGL_CONFIGURATION_DEBUG) && \
-        (AGL_CONFIGURATION != AGL_CONFIGURATION_DEVELOPMENT) && \
-        (AGL_CONFIGURATION != AGL_CONFIGURATION_RELEASE)
+  #ifdef GALA_CONFIGURATION
+    #if (GALA_CONFIGURATION != GALA_CONFIGURATION_DEBUG) && \
+        (GALA_CONFIGURATION != GALA_CONFIGURATION_DEVELOPMENT) && \
+        (GALA_CONFIGURATION != GALA_CONFIGURATION_RELEASE)
       #error ("Invalid or unknown configuration specified.")
     #else
     #endif
-  #else // ifndef AGL_CONFIGURATION
+  #else // ifndef GALA_CONFIGURATION
     #error ("Configuration not specified.")
   #endif
 #endif
 
 //===----------------------------------------------------------------------===//
 
-#include <agl/config/linkage.inl>
-#include <agl/config/visibility.inl>
+#include <gala/config/linkage.inl>
+#include <gala/config/visibility.inl>
 
 //===----------------------------------------------------------------------===//
 
-#include <agl/config/argument_and_error_checking.inl>
+#include <gala/config/argument_and_error_checking.inl>
 
 //============================================================================//
 
-#endif // _AGL_CONFIG_H_
+#endif // _GALA_CONFIG_H_
 
 //============================================================================//

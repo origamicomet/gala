@@ -1,12 +1,12 @@
-//===-- agl/compat/inttypes.h -----------------------------------*- C++ -*-===//
+//===-- gala/compat/inttypes.h ----------------------------------*- C++ -*-===//
 //
-//  Abstract Graphics Library (AGL)
+//  Gala
 //
 //  This file is distributed under the terms described in LICENSE.
 //
 //  Author(s):
 //
-//    * Michael Williams <mwilliams@bitbyte.ca>
+//    * Michael Williams <mike@origamicomet.com>
 //
 //===----------------------------------------------------------------------===//
 ///
@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _AGL_COMPAT_STDBOOL_H_
-#define _AGL_COMPAT_STDBOOL_H_
+#ifndef _GALA_COMPAT_STDBOOL_H_
+#define _GALA_COMPAT_STDBOOL_H_
 
 //============================================================================//
 
@@ -34,6 +34,6 @@
 
 //============================================================================//
 
-#endif // _AGL_COMPAT_STDBOOL_H_
+#endif // _GALA_COMPAT_STDBOOL_H_
 
 //============================================================================//

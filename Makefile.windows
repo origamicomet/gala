@@ -1,6 +1,6 @@
 # ===----------------------------------------------------------------------=== #
 #
-#  Abstract Graphics Library (AGL)
+#  Gala
 #
 #  This is free and unencumbered software released into the public domain.
 #
@@ -108,28 +108,28 @@ endif
 
 ifeq ($(CONFIGURATION),debug)
   CFLAGS += -MDd -Od -Zi -RTCsu -fp:precise -fp:except -D_DEBUG
-  CFLAGS += -DAGL_CONFIGURATION=AGL_CONFIGURATION_DEBUG
+  CFLAGS += -DGALA_CONFIGURATION=GALA_CONFIGURATION_DEBUG
   LDFLAGS += -DEBUG
   ARFLAGS +=
 endif
 ifeq ($(CONFIGURATION),development)
   CFLAGS += -MD -Zi -fp:fast -fp:except- -D_NDEBUG
-  CFLAGS += -DAGL_CONFIGURATION=AGL_CONFIGURATION_DEVELOPMENT
+  CFLAGS += -DGALA_CONFIGURATION=GALA_CONFIGURATION_DEVELOPMENT
   LDFLAGS += -DEBUG
   ARFLAGS +=
 endif
 ifeq ($(CONFIGURATION),release)
   CFLAGS += -MD -GL -Ox -fp:fast -fp:except- -D_NDEBUG
-  CFLAGS += -DAGL_CONFIGURATION=AGL_CONFIGURATION_RELEASE
+  CFLAGS += -DGALA_CONFIGURATION=GALA_CONFIGURATION_RELEASE
   LDFLAGS += -LTCG
   ARFLAGS += -LTCG
 endif
 
 ifeq ($(LINKAGE),static)
-  CFLAGS += -DAGL_LINKAGE=AGL_LINKAGE_STATIC
+  CFLAGS += -DGALA_LINKAGE=GALA_LINKAGE_STATIC
 endif
 ifeq ($(LINKAGE),dynamic)
-  CFLAGS += -DAGL_LINKAGE=AGL_LINKAGE_DYNAMIC
+  CFLAGS += -DGALA_LINKAGE=GALA_LINKAGE_DYNAMIC
 endif
 
 #
@@ -144,27 +144,27 @@ OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(SOURCES:%.c=%.o))
 $(BUILD)/obj/%.o: $(ROOT)/src/%.c
 	@echo "[CC] $<"
 	@mkdir -p ${@D}
-	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D__AGL_IS_BEING_COMPILED__=1 -Fo"$(call posix-to-windows,$@)" -Fd"$(call posix-to-windows,$(patsubst %.o,%.pdb,$@))" "$<"
-	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D__AGL_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D__GALA_IS_BEING_COMPILED__=1 -Fo"$(call posix-to-windows,$@)" -Fd"$(call posix-to-windows,$(patsubst %.o,%.pdb,$@))" "$<"
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D__GALA_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
 
 ifeq ($(LINKAGE),static)
-$(BUILD)/lib/agl.lib: $(OBJECTS)
+$(BUILD)/lib/gala.lib: $(OBJECTS)
 	@echo "[AR] $@"
 	@mkdir -p ${@D}
 	@lib $(ARFLAGS) -OUT:"$(call posix-to-windows,$@)" $(foreach obj,$(OBJECTS),"$(call posix-to-windows,$(obj))")
 
-agl: $(BUILD)/lib/agl.lib
+gala: $(BUILD)/lib/gala.lib
 endif
 ifeq ($(LINKAGE),dynamic)
-$(BUILD)/bin/agl.dll: $(OBJECTS)
+$(BUILD)/bin/gala.dll: $(OBJECTS)
 	@echo "[LD] $@"
 	@mkdir -p ${@D}
 	@link -DLL $(LDFLAGS) -OUT:"$(call posix-to-windows,$@)" $(foreach obj,$(OBJECTS),"$(call posix-to-windows,$(obj))")
 
-$(BUILD)/lib/agl.lib: $(BUILD)/bin/agl.dll
+$(BUILD)/lib/gala.lib: $(BUILD)/bin/gala.dll
 	@echo "[AR] $@"
 	@mkdir -p ${@D}
 	@-mv -f -u $(basename $<).lib $@
 
-agl: $(BUILD)/bin/agl.dll $(BUILD)/lib/agl.lib
+gala: $(BUILD)/bin/gala.dll $(BUILD)/lib/gala.lib
 endif

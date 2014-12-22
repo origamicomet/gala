@@ -1,6 +1,6 @@
 # ===----------------------------------------------------------------------=== #
 #
-#  Abstract Graphics Library (AGL)
+#  Gala
 #
 #  This is free and unencumbered software released into the public domain.
 #
@@ -68,23 +68,23 @@ endif
 
 ifeq ($(CONFIGURATION),debug)
   CFLAGS += -g
-  CFLAGS += -DAGL_CONFIGURATION=AGL_CONFIGURATION_DEBUG
+  CFLAGS += -DGALA_CONFIGURATION=GALA_CONFIGURATION_DEBUG
 endif
 ifeq ($(CONFIGURATION),development)
   CFLAGS += -g
-  CFLAGS += -DAGL_CONFIGURATION=AGL_CONFIGURATION_DEVELOPMENT
+  CFLAGS += -DGALA_CONFIGURATION=GALA_CONFIGURATION_DEVELOPMENT
 endif
 ifeq ($(CONFIGURATION),release)
   CFLAGS += -O3
-  CFLAGS += -DAGL_CONFIGURATION=AGL_CONFIGURATION_RELEASE
+  CFLAGS += -DGALA_CONFIGURATION=GALA_CONFIGURATION_RELEASE
 endif
 
 ifeq ($(LINKAGE),static)
-  CFLAGS += -DAGL_LINKAGE=AGL_LINKAGE_STATIC
+  CFLAGS += -DGALA_LINKAGE=GALA_LINKAGE_STATIC
 endif
 ifeq ($(LINKAGE),dynamic)
   CFLAGS += -fPIC
-  CFLAGS += -DAGL_LINKAGE=AGL_LINKAGE_DYNAMIC
+  CFLAGS += -DGALA_LINKAGE=GALA_LINKAGE_DYNAMIC
 endif
 
 #
@@ -99,22 +99,22 @@ OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(SOURCES:%.c=%.o))
 $(BUILD)/obj/%.o: $(ROOT)/src/%.c
 	@echo "[CC] $<"
 	@mkdir -p ${@D}
-	@g++ -std=gnu++0x -pedantic $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 -o "$@" -c "$<"
-	@g++ -std=gnu++0x -pedantic $(CFLAGS) -I"$(ROOT)/include" -D__AGL_IS_BEING_COMPILED__=1 -c "$<" -MM -MT"$@" >$(patsubst %.o,%.d,$@)
+	@g++ -std=gnu++0x -pedantic $(CFLAGS) -I"$(ROOT)/include" -D__GALA_IS_BEING_COMPILED__=1 -o "$@" -c "$<"
+	@g++ -std=gnu++0x -pedantic $(CFLAGS) -I"$(ROOT)/include" -D__GALA_IS_BEING_COMPILED__=1 -c "$<" -MM -MT"$@" >$(patsubst %.o,%.d,$@)
 
 ifeq ($(LINKAGE),static)
-$(BUILD)/lib/libagl.a: $(OBJECTS)
+$(BUILD)/lib/libgala.a: $(OBJECTS)
 	@echo "[AR] $@"
 	@mkdir -p ${@D}
 	@ar -rcs $(ARFLAGS) -o "$@" $(foreach obj,$(OBJECTS),"$(obj)")
 
-agl: $(BUILD)/lib/libagl.a
+gala: $(BUILD)/lib/libgala.a
 endif
 ifeq ($(LINKAGE),dynamic)
-$(BUILD)/bin/libagl.so: $(OBJECTS)
+$(BUILD)/bin/libgala.so: $(OBJECTS)
 	@echo "[LD] $@"
 	@mkdir -p ${@D}
 	@g++ -shared $(LDFLAGS) -o "$@" $(foreach obj,$(OBJECTS),"$(obj)")
 
-agl: $(BUILD)/bin/libagl.so
+gala: $(BUILD)/bin/libgala.so
 endif

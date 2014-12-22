@@ -1,16 +1,16 @@
-//===-- agl.c ---------------------------------------------------*- C++ -*-===//
+//===-- gala.c --------------------------------------------------*- C++ -*-===//
 //
-//  Abstract Graphics Library (AGL)
+//  Gala
 //
 //  This file is distributed under the terms described in LICENSE.
 //
 //  Author(s):
 //
-//    * Michael Williams <mwilliams@bitbyte.ca>
+//    * Michael Williams <mike@origamicomet.com>
 //
 //===----------------------------------------------------------------------===//
 
-#include <agl.h>
+#include <gala.h>
 
 //============================================================================//
 
@@ -21,8 +21,8 @@ extern "C" {
 //===----------------------------------------------------------------------===//
 
 extern
-AGL_PUBLIC
-void __agl__(void) {}
+GALA_PUBLIC
+void __gala__(void) {}
 
 //===----------------------------------------------------------------------===//
 

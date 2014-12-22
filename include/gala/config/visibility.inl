@@ -1,12 +1,12 @@
-//===-- agl/config/visibility.inl -------------------------------*- C++ -*-===//
+//===-- gala/config/visibility.inl ------------------------------*- C++ -*-===//
 //
-//  Abstract Graphics Library (AGL)
+//  Gala
 //
 //  This file is distributed under the terms described in LICENSE.
 //
 //  Author(s):
 //
-//    * Michael Williams <mwilliams@bitbyte.ca>
+//    * Michael Williams <mike@origamicomet.com>
 //
 //===----------------------------------------------------------------------===//
 ///
@@ -16,70 +16,70 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _AGL_CONFIG_VISIBILITY_INL_
-#define _AGL_CONFIG_VISIBILITY_INL_
+#ifndef _GALA_CONFIG_VISIBILITY_INL_
+#define _GALA_CONFIG_VISIBILITY_INL_
 
 //============================================================================//
 
-/// \def AGL_LOCAL
+/// \def GALA_LOCAL
 /// \brief Marks symbols for internal usage.
 ///
 #ifdef DOXYGEN
-  #define AGL_LOCAL
+  #define GALA_LOCAL
 #else // #ifndef DOXYGEN
-  #if AGL_LINKAGE == AGL_LINKAGE_STATIC
-    #define AGL_LOCAL
-  #elif AGL_LINKAGE == AGL_LINKAGE_DYNAMIC
-    #ifdef __AGL_IS_BEING_COMPILED__
+  #if GALA_LINKAGE == GALA_LINKAGE_STATIC
+    #define GALA_LOCAL
+  #elif GALA_LINKAGE == GALA_LINKAGE_DYNAMIC
+    #ifdef __GALA_IS_BEING_COMPILED__
       #if defined(__GNUC__)
         #if __GNUC__ >= 4
-          #define AGL_LOCAL __attribute__ ((visibility ("hidden")))
+          #define GALA_LOCAL __attribute__ ((visibility ("hidden")))
         #else
-          #define AGL_LOCAL
+          #define GALA_LOCAL
         #endif
       #elif defined(__clang__)
-        #define AGL_LOCAL __attribute__ ((visibility ("hidden")))
+        #define GALA_LOCAL __attribute__ ((visibility ("hidden")))
       #elif defined(_MSC_VER) || defined(__CYGWIN__)
-        #define AGL_LOCAL
+        #define GALA_LOCAL
       #else
         #error ("Unknown or unsupported toolchain!")
       #endif
-    #else // #ifndef __AGL_IS_BEING_COMPILED__
-      #define AGL_LOCAL
+    #else // #ifndef __GALA_IS_BEING_COMPILED__
+      #define GALA_LOCAL
     #endif
   #endif
 #endif
 
-/// \def AGL_PUBLIC
+/// \def GALA_PUBLIC
 /// \brief Marks symbols for public usage.
 ///
 #ifdef DOXYGEN
-  #define AGL_PUBLIC
+  #define GALA_PUBLIC
 #else // #ifndef DOXYGEN
-  #if AGL_LINKAGE == AGL_LINKAGE_STATIC
-    #define AGL_PUBLIC
-  #elif AGL_LINKAGE == AGL_LINKAGE_DYNAMIC
-    #ifdef __AGL_IS_BEING_COMPILED__
+  #if GALA_LINKAGE == GALA_LINKAGE_STATIC
+    #define GALA_PUBLIC
+  #elif GALA_LINKAGE == GALA_LINKAGE_DYNAMIC
+    #ifdef __GALA_IS_BEING_COMPILED__
       #if defined(__GNUC__)
         #if __GNUC__ >= 4
-          #define AGL_PUBLIC __attribute__ ((visibility ("default")))
+          #define GALA_PUBLIC __attribute__ ((visibility ("default")))
         #else
-          #define AGL_PUBLIC
+          #define GALA_PUBLIC
         #endif
       #elif defined(__clang__)
-        #define AGL_PUBLIC __attribute__ ((visibility ("default")))
+        #define GALA_PUBLIC __attribute__ ((visibility ("default")))
       #elif defined(_MSC_VER) || defined(__CYGWIN__)
-        #define AGL_PUBLIC __declspec(dllexport)
+        #define GALA_PUBLIC __declspec(dllexport)
       #else
         #error ("Unknown or unsupported toolchain!")
       #endif
-    #else // #ifndef __AGL_IS_BEING_COMPILED__
+    #else // #ifndef __GALA_IS_BEING_COMPILED__
       #if (defined(__GNUC__) && (__GNUC__ >= 4))
-        #define AGL_PUBLIC
+        #define GALA_PUBLIC
       #elif defined(__clang__)
-        #define AGL_PUBLIC
+        #define GALA_PUBLIC
       #elif defined(_MSC_VER) || defined(__CYGWIN__)
-        #define AGL_PUBLIC __declspec(dllimport)
+        #define GALA_PUBLIC __declspec(dllimport)
       #else
         #error ("Unknown or unsupported toolchain!")
       #endif
@@ -89,6 +89,6 @@
 
 //============================================================================//
 
-#endif // _AGL_CONFIG_VISIBILITY_INL_
+#endif // _GALA_CONFIG_VISIBILITY_INL_
 
 //============================================================================//

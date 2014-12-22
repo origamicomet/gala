@@ -1,6 +1,6 @@
-# Abstract Graphics Library
+# Gala
 
-[![Build Status](https://travis-ci.org/bitbytestudios/agl.png?branch=master)](http://travis-ci.org/bitbytestudios/agl)
+[![Build Status](https://travis-ci.org/origamicomet/gala.png?branch=master)](http://travis-ci.org/origamicomet/gala)
 
 Abstracts rendering through an asynchronous cross-platform API.
 
@@ -23,51 +23,51 @@ What platforms does it support?
 What backends does it provide?
 ------------------------------
 
-| Platform   | Backend                 | Supported             |
-|:----------:|:-----------------------:|:---------------------:|
-| Windows    | `AGL_BACKEND_D3D9`      |        Planned        |
-| Windows    | `AGL_BACKEND_D3D11`     |        Planned        |
-| Windows    | `AGL_BACKEND_GL21`      |        Planned        |
-| Windows    | `AGL_BACKEND_GL31`      |        Planned        |
-| Windows    | `AGL_BACKEND_MANTLE`    |        Planned        |
-|            |                         |                       |
-| Mac OS X   | `AGL_BACKEND_GL21`      |        Planned        |
-| Mac OS X   | `AGL_BACKEND_GL31`      |        Planned        |
-| Mac OS X   | `AGL_BACKEND_MANTLE`    |       Hopefully       |
-|            |                         |                       |
-| Linux      | `AGL_BACKEND_GL21`      |        Planned        |
-| Linux      | `AGL_BACKEND_GL31`      |        Planned        |
-| Linux      | `AGL_BACKEND_MANTLE`    |       Hopefully       |
-|            |                         |                       |
-| Android    | `AGL_BACKEND_GLES`      |         Never         |
-| Android    | `AGL_BACKEND_GLES2`     |        Planned        |
-| Android    | `AGL_BACKEND_GLES3`     |        Planned        |
-|            |                         |                       |
-| iOS        | `AGL_BACKEND_GLES`      |         Never         |
-| iOS        | `AGL_BACKEND_GLES2`     |        Planned        |
-| iOS        | `AGL_BACKEND_GLES3`     |        Planned        |
-| iOS        | `AGL_BACKEND_METAL`     |       Hopefully       |
-|            |                         |                       |
-| NaCl       | `AGL_BACKEND_GLES2`     |        Planned        |
-| NaCl       | `AGL_BACKEND_GLES3`     |        Planned        |
-|            |                         |                       |
-| emscripten | `AGL_BACKEND_GLES2`     |        Planned        |
-| emscripten | `AGL_BACKEND_GLES3`     |        Planned        |
+| Platform   | Backend               | Supported             |
+|:----------:|:---------------------:|:---------------------:|
+| Windows    | `GALA_BACKEND_D3D9`   |        Planned        |
+| Windows    | `GALA_BACKEND_D3D11`  |        Planned        |
+| Windows    | `GALA_BACKEND_GL21`   |        Planned        |
+| Windows    | `GALA_BACKEND_GL31`   |        Planned        |
+| Windows    | `GALA_BACKEND_MANTLE` |        Planned        |
+|            |                       |                       |
+| Mac OS X   | `GALA_BACKEND_GL21`   |        Planned        |
+| Mac OS X   | `GALA_BACKEND_GL31`   |        Planned        |
+| Mac OS X   | `GALA_BACKEND_MANTLE` |       Hopefully       |
+|            |                       |                       |
+| Linux      | `GALA_BACKEND_GL21`   |        Planned        |
+| Linux      | `GALA_BACKEND_GL31`   |        Planned        |
+| Linux      | `GALA_BACKEND_MANTLE` |       Hopefully       |
+|            |                       |                       |
+| Android    | `GALA_BACKEND_GLES`   |         Never         |
+| Android    | `GALA_BACKEND_GLES2`  |        Planned        |
+| Android    | `GALA_BACKEND_GLES3`  |        Planned        |
+|            |                       |                       |
+| iOS        | `GALA_BACKEND_GLES`   |         Never         |
+| iOS        | `GALA_BACKEND_GLES2`  |        Planned        |
+| iOS        | `GALA_BACKEND_GLES3`  |        Planned        |
+| iOS        | `GALA_BACKEND_METAL`  |       Hopefully       |
+|            |                       |                       |
+| NaCl       | `GALA_BACKEND_GLES2`  |        Planned        |
+| NaCl       | `GALA_BACKEND_GLES3`  |        Planned        |
+|            |                       |                       |
+| emscripten | `GALA_BACKEND_GLES2`  |        Planned        |
+| emscripten | `GALA_BACKEND_GLES3`  |        Planned        |
 
 How do I build it?
 ------------------
 
-    $ git clone https://github.com/bitbytestudios/agl.git
-    $ cd agl
+    $ git clone https://github.com/origamicomet/gala.git
+    $ cd gala
     $ ./configure
     $ make
 
-For more details please go [here](https://github.com/bitbytestudios/agl/wiki/Building).
+For more details please go [here](https://github.com/origamicomet/gala/wiki/Building).
 
 How do I contribute?
 --------------------
 
-See our contribution guide [here](https://github.com/bitbytestudios/meta/wiki/Contributing).
+See our contribution guide [here](https://github.com/origamicomet/gala/wiki/Contributing).
 
 How is it licensed?
 -------------------
@@ -77,7 +77,7 @@ Under the public domain with licensing agreements for closed platforms.
 ```
 Author(s):
 
-  * Michael Williams <mwilliams@bitbyte.ca>
+  * Michael Williams <mike@origamicomet.com>
 
 This is free and unencumbered software released into the public domain. Anyone
 is free to copy, modify, publish, use, compile, sell, or distribute this
