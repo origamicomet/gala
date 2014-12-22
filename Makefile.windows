@@ -109,37 +109,53 @@ endif
 ifeq ($(CONFIGURATION),debug)
   CFLAGS += -MDd -Od -Zi -RTCsu -fp:precise -fp:except -D_DEBUG
   CFLAGS += -DGALA_CONFIGURATION=GALA_CONFIGURATION_DEBUG
+  CFLAGS += -DBITBYTE_FOUNDATION_CONFIGURATION=BITBYTE_FOUNDATION_CONFIGURATION_DEBUG
   LDFLAGS += -DEBUG
   ARFLAGS +=
 endif
 ifeq ($(CONFIGURATION),development)
   CFLAGS += -MD -Zi -fp:fast -fp:except- -D_NDEBUG
   CFLAGS += -DGALA_CONFIGURATION=GALA_CONFIGURATION_DEVELOPMENT
+  CFLAGS += -DBITBYTE_FOUNDATION_CONFIGURATION=BITBYTE_FOUNDATION_CONFIGURATION_DEVELOPMENT
   LDFLAGS += -DEBUG
   ARFLAGS +=
 endif
 ifeq ($(CONFIGURATION),release)
   CFLAGS += -MD -GL -Ox -fp:fast -fp:except- -D_NDEBUG
   CFLAGS += -DGALA_CONFIGURATION=GALA_CONFIGURATION_RELEASE
+  CFLAGS += -DBITBYTE_FOUNDATION_CONFIGURATION=BITBYTE_FOUNDATION_CONFIGURATION_RELEASE
   LDFLAGS += -LTCG
   ARFLAGS += -LTCG
 endif
 
 ifeq ($(LINKAGE),static)
   CFLAGS += -DGALA_LINKAGE=GALA_LINKAGE_STATIC
+  CFLAGS += -DBITBYTE_FOUNDATION_TIER0_LINKAGE=BITBYTE_FOUNDATION_TIER0_STATIC_LINKAGE
+  CFLAGS += -DBITBYTE_FOUNDATION_TIER1_LINKAGE=BITBYTE_FOUNDATION_TIER1_STATIC_LINKAGE
+  CFLAGS += -DBITBYTE_FOUNDATION_TIER2_LINKAGE=BITBYTE_FOUNDATION_TIER2_STATIC_LINKAGE
+  CFLAGS += -DBITBYTE_FOUNDATION_TIER3_LINKAGE=BITBYTE_FOUNDATION_TIER3_STATIC_LINKAGE
+  CFLAGS += -DBITBYTE_FOUNDATION_TIER4_LINKAGE=BITBYTE_FOUNDATION_TIER4_STATIC_LINKAGE
 endif
 ifeq ($(LINKAGE),dynamic)
   CFLAGS += -DGALA_LINKAGE=GALA_LINKAGE_DYNAMIC
+  CFLAGS += -DBITBYTE_FOUNDATION_TIER0_LINKAGE=BITBYTE_FOUNDATION_TIER0_DYNAMIC_LINKAGE
+  CFLAGS += -DBITBYTE_FOUNDATION_TIER1_LINKAGE=BITBYTE_FOUNDATION_TIER1_DYNAMIC_LINKAGE
+  CFLAGS += -DBITBYTE_FOUNDATION_TIER2_LINKAGE=BITBYTE_FOUNDATION_TIER2_DYNAMIC_LINKAGE
+  CFLAGS += -DBITBYTE_FOUNDATION_TIER3_LINKAGE=BITBYTE_FOUNDATION_TIER3_DYNAMIC_LINKAGE
+  CFLAGS += -DBITBYTE_FOUNDATION_TIER4_LINKAGE=BITBYTE_FOUNDATION_TIER4_DYNAMIC_LINKAGE
 endif
+
+CFLAGS += -I"$(call posix-to-windows,$(FOUNDATION)/include)"
+LDFLAGS += -LIBPATH:"$(call posix-to-windows,$(FOUNDATION_BUILD)/bin)" -LIBPATH:"$(call posix-to-windows,$(FOUNDATION_BUILD)/lib)"
 
 #
 # Rules:
 #
 
-SOURCES := $(shell find $(ROOT)/src -name '*.c')
-OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(SOURCES:%.c=%.o))
+GALA_SOURCES := $(shell find $(ROOT)/src -name '*.c')
+GALA_OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(GALA_SOURCES:%.c=%.o))
 
--include $(OBJECTS:%.o=%.d)
+-include $(GALA_OBJECTS:%.o=%.d)
 
 $(BUILD)/obj/%.o: $(ROOT)/src/%.c
 	@echo "[CC] $<"
@@ -148,23 +164,23 @@ $(BUILD)/obj/%.o: $(ROOT)/src/%.c
 	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D__GALA_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
 
 ifeq ($(LINKAGE),static)
-$(BUILD)/lib/gala.lib: $(OBJECTS)
+$(BUILD)/lib/gala.lib: foundation $(GALA_OBJECTS)
 	@echo "[AR] $@"
 	@mkdir -p ${@D}
-	@lib $(ARFLAGS) -OUT:"$(call posix-to-windows,$@)" $(foreach obj,$(OBJECTS),"$(call posix-to-windows,$(obj))")
+	@lib $(ARFLAGS) -OUT:"$(call posix-to-windows,$@)" $(foreach obj,$(GALA_OBJECTS),"$(call posix-to-windows,$(obj))")
 
-gala: $(BUILD)/lib/gala.lib
+gala: foundation $(BUILD)/lib/gala.lib
 endif
 ifeq ($(LINKAGE),dynamic)
-$(BUILD)/bin/gala.dll: $(OBJECTS)
+$(BUILD)/bin/gala.dll: foundation $(GALA_OBJECTS)
 	@echo "[LD] $@"
 	@mkdir -p ${@D}
-	@link -DLL $(LDFLAGS) -OUT:"$(call posix-to-windows,$@)" $(foreach obj,$(OBJECTS),"$(call posix-to-windows,$(obj))")
+	@link -DLL $(LDFLAGS) -OUT:"$(call posix-to-windows,$@)" $(foreach obj,$(GALA_OBJECTS),"$(call posix-to-windows,$(obj))")
 
 $(BUILD)/lib/gala.lib: $(BUILD)/bin/gala.dll
 	@echo "[AR] $@"
 	@mkdir -p ${@D}
 	@-mv -f -u $(basename $<).lib $@
 
-gala: $(BUILD)/bin/gala.dll $(BUILD)/lib/gala.lib
+gala: foundation $(BUILD)/bin/gala.dll $(BUILD)/lib/gala.lib
 endif

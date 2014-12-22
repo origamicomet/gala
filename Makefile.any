@@ -61,9 +61,13 @@ endif
 
 export
 
-.PHONY: all test docs clean
+.PHONY: all test docs clean \
+			  gala foundation
 
 all: gala
+
+foundation:
+	@cd $(FOUNDATION) && make all
 
 test:
 	# TODO: Add unit testing.
@@ -73,6 +77,7 @@ docs:
 	@doxygen Doxyfile
 
 clean:
+	@cd $(FOUNDATION) && make clean
 	@echo "[RM] $(BUILD)/obj"
 	@rm -R -f $(BUILD)/obj
 	@echo "[RM] $(BUILD)/lib"
