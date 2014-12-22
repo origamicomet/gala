@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/origamicomet/gala.png?branch=master)](http://travis-ci.org/origamicomet/gala)
 
-Abstracts rendering through an asynchronous cross-platform API.
+Gala is a low-level abstraction layer for rendering.
 
 What platforms does it support?
 -------------------------------
