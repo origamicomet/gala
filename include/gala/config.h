@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Documents and defines the pre-processor macros that control GALA's
+/// \brief Documents and defines the pre-processor macros that control Gala's
 /// compile-time, link-time, and runtime behaviour.
 ///
 //===----------------------------------------------------------------------===//
@@ -56,12 +56,47 @@
 
 //===----------------------------------------------------------------------===//
 
-#include <gala/config/linkage.inl>
-#include <gala/config/visibility.inl>
+/// \def GALA_DISABLE_ARGUMENT_CHECKS
+/// \brief If defined, Gala won't check supplied arguments.
+///
+#ifdef DOXYGEN
+  #define GALA_DISABLE_ARGUMENT_CHECKS
+#else // #ifndef DOXYGEN
+  #if GALA_CONFIGURATION == GALA_CONFIGURATION_DEBUG
+  #elif GALA_CONFIGURATION == GALA_CONFIGURATION_DEVELOPMENT
+  #elif GALA_CONFIGURATION == GALA_CONFIGURATION_RELEASE
+    #define GALA_DISABLE_ARGUMENT_CHECKS
+  #else // #ifndef GALA_CONFIGURATION
+  #endif
+#endif
 
-//===----------------------------------------------------------------------===//
+/// \def GALA_DISABLE_ERROR_CHECKS
+/// \brief If defined, Gala won't check for errors.
+///
+#ifdef DOXYGEN
+  #define GALA_DISABLE_ERROR_CHECKS
+#else // #ifndef DOXYGEN
+  #if GALA_CONFIGURATION == GALA_CONFIGURATION_DEBUG
+  #elif GALA_CONFIGURATION == GALA_CONFIGURATION_DEVELOPMENT
+  #elif GALA_CONFIGURATION == GALA_CONFIGURATION_RELEASE
+    #define GALA_DISABLE_ERROR_CHECKS
+  #else // #ifndef GALA_CONFIGURATION
+  #endif
+#endif
 
-#include <gala/config/argument_and_error_checking.inl>
+/// \def GALA_DISABLE_ERROR_DETAILS
+/// \brief If defined, Gala won't provide error details.
+///
+#ifdef DOXYGEN
+  #define GALA_DISABLE_ERROR_DETAILS
+#else // #ifndef DOXYGEN
+  #if GALA_CONFIGURATION == GALA_CONFIGURATION_DEBUG
+  #elif GALA_CONFIGURATION == GALA_CONFIGURATION_DEVELOPMENT
+  #elif GALA_CONFIGURATION == GALA_CONFIGURATION_RELEASE
+    #define GALA_DISABLE_ERROR_DETAILS
+  #else // #ifndef GALA_CONFIGURATION
+  #endif
+#endif
 
 //============================================================================//
 

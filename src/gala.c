@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <gala.h>
+#include "gala.h"
 
 //============================================================================//
 
@@ -22,7 +22,11 @@ extern "C" {
 
 extern
 GALA_PUBLIC
-void __gala__(void) {}
+void __gala__(void)
+{
+  // HACK(mike): We need to export at least one symbol for Microsoft's linker
+  // to build a dynamically linked library.
+}
 
 //===----------------------------------------------------------------------===//
 
