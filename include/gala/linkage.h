@@ -21,15 +21,32 @@
 
 //============================================================================//
 
+/// \def GALA_INTERNAL_LINKAGE
+/// \brief Exports symbols for inclusion of Gala via objects.
+///
+#define GALA_INTERNAL_LINKAGE 0
+
+/// \def GALA_STATIC_LINKAGE
+/// \brief Exports symbols for inclusion of Gala via static library.
+///
+#define GALA_STATIC_LINKAGE 1
+
+/// \def GALA_DYNAMIC_LINKAGE
+/// \brief Exports symbols for inclusion of Gala via dynamic library.
+///
+#define GALA_DYNAMIC_LINKAGE 2
+
+//===----------------------------------------------------------------------===//
+
 /// \def GALA_LOCAL
 /// \brief Marks symbols for internal usage.
 ///
 #ifdef DOXYGEN
   #define GALA_LOCAL
 #else // #ifndef DOXYGEN
-  #if GALA_LINKAGE == GALA_LINKAGE_STATIC
+  #if GALA_LINKAGE == GALA_STATIC_LINKAGE
     #define GALA_LOCAL
-  #elif GALA_LINKAGE == GALA_LINKAGE_DYNAMIC
+  #elif GALA_LINKAGE == GALA_DYNAMIC_LINAKGE
     #ifdef __GALA_IS_BEING_COMPILED__
       #if defined(__GNUC__)
         #if __GNUC__ >= 4
@@ -58,9 +75,9 @@
 #ifdef DOXYGEN
   #define GALA_PUBLIC
 #else // #ifndef DOXYGEN
-  #if GALA_LINKAGE == GALA_LINKAGE_STATIC
+  #if GALA_LINKAGE == GALA_STATIC_LINKAGE
     #define GALA_PUBLIC
-  #elif GALA_LINKAGE == GALA_LINKAGE_DYNAMIC
+  #elif GALA_LINKAGE == GALA_DYNAMIC_LINAKGE
     #ifdef __GALA_IS_BEING_COMPILED__
       #if defined(__GNUC__)
         #if __GNUC__ >= 4
