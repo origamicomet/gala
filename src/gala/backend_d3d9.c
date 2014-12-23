@@ -9,11 +9,10 @@
 //    * Michael Williams <mike@origamicomet.com>
 //
 //===----------------------------------------------------------------------===//
-///
-/// \file
-/// \brief
-///
-//===----------------------------------------------------------------------===//
+
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+
+//============================================================================//
 
 #include "gala/backend_d3d9.h"
 
@@ -24,11 +23,9 @@
 
 //===----------------------------------------------------------------------===//
 
-#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
-  #define _WIN32_LEAN_AND_MEAN
-  #include <windows.h>
-  #include <d3d9.h>
-#endif
+#define _WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <d3d9.h>
 
 //============================================================================//
 
@@ -57,7 +54,6 @@ static Direct3DCreate9_fn Direct3DCreate9_ = NULL;
 
 bool gala_backend_init_d3d9(void)
 {
-#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
   if (gala_d3d9_initialized_ != FALSE)
     // Already initialized.
     return false;
@@ -203,10 +199,6 @@ bool gala_backend_init_d3d9(void)
 
   gala_d3d9_initialized_ = true;
   return true;
-#else // != BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
-  // TODO(mike): Provide details.
-  return false;
-#endif
 }
 
 //===----------------------------------------------------------------------===//
@@ -214,6 +206,34 @@ bool gala_backend_init_d3d9(void)
 #ifdef __cplusplus
 }
 #endif // __cplusplus
+
+//============================================================================//
+
+#else // BITBYTE_FOUNDATION_TIER0_SYSTEM != __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+
+//============================================================================//
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+//===----------------------------------------------------------------------===//
+
+bool gala_backend_init_d3d9(void)
+{
+  // TODO(mike): Provide details.
+  return false;
+}
+
+//===----------------------------------------------------------------------===//
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+//============================================================================//
+
+#endif
 
 //===----------------------------------------------------------------------===//
 

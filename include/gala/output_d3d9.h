@@ -15,6 +15,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+
+//============================================================================//
+
 #ifndef _GALA_OUTPUT_D3D9_H_
 #define _GALA_OUTPUT_D3D9_H_
 
@@ -24,11 +28,9 @@
 
 //===----------------------------------------------------------------------===//
 
-#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
-  #define _WIN32_LEAN_AND_MEAN
-  #include <windows.h>
-  #include <d3d9.h>
-#endif
+#define _WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <d3d9.h>
 
 //============================================================================//
 
@@ -128,5 +130,9 @@ class Output
 //============================================================================//
 
 #endif // _GALA_OUTPUT_D3D9_H_
+
+//============================================================================//
+
+#endif // BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
 
 //============================================================================//

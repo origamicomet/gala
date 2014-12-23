@@ -20,15 +20,17 @@
 
 //============================================================================//
 
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+
+//============================================================================//
+
 #include "gala/adapter.h"
 
 //===----------------------------------------------------------------------===//
 
-#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
-  #define _WIN32_LEAN_AND_MEAN
-  #include <windows.h>
-  #include <d3d9.h>
-#endif
+#define _WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <d3d9.h>
 
 //============================================================================//
 
@@ -96,5 +98,9 @@ class Adapter
 //============================================================================//
 
 #endif // _GALA_ADAPTER_D3D9_H_
+
+//============================================================================//
+
+#endif // BITBYTE_FOUNDATION_TIER0_SYSTEM = __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
 
 //============================================================================//
