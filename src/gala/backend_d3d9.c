@@ -33,9 +33,9 @@ extern "C" {
 
 //===----------------------------------------------------------------------===//
 
-static BOOL bInitialized = FALSE;
-static HMODULE hDirect3D9Dll = NULL;
-static IDirect3D9 *D3D9 = NULL;
+static BOOL gala_d3d9_initialized_ = FALSE;
+static HMODULE gala_d3d9_dll_ = NULL;
+static IDirect3D9 *gala_d3d9_ = NULL;
 
 //===----------------------------------------------------------------------===//
 
@@ -48,19 +48,19 @@ static Direct3DCreate9_fn Direct3DCreate9_ = NULL;
 bool gala_backend_init_d3d9(void)
 {
 #if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
-  if (bInitialized != FALSE)
+  if (gala_d3d9_initialized_ != FALSE)
     // Already initialized.
     return false;
-  hDirect3D9Dll = LoadLibraryA("d3d9.dll");
-  if (hDirect3D9Dll == NULL)
+  gala_d3d9_dll_ = LoadLibraryA("d3d9.dll");
+  if (gala_d3d9_dll_ == NULL)
     // Could not find or failed to load 'd3d9.dll'.
     return false;
   // TODO(mike): Try Direct3DCreate9Ex?
-  Direct3DCreate9_ = (Direct3DCreate9_fn)GetProcAddress(hDirect3D9Dll,
+  Direct3DCreate9_ = (Direct3DCreate9_fn)GetProcAddress(gala_d3d9_dll_,
                                                         "Direct3DCreate9");
   if (Direct3DCreate9_ == NULL)
     return false;
-  D3D9 = Direct3DCreate9_(D3D_SDK_VERSION);
+  gala_d3d9_ = Direct3DCreate9_(D3D_SDK_VERSION);
   return true;
 #else // != BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
   // TODO(mike): Provide details.
