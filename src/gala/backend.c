@@ -26,13 +26,14 @@ bool gala_backend_available(
   switch (backend) {
   #if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
     case GALA_BACKEND_D3D9:
+      return true;
     case GALA_BACKEND_D3D10:
     case GALA_BACKEND_D3D11:
     case GALA_BACKEND_D3D12:
     case GALA_BACKEND_GL2:
     case GALA_BACKEND_GL3:
     case GALA_BACKEND_GL4:
-      return true;
+      return false;
   #elif BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_MAC_OS_X__
     case GALA_BACKEND_D3D9:
     case GALA_BACKEND_D3D10:
