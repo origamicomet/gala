@@ -112,6 +112,13 @@ typedef enum __Enum__ {
 
 namespace backend {
 
+/// \brief Initializes the backend.
+///
+template <gala::backends::__Enum__ _Backend>
+extern
+GALA_PUBLIC
+bool init(void);
+
 /// \copydoc ::gala_backend_available
 extern
 GALA_PUBLIC
