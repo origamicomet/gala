@@ -67,7 +67,7 @@ export
 all: gala
 
 foundation:
-	@cd $(FOUNDATION) && make all
+	@if [ -z "$(SKIP_FOUNDATION)" ]; then (cd $(FOUNDATION) && make all); fi
 
 test:
 	# TODO: Add unit testing.
@@ -77,7 +77,7 @@ docs:
 	@doxygen Doxyfile
 
 clean:
-	@cd $(FOUNDATION) && make clean
+	@if [ -z "$(SKIP_FOUNDATION)" ]; then (cd $(FOUNDATION) && make clean); fi
 	@echo "[RM] $(BUILD)/obj"
 	@rm -R -f $(BUILD)/obj
 	@echo "[RM] $(BUILD)/lib"
