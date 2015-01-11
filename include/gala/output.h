@@ -128,6 +128,9 @@ class Output
   ~Output();
 
  public:
+  /// \copydoc ::gala_output_t::primary
+  const bool primary() const { return __output__.primary; }
+
   /// \copydoc ::gala_output_t::bounds
   void bounds(uint32_t *top,
               uint32_t *left,
@@ -139,6 +142,12 @@ class Output
     *bottom = __output__.bounds.bottom;
     *right = __output__.bounds.right;
   }
+
+  /// \copydoc ::gala_output_t::num_modes
+  const size_t num_modes() const { return __output__.num_modes; }
+
+  /// \copydoc ::gala_output_t::modes
+  const ::gala::Output::Mode **modes() const { return (const ::gala::Output::Mode **)__output__.modes; }
 
  private:
   ::gala_output_t __output__;
