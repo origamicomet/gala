@@ -98,7 +98,7 @@ class Adapter
   /// \copydoc ::gala_adapter_t::num_outputs
   const size_t num_outputs() const { return __adapter__.num_outputs; }
   /// \copydoc ::gala_adapter_t::outputs
-  const class Output *outputs() const { return (const class Output *)__adapter__.outputs; }
+  const class Output **outputs() const { return (const class Output **)__adapter__.outputs; }
 
  private:
   ::gala_adapter_t __adapter__;
