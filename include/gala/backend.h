@@ -24,6 +24,11 @@
 #include "gala/linkage.h"
 #include "gala/foundation.h"
 
+//===----------------------------------------------------------------------===//
+
+#include "gala/adapter.h"
+#include "gala/output.h"
+
 //============================================================================//
 
 #ifdef __cplusplus
@@ -124,6 +129,20 @@ extern
 GALA_PUBLIC
 bool available(
   const gala::backends::__Enum__ backend);
+
+/// \brief
+///
+template <gala::backends::__Enum__ _Backend>
+extern
+GALA_PUBLIC
+size_t num_adapters(void);
+
+/// \brief
+///
+template <gala::backends::__Enum__ _Backend>
+extern
+GALA_PUBLIC
+const gala::Adapter **adapters(void);
 
 } // backend
 

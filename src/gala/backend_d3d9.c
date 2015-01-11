@@ -203,6 +203,22 @@ bool gala_backend_init_d3d9(void)
 
 //===----------------------------------------------------------------------===//
 
+size_t gala_backend_num_adapters_d3d9(void)
+{
+  // TODO(mike): Check if initialized.
+  return gala_d3d9_num_adapters_;
+}
+
+//===----------------------------------------------------------------------===//
+
+const gala_adapter_t **gala_backend_adapters_d3d9(void)
+{
+  // TODO(mike): Check if initialized.
+  return (const gala_adapter_t **)gala_d3d9_adapters_;
+}
+
+//===----------------------------------------------------------------------===//
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
@@ -223,6 +239,22 @@ bool gala_backend_init_d3d9(void)
 {
   // TODO(mike): Provide details.
   return false;
+}
+
+//===----------------------------------------------------------------------===//
+
+size_t gala_backend_num_adapters_d3d9(void)
+{
+  // TODO(mike): Fail.
+  return 0;
+}
+
+//===----------------------------------------------------------------------===//
+
+const gala_adapter_t **gala_backend_adapters_d3d9(void)
+{
+  // TODO(mike): Fail.
+  return NULL;
 }
 
 //===----------------------------------------------------------------------===//
@@ -250,6 +282,16 @@ namespace backend {
 template <>
 bool init<gala::backends::D3D9>(void) {
   return ::gala_backend_init_d3d9();
+}
+
+template <>
+size_t num_adapters<gala::backends::D3D9>(void) {
+  return ::gala_backend_num_adapters_d3d9();
+}
+
+template <>
+const gala::Adapter **adapters<gala::backends::D3D9>(void) {
+  return (const gala::Adapter **)::gala_backend_adapters_d3d9();
 }
 
 } // backend

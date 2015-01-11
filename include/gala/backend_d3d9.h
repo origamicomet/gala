@@ -41,6 +41,20 @@ bool gala_backend_init_d3d9(void);
 
 //===----------------------------------------------------------------------===//
 
+/// \copydoc ::gala::backend::num_adapters
+extern
+GALA_PUBLIC
+size_t gala_backend_num_adapters_d3d9(void);
+
+//===----------------------------------------------------------------------===//
+
+/// \copydoc ::gala::backend::adapters
+extern
+GALA_PUBLIC
+const gala_adapter_t **gala_backend_adapters_d3d9(void);
+
+//===----------------------------------------------------------------------===//
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
@@ -62,6 +76,18 @@ template <>
 extern
 GALA_PUBLIC
 bool init<gala::backends::D3D9>(void);
+
+/// \copydoc ::gala_backend_num_adapters_d3d9
+template <>
+extern
+GALA_PUBLIC
+size_t num_adapters<gala::backends::D3D9>(void);
+
+/// \copydoc ::gala_backend_adapters_d3d9
+template <>
+extern
+GALA_PUBLIC
+const gala::Adapter **adapters<gala::backends::D3D9>(void);
 
 } // backend
 
