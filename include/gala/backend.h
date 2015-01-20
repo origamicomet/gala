@@ -106,6 +106,7 @@ class Backend {
  public:
   /// \copydoc ::gala_backend_initialize
   template <Type _Type>
+  static
   GALA_PUBLIC
   ::gala::Error initialize(
     ::gala::Backend **backend,
