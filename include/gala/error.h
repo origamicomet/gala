@@ -110,15 +110,19 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
+namespace Errors {
+  enum _ {
+    /// \copydoc ::GALA_ERROR_NONE
+    kNone = ::GALA_ERROR_NONE,
+    /// \copydoc ::GALA_ERROR_UNKNOWN
+    kUnknown = ::GALA_ERROR_UNKNOWN,
+    /// \copydoc ::GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS
+    kOneOrMoreInvalidArguments = ::GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS
+  };
+}
+
 /// \copydoc ::gala_error_t
-enum Error {
-  /// \copydoc ::GALA_ERROR_NONE
-  kNone = ::GALA_ERROR_NONE,
-  /// \copydoc ::GALA_ERROR_UNKNOWN
-  kUnknown = ::GALA_ERROR_UNKNOWN,
-  /// \copydoc ::GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS
-  kOneOrMoreInvalidArguments = ::GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS
-};
+typedef Errors::_ Error;
 
 //===----------------------------------------------------------------------===//
 
