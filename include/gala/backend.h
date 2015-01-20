@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief
+/// \brief TODO(mike): Document this file.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -23,11 +23,7 @@
 #include "gala/config.h"
 #include "gala/linkage.h"
 #include "gala/foundation.h"
-
-//===----------------------------------------------------------------------===//
-
-#include "gala/adapter.h"
-#include "gala/output.h"
+#include "gala/error.h"
 
 //============================================================================//
 
@@ -39,38 +35,46 @@ extern "C" {
 
 /// \brief
 ///
-typedef enum gala_backend {
-  /// Direct3D 9
-  GALA_BACKEND_D3D9  = 1,
-  /// Direct3D 10
-  GALA_BACKEND_D3D10 = 2,
-  /// Direct3D 11
-  GALA_BACKEND_D3D11 = 3,
-  /// Direct3D 12
-  GALA_BACKEND_D3D12 = 4,
-  /// OpenGL 2+
-  GALA_BACKEND_GL2   = 5,
-  /// OpenGL 3+
-  GALA_BACKEND_GL3   = 6,
-  /// OpenGL 4+
-  GALA_BACKEND_GL4   = 7,
-  /// OpenGL ES
-  GALA_BACKEND_GLES  = 8,
-  /// OpenGL ES 2
-  GALA_BACKEND_GLES2 = 9,
-  /// OpenGL ES 3
-  GALA_BACKEND_GLES3 = 10
+typedef enum gala_backend_type {
+  /// Null.
+  GALA_BACKEND_NULL = 0,
+  /// Direct3D 9.
+  GALA_BACKEND_D3D9 = 1
+} gala_backend_type_t;
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+///
+typedef gala_error_t (*gala_backend_shutdown_fn)(
+  struct gala_backend *backend,
+  const gala_error_details_t **error_details);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+///
+typedef struct gala_backend {
+  /// \copydoc ::gala_backend_type_t
+  gala_backend_type_t type;
+  /// \copydoc ::gala_backend_shutdown_fn
+  gala_backend_shutdown_fn shutdown;
 } gala_backend_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
+/// \param type
 /// \param backend
+/// \param error_details
+/// \returns
 ///
 extern
 GALA_PUBLIC
-bool gala_backend_available(
-  const gala_backend_t backend);
+gala_error_t gala_backend_initialize(
+  const gala_backend_type_t type,
+  gala_backend_t **backend,
+  const gala_error_details_t **error_details);
 
 //===----------------------------------------------------------------------===//
 
@@ -78,7 +82,7 @@ bool gala_backend_available(
 }
 #endif // __cplusplus
 
-//===----------------------------------------------------------------------===//
+//============================================================================//
 
 #ifdef __cplusplus
 
@@ -88,63 +92,41 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-namespace backends {
-typedef enum __Enum__ {
-  /// \copydoc ::GALA_BACKEND_D3D9
-  D3D9  = ::GALA_BACKEND_D3D9,
-  /// \copydoc ::GALA_BACKEND_D3D10
-  D3D10 = ::GALA_BACKEND_D3D10,
-  /// \copydoc ::GALA_BACKEND_D3D11
-  D3D11 = ::GALA_BACKEND_D3D11,
-  /// \copydoc ::GALA_BACKEND_D3D12
-  D3D12 = ::GALA_BACKEND_D3D12,
-  /// \copydoc ::GALA_BACKEND_GL2
-  GL2   = ::GALA_BACKEND_GL2,
-  /// \copydoc ::GALA_BACKEND_GL3
-  GL3   = ::GALA_BACKEND_GL3,
-  /// \copydoc ::GALA_BACKEND_GL4
-  GL4   = ::GALA_BACKEND_GL4,
-  /// \copydoc ::GALA_BACKEND_GLES
-  GLES  = ::GALA_BACKEND_GLES,
-  /// \copydoc ::GALA_BACKEND_GLES2
-  GLES2 = ::GALA_BACKEND_GLES2,
-  /// \copydoc ::GALA_BACKEND_GLES3
-  GLES3 = ::GALA_BACKEND_GLES3
-} __Enum__;
-} // backends
+/// \copydoc ::gala_backend_t
+class Backend {
+ public:
+  /// \copydoc ::gala_backend_type_t
+  enum Type {
+    /// \copydoc ::GALA_BACKEND_NULL
+    kNull = ::GALA_BACKEND_NULL,
+    /// \copydoc ::GALA_BACKEND_D3D9
+    kDirect3D9 = ::GALA_BACKEND_D3D9
+  };
 
-//===----------------------------------------------------------------------===//
+ public:
+  /// \copydoc ::gala_backend_initialize
+  template <Type _Type>
+  GALA_PUBLIC
+  ::gala::Error initialize(
+    ::gala::Backend **backend,
+    const ::gala::ErrorDetails **error_details = NULL)
+  {
+    return (::gala::Error)::gala_backend_initialize((gala_backend_type_t)_Type,
+                                                    (::gala_backend_t **)backend,
+                                                    (const ::gala_error_details_t **)error_details);
+  }
 
-namespace backend {
+  /// \copydoc ::gala_backend_t::shutdown
+  ::gala::Error shutdown(
+    const ::gala::ErrorDetails **error_details = NULL)
+  {
+    return (::gala::Error)__backend__.shutdown(&__backend__,
+                                               (const ::gala_error_details_t **)error_details);
+  }
 
-/// \brief Initializes the backend.
-///
-template <gala::backends::__Enum__ _Backend>
-extern
-GALA_PUBLIC
-bool init(void);
-
-/// \copydoc ::gala_backend_available
-extern
-GALA_PUBLIC
-bool available(
-  const gala::backends::__Enum__ backend);
-
-/// \brief
-///
-template <gala::backends::__Enum__ _Backend>
-extern
-GALA_PUBLIC
-size_t num_adapters(void);
-
-/// \brief
-///
-template <gala::backends::__Enum__ _Backend>
-extern
-GALA_PUBLIC
-const gala::Adapter **adapters(void);
-
-} // backend
+ public:
+  ::gala_backend_t __backend__;
+};
 
 //===----------------------------------------------------------------------===//
 

@@ -6,7 +6,7 @@
 //
 //  Author(s):
 //
-//    * Michael Williams <mike@origamicomet.com>
+//   * Michael Williams <mike@origamicomet.com>
 //
 //===----------------------------------------------------------------------===//
 
@@ -25,7 +25,8 @@ GALA_PUBLIC
 void __gala__(void)
 {
   // HACK(mike): We need to export at least one symbol for Microsoft's linker
-  // to build a dynamically linked library.
+  // to actually produce a dynamically linked library.
+  //
 }
 
 //===----------------------------------------------------------------------===//

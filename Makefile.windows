@@ -172,8 +172,8 @@ GALA_OBJECTS := $(subst $(ROOT)/src/,$(BUILD)/obj/,$(GALA_SOURCES:%.c=%.o))
 $(BUILD)/obj/%.o: $(ROOT)/src/%.c
 	@echo "[CC] $<"
 	@mkdir -p ${@D}
-	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D__GALA_IS_BEING_COMPILED__=1 -Fo"$(call posix-to-windows,$@)" -Fd"$(call posix-to-windows,$(patsubst %.o,%.pdb,$@))" "$<"
-	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -D__GALA_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
+	$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -I"$(call posix-to-windows,$(ROOT)/src)" -D__GALA_IS_BEING_COMPILED__=1 -Fo"$(call posix-to-windows,$@)" -Fd"$(call posix-to-windows,$(patsubst %.o,%.pdb,$@))" "$<"
+	@$(ROOT)/build/toolchains/msvc.d/cl -TP $(CFLAGS) -I"$(call posix-to-windows,$(ROOT)/include)" -I"$(call posix-to-windows,$(ROOT)/src)" -D__GALA_IS_BEING_COMPILED__=1 "$<" -MM -MT $@ >$(patsubst %.o,%.d,$@)
 
 ifeq ($(LINKAGE),static)
 $(BUILD)/lib/gala.lib: foundation $(GALA_OBJECTS)

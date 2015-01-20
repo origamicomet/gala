@@ -20,83 +20,61 @@ extern "C" {
 
 //===----------------------------------------------------------------------===//
 
-bool gala_backend_available(
-  const gala_backend_t backend)
+extern
+gala_error_t gala_backend_initialize_d3d9(
+  gala_backend_t **backend,
+  const gala_error_details_t **error_details);
+
+//===----------------------------------------------------------------------===//
+
+gala_error_t gala_backend_initialize(
+  const gala_backend_type_t type,
+  gala_backend_t **backend,
+  const gala_error_details_t **error_details)
 {
-  switch (backend) {
-  #if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
-    case GALA_BACKEND_D3D9:
-      return true;
-    case GALA_BACKEND_D3D10:
-    case GALA_BACKEND_D3D11:
-    case GALA_BACKEND_D3D12:
-    case GALA_BACKEND_GL2:
-    case GALA_BACKEND_GL3:
-    case GALA_BACKEND_GL4:
-      return false;
-  #elif BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_MAC_OS_X__
-    case GALA_BACKEND_D3D9:
-    case GALA_BACKEND_D3D10:
-    case GALA_BACKEND_D3D11:
-    case GALA_BACKEND_D3D12:
-      return false;
-    case GALA_BACKEND_GL2:
-    case GALA_BACKEND_GL3:
-    case GALA_BACKEND_GL4:
-      return true;
-  #elif BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_LINUX__
-    case GALA_BACKEND_D3D9:
-    case GALA_BACKEND_D3D10:
-    case GALA_BACKEND_D3D11:
-    case GALA_BACKEND_D3D12:
-      return false;
-    case GALA_BACKEND_GL2:
-    case GALA_BACKEND_GL3:
-    case GALA_BACKEND_GL4:
-      return true;
-  #endif
-    case GALA_BACKEND_GLES:
-    case GALA_BACKEND_GLES2:
-    case GALA_BACKEND_GLES3:
-    default:
-      break;
+#ifndef GALA_DISABLE_ARGUMENT_CHECKS
+  if ((type < GALA_BACKEND_NULL) || (type > GALA_BACKEND_D3D9)) {
+    if (error_details) {
+      *error_details = gala_error_details_create_unformatted(
+        GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS,
+        "Expected `type' to be a valid ::gala_backend_type_t.");
+    }
+    return GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS;
   }
-
-  return false;
+  if (backend == NULL) {
+    if (error_details) {
+      *error_details = gala_error_details_create_unformatted(
+        GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS,
+        "Expected `backend' to be non-NULL.");
+    }
+    return GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS;
+  }
+#endif // !GALA_DISABLE_ARGUMENT_CHECKS
+  switch (type) {
+    // TODO(mike): Provide a null backend.
+    // case GALA_BACKEND_NULL:
+    //   return gala_backend_initialize_null(backend, error_details);
+    case GALA_BACKEND_D3D9:
+      return gala_backend_initialize_d3d9(backend, error_details);
+  #ifndef GALA_DISABLE_ERROR_CHECKS
+    default:
+      if (error_details) {
+        *error_details = gala_error_details_create_unformatted(
+          GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS,
+          "Unknown or unimplemented backend `type'.");
+      }
+      return GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS;
+  #endif // !GALA_DISABLE_ERROR_CHECKS
+  }
+  if (error_details)
+    *error_details = NULL;
+  return GALA_ERROR_UNKNOWN;
 }
 
 //===----------------------------------------------------------------------===//
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
-
-//===----------------------------------------------------------------------===//
-
-#ifdef __cplusplus
-
-//===----------------------------------------------------------------------===//
-
-namespace gala {
-
-//===----------------------------------------------------------------------===//
-
-namespace backend {
-
-bool available(
-  const gala::backends::__Enum__ backend)
-{
-  return ::gala_backend_available((::gala_backend_t)backend);
-}
-
-} // backend
-
-//===----------------------------------------------------------------------===//
-
-} // gala
-
-//===----------------------------------------------------------------------===//
-
 #endif // __cplusplus
 
 //============================================================================//

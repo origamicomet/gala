@@ -1,4 +1,4 @@
-//===-- gala.h -------------------------------------------------*- C++ -*-===//
+//===-- gala.h --------------------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -6,7 +6,7 @@
 //
 //  Author(s):
 //
-//    * Michael Williams <mike@origamicomet.com>
+//   * Michael Williams <mike@origamicomet.com>
 //
 //===----------------------------------------------------------------------===//
 ///
@@ -22,8 +22,8 @@
 
 #include "gala/config.h"
 #include "gala/linkage.h"
-
-//===----------------------------------------------------------------------===//
+#include "gala/foundation.h"
+#include "gala/error.h"
 
 #include "gala/backend.h"
 
