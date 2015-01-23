@@ -40,7 +40,9 @@ typedef enum gala_error {
   /// Unknown.
   GALA_ERROR_UNKNOWN = 1,
   /// One or more arguments are invalid.
-  GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS = 2
+  GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS = 2,
+  /// Not enough memory.
+  GALA_ERROR_OUT_OF_MEMORY = 3
 } gala_error_t;
 
 //===----------------------------------------------------------------------===//
@@ -117,7 +119,9 @@ namespace Errors {
     /// \copydoc ::GALA_ERROR_UNKNOWN
     kUnknown = ::GALA_ERROR_UNKNOWN,
     /// \copydoc ::GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS
-    kOneOrMoreInvalidArguments = ::GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS
+    kOneOrMoreInvalidArguments = ::GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS,
+    /// \copydoc ::GALA_ERROR_OUT_OF_MEMORY
+    kOutOfMemory = ::GALA_ERROR_OUT_OF_MEMORY
   };
 }
 
