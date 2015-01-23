@@ -126,6 +126,12 @@ class Backend {
   }
 
  public:
+  /// \copydoc ::gala_backend_t::type
+  ::gala::Backend::Type type() const {
+    return (::gala::Backend::Type)__backend__.type;
+  }
+
+ public:
   ::gala_backend_t __backend__;
 };
 
