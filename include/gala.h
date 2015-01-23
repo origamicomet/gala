@@ -26,6 +26,7 @@
 #include "gala/error.h"
 
 #include "gala/backend.h"
+#include "gala/adapter.h"
 
 //============================================================================//
 
