@@ -78,6 +78,23 @@ gala_error_t gala_backend_initialize(
 
 //===----------------------------------------------------------------------===//
 
+/// \brief
+/// \param backend
+/// \param buf
+/// \param buf_sz
+/// \param error_details
+/// \returns
+///
+extern
+GALA_PUBLIC
+gala_error_t gala_backend_to_s(
+  const gala_backend_t *backend,
+  char *buf,
+  const size_t buf_sz,
+  const gala_error_details_t **error_details);
+
+//===----------------------------------------------------------------------===//
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
@@ -123,6 +140,18 @@ class Backend {
   {
     return (::gala::Error)__backend__.shutdown(&__backend__,
                                                (const ::gala_error_details_t **)error_details);
+  }
+
+ public:
+  /// \copydoc ::gala_backend_to_s
+  ::gala::Error to_s(
+    char *buf,
+    const size_t buf_sz,
+    const ::gala::ErrorDetails **error_details = NULL) const
+  {
+    return (::gala::Error)::gala_backend_to_s(&__backend__,
+                                              buf, buf_sz,
+                                              (const ::gala_error_details_t **)error_details);
   }
 
  public:

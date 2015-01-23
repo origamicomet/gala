@@ -73,6 +73,64 @@ gala_error_t gala_backend_initialize(
 
 //===----------------------------------------------------------------------===//
 
+gala_error_t gala_backend_to_s(
+  const gala_backend_t *backend,
+  char *buf,
+  const size_t buf_sz,
+  const gala_error_details_t **error_details)
+{
+#ifndef GALA_DISABLE_ARGUMENT_CHECKS
+  if (backend == NULL) {
+    if (error_details) {
+      *error_details = gala_error_details_create_unformatted(
+        GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS,
+        "Expected `backend' to be non-NULL.");
+    }
+    return GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS;
+  }
+  if (buf == NULL) {
+    if (error_details) {
+      *error_details = gala_error_details_create_unformatted(
+        GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS,
+        "Expected `buf' to be non-NULL.");
+    }
+    return GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS;
+  }
+  if (buf_sz == 0) {
+    if (error_details) {
+      *error_details = gala_error_details_create_unformatted(
+        GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS,
+        "Expected `buf' to be greater than `0'.");
+    }
+    return GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS;
+  }
+#endif // !GALA_DISABLE_ARGUMENT_CHECKS
+  const char *type_as_str = NULL;
+  switch (backend->type) {
+    default: type_as_str = "unknown"; break;
+    case GALA_BACKEND_NULL: type_as_str = "null"; break;
+    case GALA_BACKEND_D3D9: type_as_str = "direct3d9"; break;
+  }
+  // TODO(mike): Defer to implementation specific implementation.
+  const int written = snprintf(buf, buf_sz, "#<gala_backend_t:%" PRIxPTR " type=`%s'>",
+                               backend, type_as_str);
+#ifndef GALA_DISABLE_ERROR_CHECKS
+  if (written <= 0) {
+    if (error_details) {
+      *error_details = gala_error_details_create_unformatted(
+        GALA_ERROR_OUT_OF_MEMORY,
+        "The specified buffer is not large enough.");
+    }
+    return GALA_ERROR_OUT_OF_MEMORY;
+  }
+#endif // !GALA_DISABLE_ERROR_CHECKS
+  if (error_details)
+    *error_details = NULL;
+  return GALA_ERROR_NONE;
+}
+
+//===----------------------------------------------------------------------===//
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
