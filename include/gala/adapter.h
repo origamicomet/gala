@@ -57,6 +57,8 @@ typedef struct gala_adapter {
   size_t num_outputs;
   /// TODO(mike): Document this.
   struct gala_output_t **outputs;
+  /// The backend this belongs to.
+  struct gala_backend *_backend;
 } gala_adapter_t;
 
 //===----------------------------------------------------------------------===//
