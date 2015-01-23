@@ -25,6 +25,10 @@
 #include "gala/foundation.h"
 #include "gala/error.h"
 
+//===----------------------------------------------------------------------===//
+
+#include "gala/adapter.h"
+
 //============================================================================//
 
 #ifdef __cplusplus
@@ -59,6 +63,10 @@ typedef struct gala_backend {
   gala_backend_type_t type;
   /// \copydoc ::gala_backend_shutdown_fn
   gala_backend_shutdown_fn shutdown;
+  /// TODO(mike): Document this.
+  size_t num_adapters;
+  /// TODO(mike): Document this.
+  const gala_adapter_t **adapters;
 } gala_backend_t;
 
 //===----------------------------------------------------------------------===//
@@ -158,6 +166,16 @@ class Backend {
   /// \copydoc ::gala_backend_t::type
   ::gala::Backend::Type type() const {
     return (::gala::Backend::Type)__backend__.type;
+  }
+
+  /// \copydoc ::gala_backend_t::num_adapters
+  size_t num_adapters() const {
+    return __backend__.num_adapters;
+  }
+
+  /// \copydoc ::gala_backend_t::adapters
+  const ::gala::Adapter **adapters() const {
+    return (const ::gala::Adapter **)__backend__.adapters;
   }
 
  public:
