@@ -15,6 +15,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "gala/adapter_d3d9_win32.h"
+#include "gala/output_d3d9_win32.h"
+// #include "gala/output_mode_d3d9_win32.h"
 
 //============================================================================//
 
@@ -28,6 +30,7 @@ gala_error_t gala_backend_initialize_d3d9(
   gala_backend_t **backend_,
   const gala_error_details_t **error_details)
 {
+  // BUG(mike): Memory leaks on failure...
   // TODO(mike): Use a user-specified allocator.
   gala_backend_d3d9_t *backend =
     (gala_backend_d3d9_t *)calloc(sizeof(gala_backend_d3d9_t), 1);
@@ -127,31 +130,74 @@ gala_error_t gala_backend_initialize_d3d9(
       }
     #endif // !GALA_DISABLE_ERROR_CHECKS
     }
+
     if (strstr(adapters[uiAdapter].Identifier.Description, ".") != NULL)
       adapters[uiAdapter].__adapter__.type = GALA_ADAPTER_PROXY;
-    /* adapters[uiAdapter].hMonitor = */ {
-      adapters[uiAdapter].hMonitor = backend->D3D9->GetAdapterMonitor(uiAdapter);
-    #ifndef GALA_DISABLE_ERROR_CHECKS
-      if (adapters[uiAdapter].hMonitor == NULL) {
-        uiAdapter -= 1;
-        for (; uiAdapter >= 0; --uiAdapter)
-          CloseHandle(adapters[uiAdapter].hMonitor);
-        free((void *)adapters);
-        free((void *)adapters_);
-        FreeLibrary(backend->hDll);
-        free((void *)backend);
-        if (error_details) {
-          *error_details = gala_error_details_create_unformatted(
-            GALA_ERROR_UNKNOWN,
-            "Failed to query an adapter's associated monitor.");
-        }
-        return GALA_ERROR_UNKNOWN;
+
+    adapters[uiAdapter].__adapter__.num_outputs = 1;
+    gala_output_d3d9_t *outputs = (gala_output_d3d9_t *)calloc(1, sizeof(gala_output_d3d9_t));
+    adapters[uiAdapter].__adapter__.outputs = (const gala_output_t **)calloc(1, sizeof(gala_output_t *));
+
+  #ifndef GALA_DISABLE_ERROR_CHECKS
+    if ((outputs == NULL) || (adapters[uiAdapter].__adapter__.outputs == NULL)) {
+      if (outputs)
+        free((void *)outputs);
+      if (adapters[uiAdapter].__adapter__.outputs)
+        free((void *)adapters[uiAdapter].__adapter__.outputs);
+      free((void *)adapters);
+      free((void *)adapters_);
+      FreeLibrary(backend->hDll);
+      free((void *)backend);
+      if (error_details) {
+        *error_details = gala_error_details_create_unformatted(
+          GALA_ERROR_OUT_OF_MEMORY,
+          "Ran out of memory when querying an adapter's outputs.");
       }
-    #endif // !GALA_DISABLE_ERROR_CHECKS
+      return GALA_ERROR_OUT_OF_MEMORY;
     }
+  #endif // !GALA_DISABLE_ERROR_CHECKS
+
+    adapters[uiAdapter].__adapter__.outputs[0] = (const gala_output_t *)&outputs[0];
+
+    outputs[0].hMonitor = backend->D3D9->GetAdapterMonitor(uiAdapter);
+
+    MONITORINFOEX MonitorInfo;
+    ZeroMemory((void *)&MonitorInfo, sizeof(MONITORINFOEX));
+    MonitorInfo.cbSize = sizeof(MONITORINFOEX);
+    const BOOL bHaveMonitorInfo = GetMonitorInfo(outputs[0].hMonitor, &MonitorInfo);
+
+    DEVMODE DevMode;
+    const BOOL bHaveDisplaySettings = EnumDisplaySettings(MonitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &DevMode);
+
+  #ifndef GALA_DISABLE_ERROR_CHECKS
+    if ((outputs[0].hMonitor == NULL) || !bHaveMonitorInfo || !bHaveDisplaySettings) {
+      free((void *)adapters[uiAdapter].__adapter__.outputs[0]);
+      free((void *)adapters[uiAdapter].__adapter__.outputs);
+      free((void *)adapters);
+      free((void *)adapters_);
+      FreeLibrary(backend->hDll);
+      free((void *)backend);
+      if (error_details) {
+        *error_details = gala_error_details_create_unformatted(
+          GALA_ERROR_UNKNOWN,
+          "Failed to query an adapter's output's monitor and/or display settings.");
+      }
+      return GALA_ERROR_UNKNOWN;
+    }
+  #endif // !GALA_DISABLE_ERROR_CHECKS
+
+    outputs[0].__output__.primary = (uiAdapter == D3DADAPTER_DEFAULT);
+    // outputs[0].__output__.primary = (MonitorInfo.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY;
+    outputs[0].__output__.primary = (MonitorInfo.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY;
+    outputs[0].__output__.bounds.top = MonitorInfo.rcMonitor.top;
+    outputs[0].__output__.bounds.left = MonitorInfo.rcMonitor.left;
+    outputs[0].__output__.bounds.bottom = MonitorInfo.rcMonitor.bottom;
+    outputs[0].__output__.bounds.right = MonitorInfo.rcMonitor.right;
+    outputs[0].ModeCount.uiA8R8G8B8 = backend->D3D9->GetAdapterModeCount(uiAdapter, D3DFMT_A8R8G8B8);
+    outputs[0].ModeCount.uiX8R8G8B8 = backend->D3D9->GetAdapterModeCount(uiAdapter, D3DFMT_X8R8G8B8);
+    outputs[0].__output__.num_modes = outputs[0].ModeCount.uiA8R8G8B8 + outputs[0].ModeCount.uiX8R8G8B8;
     // TODO(mike):
-    adapters[uiAdapter].__adapter__.num_outputs = 0;
-    adapters[uiAdapter].__adapter__.outputs = NULL;
+    outputs[0].__output__.modes = NULL;
   }
 
   *backend_ = (gala_backend_t *)backend;
@@ -179,10 +225,15 @@ gala_error_t gala_backend_shutdown_d3d9(
   gala_backend_d3d9_t *backend = (gala_backend_d3d9_t *)backend_;
   backend->D3D9->Release();
   FreeLibrary(backend->hDll);
-  for (UINT uiAdapter = 0; uiAdapter < backend->__backend__.num_adapters; ++uiAdapter)
-    CloseHandle(((const gala_adapter_d3d9_t **)backend->__backend__.adapters)[uiAdapter]->hMonitor);
-  free((void *)backend->__backend__.adapters);
+  const gala_adapter_d3d9_t **adapters =
+    ((const gala_adapter_d3d9_t **)backend->__backend__.adapters);
+  for (UINT uiAdapter = 0; uiAdapter < backend->__backend__.num_adapters; ++uiAdapter) {
+    CloseHandle(((const gala_output_d3d9_t **)adapters[uiAdapter]->__adapter__.outputs)[0]->hMonitor);
+    free((void *)adapters[uiAdapter]->__adapter__.outputs[0]);
+    free((void *)adapters[uiAdapter]->__adapter__.outputs);
+  }
   free((void *)backend->__backend__.adapters[0]);
+  free((void *)backend->__backend__.adapters);
   free((void *)backend);
   if (error_details)
     *error_details = NULL;

@@ -1,4 +1,4 @@
-//===-- gala/adapter_d3d9_win32.h -------------------------------*- C++ -*-===//
+//===-- gala/output_d3d9_win32.h --------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_ADAPTER_D3D9_WIN32_H_
-#define _GALA_ADAPTER_D3D9_WIN32_H_
+#ifndef _GALA_OUTPUT_D3D9_WIN32_H_
+#define _GALA_OUTPUT_D3D9_WIN32_H_
 
 //============================================================================//
 
@@ -24,7 +24,7 @@
 #include "gala/linkage.h"
 #include "gala/foundation.h"
 #include "gala/error.h"
-#include "gala/adapter.h"
+#include "gala/output.h"
 
 //===----------------------------------------------------------------------===//
 
@@ -42,14 +42,17 @@ extern "C" {
 
 /// \brief
 ///
-typedef struct gala_adapter_d3d9 {
-  /// \copydoc ::gala_adapter_t
-  gala_adapter_t __adapter__;
+typedef struct gala_output_d3d9 {
+  /// \copydoc ::gala_output_t
+  gala_output_t __output__;
   /// TODO(mike): Document this.
-  UINT uiAdapter;
+  HMONITOR hMonitor;
   /// TODO(mike): Document this.
-  D3DADAPTER_IDENTIFIER9 Identifier;
-} gala_adapter_d3d9_t;
+  struct {
+    UINT uiA8R8G8B8;
+    UINT uiX8R8G8B8;
+  } ModeCount;
+} gala_output_d3d9_t;
 
 //===----------------------------------------------------------------------===//
 
@@ -59,6 +62,6 @@ typedef struct gala_adapter_d3d9 {
 
 //============================================================================//
 
-#endif // _GALA_ADAPTER_D3D9_WIN32_H_
+#endif // _GALA_OUTPUT_D3D9_WIN32_H_
 
 //============================================================================//
