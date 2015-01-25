@@ -112,7 +112,7 @@ gala_error_t gala_backend_to_s(
     case GALA_BACKEND_D3D9: type_as_str = "direct3d9"; break;
   }
   // TODO(mike): Defer to implementation specific implementation.
-  const int written = snprintf(buf, buf_sz, "#<gala_backend_t:%" PRIxPTR " type=`%s'>",
+  const int written = snprintf(buf, buf_sz, "#<gala_backend_t:%.16" PRIxPTR " type=`%s'>",
                                backend, type_as_str);
 #ifndef GALA_DISABLE_ERROR_CHECKS
   if (written <= 0) {

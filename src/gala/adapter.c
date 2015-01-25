@@ -60,7 +60,7 @@ gala_error_t gala_adapter_to_s(
     case GALA_ADAPTER_PROXY: type_as_str = "proxy"; break;
   }
   // TODO(mike): Defer to implementation specific implementation.
-  const int written = snprintf(buf, buf_sz, "#<gala_adapter_t:%" PRIxPTR " type=`%s'>",
+  const int written = snprintf(buf, buf_sz, "#<gala_adapter_t:%.16" PRIxPTR "16 type=`%s'>",
                                adapter, type_as_str);
 #ifndef GALA_DISABLE_ERROR_CHECKS
   if (written <= 0) {

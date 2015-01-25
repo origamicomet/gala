@@ -42,7 +42,7 @@ gala_error_t gala_backend_initialize_d3d9(
     if (error_details) {
       *error_details = gala_error_details_create_unformatted(
         GALA_ERROR_UNKNOWN,
-        "Unable to load the Direct3D9 runtime (d3d9.dll).");
+        "Unable to load the Direct3D9 runtime.");
     }
     return GALA_ERROR_UNKNOWN;
   }
@@ -97,7 +97,7 @@ gala_error_t gala_backend_initialize_d3d9(
     if (error_details) {
       *error_details = gala_error_details_create_unformatted(
         GALA_ERROR_OUT_OF_MEMORY,
-        "Ran out of memory when querying Direct3D9 adapters.");
+        "Ran out of memory when querying adapters.");
     }
     return GALA_ERROR_OUT_OF_MEMORY;
   }
@@ -109,13 +109,11 @@ gala_error_t gala_backend_initialize_d3d9(
     adapters[uiAdapter].__adapter__.type = GALA_ADAPTER_HARDWARE;
     adapters[uiAdapter].__adapter__._backend = (gala_backend_t *)backend;
     adapters[uiAdapter].uiAdapter = uiAdapter;
+
     /* adapters[uiAdapter].Identifier = */ {
       const HRESULT Result = backend->D3D9->GetAdapterIdentifier(uiAdapter, 0, &adapters[uiAdapter].Identifier);
     #ifndef GALA_DISABLE_ERROR_CHECKS
       if (FAILED(Result)) {
-        uiAdapter -= 1;
-        for (; uiAdapter >= 0; --uiAdapter)
-          CloseHandle(adapters[uiAdapter].hMonitor);
         free((void *)adapters);
         free((void *)adapters_);
         FreeLibrary(backend->hDll);
