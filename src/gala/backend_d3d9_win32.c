@@ -131,7 +131,7 @@ gala_error_t gala_backend_initialize_d3d9(
     #endif // !GALA_DISABLE_ERROR_CHECKS
     }
 
-    if (strstr(adapters[uiAdapter].Identifier.Description, ".") != NULL)
+    if (strstr(adapters[uiAdapter].Identifier.Description, "PerfHUD") != NULL)
       adapters[uiAdapter].__adapter__.type = GALA_ADAPTER_PROXY;
 
     adapters[uiAdapter].__adapter__.num_outputs = 1;
@@ -187,7 +187,7 @@ gala_error_t gala_backend_initialize_d3d9(
   #endif // !GALA_DISABLE_ERROR_CHECKS
 
     outputs[0].__output__.primary = (uiAdapter == D3DADAPTER_DEFAULT);
-    // outputs[0].__output__.primary = (MonitorInfo.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY;
+    // NOTE: That uiAdapter == D3DADAPTER_DEFAULT should be true, if outputs[0].__output__.primary is.
     outputs[0].__output__.primary = (MonitorInfo.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY;
     outputs[0].__output__.bounds.top = MonitorInfo.rcMonitor.top;
     outputs[0].__output__.bounds.left = MonitorInfo.rcMonitor.left;
