@@ -131,6 +131,11 @@ gala_error_t gala_backend_initialize_d3d9(
     #endif // !GALA_DISABLE_ERROR_CHECKS
     }
 
+    memcpy((void *)adapters[uiAdapter].__adapter__.desc,
+           (const void *)adapters[uiAdapter].Identifier.Description,
+           sizeof(adapters[uiAdapter].__adapter__.desc)-1);
+    adapters[uiAdapter].__adapter__.desc[sizeof(adapters[uiAdapter].__adapter__.desc)-1] = '\0';
+
     if (strstr(adapters[uiAdapter].Identifier.Description, "PerfHUD") != NULL)
       adapters[uiAdapter].__adapter__.type = GALA_ADAPTER_PROXY;
 

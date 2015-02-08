@@ -53,6 +53,8 @@ typedef enum gala_adapter_type {
 typedef struct gala_adapter {
   /// \copydoc ::gala_adapter_type_t
   gala_adapter_type_t type;
+  /// TOOD(mike): Document this.
+  char desc[65];
   /// TODO(mike): Document this.
   size_t num_outputs;
   /// TODO(mike): Document this.
