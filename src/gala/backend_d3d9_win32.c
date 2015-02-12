@@ -135,14 +135,15 @@ gala_error_t gala_backend_initialize_d3d9(
 
     adapters[uiAdapter].__adapter__.num_outputs = 1;
     gala_output_d3d9_t *outputs = (gala_output_d3d9_t *)calloc(1, sizeof(gala_output_d3d9_t));
-    adapters[uiAdapter].__adapter__.outputs = (const gala_output_t **)calloc(1, sizeof(gala_output_t *));
+    gala_output_t **outputs_ = (gala_output_t **)calloc(1, sizeof(gala_output_t *));
+    adapters[uiAdapter].__adapter__.outputs = (gala_output_t * const *)outputs_;
 
   #ifndef GALA_DISABLE_ERROR_CHECKS
-    if ((outputs == NULL) || (adapters[uiAdapter].__adapter__.outputs == NULL)) {
+    if ((outputs == NULL) || (outputs_ == NULL)) {
       if (outputs)
         free((void *)outputs);
-      if (adapters[uiAdapter].__adapter__.outputs)
-        free((void *)adapters[uiAdapter].__adapter__.outputs);
+      if (outputs_)
+        free((void *)outputs_);
       free((void *)adapters);
       free((void *)adapters_);
       FreeLibrary(backend->hDll);
@@ -156,7 +157,7 @@ gala_error_t gala_backend_initialize_d3d9(
     }
   #endif // !GALA_DISABLE_ERROR_CHECKS
 
-    adapters[uiAdapter].__adapter__.outputs[0] = (const gala_output_t *)&outputs[0];
+    outputs_[0] = (gala_output_t *)&outputs[0];
 
     outputs[0].hMonitor = backend->D3D9->GetAdapterMonitor(uiAdapter);
 
