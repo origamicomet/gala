@@ -28,6 +28,7 @@
 #include "gala/backend.h"
 #include "gala/adapter.h"
 #include "gala/output.h"
+#include "gala/context.h"
 
 //============================================================================//
 
