@@ -147,99 +147,97 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-namespace PixelFormats {
-  /// \copydoc ::GALA_PIXEL_FORMAT_COLOR
-  static const uint32_t kColor = ::GALA_PIXEL_FORMAT_COLOR;
-  /// \copydoc ::GALA_PIXEL_FORMAT_DEPTH
-  static const uint32_t kDepth = ::GALA_PIXEL_FORMAT_DEPTH;
-  /// \copydoc ::GALA_PIXEL_FORMAT_STENCIL
-  static const uint32_t kStencil = ::GALA_PIXEL_FORMAT_STENCIL;
-  /// \copydoc ::GALA_PIXEL_FORMAT_COMPRESSED
-  static const uint32_t kCompressed = ::GALA_PIXEL_FORMAT_COMPRESSED;
-
-  enum _ {
-    /// \copydoc ::GALA_PIXEL_FORMAT_UNKNOWN
-    kUnknown = ::GALA_PIXEL_FORMAT_UNKNOWN,
-
-    /// \copydoc ::GALA_PIXEL_FORMAT_R8
-    kR8 = ::GALA_PIXEL_FORMAT_R8,
-    /// \copydoc ::GALA_PIXEL_FORMAT_R8G8
-    kR8G8 = ::GALA_PIXEL_FORMAT_R8G8,
-    /// \copydoc ::GALA_PIXEL_FORMAT_R8G8B8
-    kR8G8B8 = ::GALA_PIXEL_FORMAT_R8G8B8,
-    /// \copydoc ::GALA_PIXEL_FORMAT_R8G8B8A8
-    kR8G8B8A8 = ::GALA_PIXEL_FORMAT_R8G8B8A8,
-
-    /// \copydoc ::GALA_PIXEL_FORMAT_R16F
-    kR16F = ::GALA_PIXEL_FORMAT_R16F,
-    /// \copydoc ::GALA_PIXEL_FORMAT_R16FG16F
-    kR16FG16F = ::GALA_PIXEL_FORMAT_R16FG16F,
-    /// \copydoc ::GALA_PIXEL_FORMAT_R16FG16FB16F
-    kR16FG16FB16F = ::GALA_PIXEL_FORMAT_R16FG16FB16F,
-    /// \copydoc ::GALA_PIXEL_FORMAT_R16FG16FB16FA16F
-    kR16FG16FB16FA16F = ::GALA_PIXEL_FORMAT_R16FG16FB16FA16F,
-
-    /// \copydoc ::GALA_PIXEL_FORMAT_R32F
-    kR32F = ::GALA_PIXEL_FORMAT_R32F,
-    /// \copydoc ::GALA_PIXEL_FORMAT_R32FG32F
-    kR32FG32F = ::GALA_PIXEL_FORMAT_R32FG32F,
-    /// \copydoc ::GALA_PIXEL_FORMAT_R32FG32FB32F
-    kR32FG32FB32F = ::GALA_PIXEL_FORMAT_R32FG32FB32F,
-    /// \copydoc ::GALA_PIXEL_FORMAT_R32FG32FB32FA32F
-    kR32FG32FB32FA32F = ::GALA_PIXEL_FORMAT_R32FG32FB32FA32F,
-
-    /// \copydoc ::GALA_PIXEL_FORMAT_BC1
-    kBC1 = ::GALA_PIXEL_FORMAT_BC1,
-    /// \copydoc ::GALA_PIXEL_FORMAT_BC2
-    kBC2 = ::GALA_PIXEL_FORMAT_BC2,
-    /// \copydoc ::GALA_PIXEL_FORMAT_BC3
-    kBC3 = ::GALA_PIXEL_FORMAT_BC3,
-    /// \copydoc ::GALA_PIXEL_FORMAT_BC4
-    kBC4 = ::GALA_PIXEL_FORMAT_BC4,
-    /// \copydoc ::GALA_PIXEL_FORMAT_BC5
-    kBC5 = ::GALA_PIXEL_FORMAT_BC5,
-    /// \copydoc ::GALA_PIXEL_FORMAT_BC6H
-    kBC6H = ::GALA_PIXEL_FORMAT_BC6H,
-    /// \copydoc ::GALA_PIXEL_FORMAT_BC7
-    kBC7 = ::GALA_PIXEL_FORMAT_BC7,
-
-    /// \copydoc ::GALA_PIXEL_FORMAT_ATITC
-    kATITC = ::GALA_PIXEL_FORMAT_ATITC,
-    /// \copydoc ::GALA_PIXEL_FORMAT_ETC1
-    kETC1 = ::GALA_PIXEL_FORMAT_ETC1,
-    /// \copydoc ::GALA_PIXEL_FORMAT_ETC2
-    kETC2 = ::GALA_PIXEL_FORMAT_ETC2,
-    /// \copydoc ::GALA_PIXEL_FORMAT_PVRTC
-    kPVRTC = ::GALA_PIXEL_FORMAT_PVRTC,
-    /// \copydoc ::GALA_PIXEL_FORMAT_PVRTC2
-    kPVRTC2 = ::GALA_PIXEL_FORMAT_PVRTC2,
-
-    /// \copydoc ::GALA_PIXEL_FORMAT_D24X8
-    kD24X8 = ::GALA_PIXEL_FORMAT_D24X8,
-    /// \copydoc ::GALA_PIXEL_FORMAT_D24S8
-    kD24S8 = ::GALA_PIXEL_FORMAT_D24S8,
-    /// \copydoc ::GALA_PIXEL_FORMAT_D16
-    kD16 = ::GALA_PIXEL_FORMAT_D16,
-    /// \copydoc ::GALA_PIXEL_FORMAT_D32F
-    kD32F = ::GALA_PIXEL_FORMAT_D32F,
-
-    /// \copydoc ::GALA_PIXEL_FORMAT_FORCE_UINT32
-    kForceUInt32 = ::GALA_PIXEL_FORMAT_FORCE_UINT32
-  };
-}
-
 /// \copydoc ::gala_pixel_format_t
-typedef PixelFormats::_ PixelFormat;
+class PixelFormat {
+ public:
+  /// \copydoc ::GALA_PIXEL_FORMAT_UNKNOWN
+  static const PixelFormat kUnknown;
 
-//===----------------------------------------------------------------------===//
+  /// \copydoc ::GALA_PIXEL_FORMAT_R8
+  static const PixelFormat kR8;
+  /// \copydoc ::GALA_PIXEL_FORMAT_R8G8
+  static const PixelFormat kR8G8;
+  /// \copydoc ::GALA_PIXEL_FORMAT_R8G8B8
+  static const PixelFormat kR8G8B8;
+  /// \copydoc ::GALA_PIXEL_FORMAT_R8G8B8A8
+  static const PixelFormat kR8G8B8A8;
 
-/// \copydoc ::gala_pixel_format_to_s
-static
-const char *to_s(
-  const ::gala::PixelFormat pixel_format)
-{
-  return ::gala_pixel_format_to_s((::gala_pixel_format_t)pixel_format);
-}
+  /// \copydoc ::GALA_PIXEL_FORMAT_R16F
+  static const PixelFormat kR16F;
+  /// \copydoc ::GALA_PIXEL_FORMAT_R16FG16F
+  static const PixelFormat kR16FG16F;
+  /// \copydoc ::GALA_PIXEL_FORMAT_R16FG16FB16F
+  static const PixelFormat kR16FG16FB16F;
+  /// \copydoc ::GALA_PIXEL_FORMAT_R16FG16FB16FA16F
+  static const PixelFormat kR16FG16FB16FA16F;
+
+  /// \copydoc ::GALA_PIXEL_FORMAT_R32F
+  static const PixelFormat kR32F;
+  /// \copydoc ::GALA_PIXEL_FORMAT_R32FG32F
+  static const PixelFormat kR32FG32F;
+  /// \copydoc ::GALA_PIXEL_FORMAT_R32FG32FB32F
+  static const PixelFormat kR32FG32FB32F;
+  /// \copydoc ::GALA_PIXEL_FORMAT_R32FG32FB32FA32F
+  static const PixelFormat kR32FG32FB32FA32F;
+
+  /// \copydoc ::GALA_PIXEL_FORMAT_BC1
+  static const PixelFormat kBC1;
+  /// \copydoc ::GALA_PIXEL_FORMAT_BC2
+  static const PixelFormat kBC2;
+  /// \copydoc ::GALA_PIXEL_FORMAT_BC3
+  static const PixelFormat kBC3;
+  /// \copydoc ::GALA_PIXEL_FORMAT_BC4
+  static const PixelFormat kBC4;
+  /// \copydoc ::GALA_PIXEL_FORMAT_BC5
+  static const PixelFormat kBC5;
+  /// \copydoc ::GALA_PIXEL_FORMAT_BC6H
+  static const PixelFormat kBC6H;
+  /// \copydoc ::GALA_PIXEL_FORMAT_BC7
+  static const PixelFormat kBC7;
+
+  /// \copydoc ::GALA_PIXEL_FORMAT_ATITC
+  static const PixelFormat kATITC;
+  /// \copydoc ::GALA_PIXEL_FORMAT_ETC1
+  static const PixelFormat kETC1;
+  /// \copydoc ::GALA_PIXEL_FORMAT_ETC2
+  static const PixelFormat kETC2;
+  /// \copydoc ::GALA_PIXEL_FORMAT_PVRTC
+  static const PixelFormat kPVRTC;
+  /// \copydoc ::GALA_PIXEL_FORMAT_PVRTC2
+  static const PixelFormat kPVRTC2;
+
+  /// \copydoc ::GALA_PIXEL_FORMAT_D24X8
+  static const PixelFormat kD24X8;
+  /// \copydoc ::GALA_PIXEL_FORMAT_D24S8
+  static const PixelFormat kD24S8;
+  /// \copydoc ::GALA_PIXEL_FORMAT_D16
+  static const PixelFormat kD16;
+  /// \copydoc ::GALA_PIXEL_FORMAT_D32F
+  static const PixelFormat kD32F;
+
+ public:
+  PixelFormat();
+  inline PixelFormat(const ::gala_pixel_format_t pixel_format) : _Value(pixel_format) {}
+  inline PixelFormat(const PixelFormat &pixel_format) : _Value(pixel_format._Value) {}
+  PixelFormat &operator=(const PixelFormat &pixel_format);
+
+ public:
+  inline bool operator==(const PixelFormat rhs) const { return (_Value == rhs._Value); }
+  inline bool operator!=(const PixelFormat rhs) const { return (_Value != rhs._Value); }
+
+ public:
+  inline bool is_color() const { return !!(_Value & ::GALA_PIXEL_FORMAT_COLOR); }
+  inline bool is_depth() const { return !!(_Value & ::GALA_PIXEL_FORMAT_DEPTH); }
+  inline bool is_stencil() const { return !!(_Value & ::GALA_PIXEL_FORMAT_STENCIL); }
+  inline bool is_compressed() const { return !!(_Value & ::GALA_PIXEL_FORMAT_COMPRESSED); }
+
+ public:
+  /// \copydoc ::gala_pixel_format_to_s
+  inline const char *to_s() const { return ::gala_pixel_format_to_s(_Value); }
+
+ private:
+  const ::gala_pixel_format_t _Value;
+};
 
 //===----------------------------------------------------------------------===//
 
