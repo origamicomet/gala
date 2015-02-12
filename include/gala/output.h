@@ -113,6 +113,16 @@ class Output {
     *right = __output__.bounds.right;
   }
 
+  /// \copydoc ::gala_output_t::modes
+  const ::gala::OutputMode * const *modes() const {
+    return (const ::gala::OutputMode * const *)__output__.modes;
+  }
+
+  /// \copydoc ::gala_output_t::num_modes
+  size_t num_modes() const {
+    return __output__.num_modes;
+  }
+
  public:
   ::gala_output_t __output__;
 };

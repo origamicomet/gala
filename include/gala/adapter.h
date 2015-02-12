@@ -133,6 +133,16 @@ class Adapter {
     return (::gala::Adapter::Type)__adapter__.type;
   }
 
+  /// \copydoc ::gala_adapter_t::outputs
+  const ::gala::Output * const *outputs() const {
+    return (const ::gala::Output * const *)__adapter__.outputs;
+  }
+
+  /// \copydoc ::gala_adapter_t::num_outputs
+  const size_t num_outputs() const {
+    return __adapter__.num_outputs;
+  }
+
  public:
   ::gala_adapter_t __adapter__;
 };
