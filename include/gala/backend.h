@@ -28,6 +28,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "gala/adapter.h"
+#include "gala/context.h"
 
 //============================================================================//
 
@@ -58,11 +59,23 @@ typedef gala_error_t (*gala_backend_shutdown_fn)(
 
 /// \brief
 ///
+typedef gala_error_t (*gala_backend_create_context_fn)(
+  struct gala_backend *backend,
+  const size_t adapter,
+  gala_context_t **context,
+  const gala_error_details_t **error_details);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+///
 typedef struct gala_backend {
   /// \copydoc ::gala_backend_type_t
   gala_backend_type_t type;
   /// \copydoc ::gala_backend_shutdown_fn
   gala_backend_shutdown_fn shutdown;
+  /// \copydoc :;gala_backend_create_context_fn
+  gala_backend_create_context_fn create_context;
   /// TODO(mike): Document this.
   size_t num_adapters;
   /// TODO(mike): Document this.
@@ -148,6 +161,18 @@ class Backend {
   {
     return (::gala::Error)__backend__.shutdown(&__backend__,
                                                (const ::gala_error_details_t **)error_details);
+  }
+
+  /// \copydoc ::gala_backend::create_context
+  ::gala::Error create_context(
+    const size_t adapter,
+    ::gala::Context **context,
+    const ::gala::ErrorDetails **error_details = NULL)
+  {
+    return (::gala::Error)__backend__.create_context(&__backend__,
+                                                     adapter,
+                                                     (::gala_context_t **)context,
+                                                     (const ::gala_error_details_t **)error_details);
   }
 
  public:

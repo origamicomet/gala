@@ -31,6 +31,7 @@ gala_error_t gala_backend_initialize_d3d9(
 
   backend->__backend__.type = GALA_BACKEND_D3D9;
   backend->__backend__.shutdown = &gala_backend_shutdown_d3d9;
+  backend->__backend__.create_context = &gala_backend_create_context_d3d9;
 
   backend->hDll = LoadLibraryA("d3d9.dll");
 #ifndef GALA_DISABLE_ERROR_CHECKS
@@ -307,6 +308,169 @@ gala_error_t gala_backend_shutdown_d3d9(
   free((void *)backend->__backend__.adapters[0]);
   free((void *)backend->__backend__.adapters);
   free((void *)backend);
+  if (error_details)
+    *error_details = NULL;
+  return GALA_ERROR_NONE;
+}
+
+//===----------------------------------------------------------------------===//
+
+static LRESULT WINAPI _FocusWindowProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+  gala_context_d3d9_t *context =
+    (gala_context_d3d9_t *)GetPropA(hWnd, "gala_context_d3d9_t");
+
+  switch (uMsg) {
+    case WM_NCCREATE: {
+    } break;
+
+    case WM_CREATE: {
+    } break;
+
+    case WM_DESTROY: {
+    } break;
+
+    case WM_NCDESTROY: {
+      // According to MSDN, all entries in the property list of a window must
+      // be removed (via RemoveProp) before it is destroyed. In practice, this
+      // doesn't make any material difference--perhaps a (small) memory leak.
+      RemovePropA(hWnd, "gala_context_d3d9_t");
+    } return TRUE;
+
+    case WM_ACTIVATEAPP: {
+      // TODO(mike): Toggle rendering based on this.
+    } break;
+
+    case WM_SHOWWINDOW: {
+      // TODO(mike): Toggle rendering based on this.
+    } break;
+
+    case WM_CLOSE: {
+      // Destruction is inevitable!
+      DestroyWindow(hWnd);
+    } return TRUE;
+  }
+
+  return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+gala_error_t gala_backend_create_context_d3d9(
+  gala_backend_t *backend_,
+  const size_t adapter_,
+  gala_context_t **context_,
+  const gala_error_details_t **error_details)
+{
+#ifndef GALA_DISABLE_ARGUMENT_CHECKS
+  if (backend_->type != GALA_BACKEND_D3D9) {
+    if (error_details) {
+      *error_details = gala_error_details_create_unformatted(
+        GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS,
+        "Expected a backend of type `GALA_BACKEND_D3D9'.");
+    }
+    return GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS;
+  }
+  if ((adapter_ >= backend_->num_adapters)) {
+    if (error_details) {
+      *error_details = gala_error_details_create_unformatted(
+        GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS,
+        "Expected `adapter' to be between [0, backend->num_adatpers).");
+    }
+    return GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS;
+  }
+  if (context_ == NULL) {
+    if (error_details) {
+      *error_details = gala_error_details_create_unformatted(
+        GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS,
+        "Expected `context' to be non-NULL.");
+    }
+    return GALA_ERROR_ONE_OR_MORE_INVALID_ARGUMENTS;
+  }
+#endif // !GALA_DISABLE_ARGUMENT_CHECKS
+  gala_backend_d3d9_t *backend = (gala_backend_d3d9_t *)backend_;
+  gala_adapter_d3d9_t *adapter =
+    ((gala_adapter_d3d9_t **)backend->__backend__.adapters)[adapter_];
+
+  gala_context_d3d9_t *context = (gala_context_d3d9_t *)calloc(sizeof(gala_context_d3d9_t), 1);
+  gala_assertf(context != NULL, "Ran out of memory.");
+  context->__context__._backend = backend_;
+
+  char szUUID[37];
+  bitbyte_foundation_uuid_t uuid;
+  bitbyte_foundation_uuid_generate(&uuid);
+  bitbyte_foundation_uuid_to_s(&uuid, szUUID);
+
+  WCHAR szClassName[37];
+  if (!MultiByteToWideChar(CP_UTF8, 0, szUUID, -1, szClassName, 37))
+    gala_assertf_always("Generated class name for focus window exceeds buffer size!");
+
+  WNDCLASSEXW wcx;
+  memset(&wcx, 0, sizeof(WNDCLASSEX));
+  wcx.cbSize        = sizeof(WNDCLASSEX);
+  wcx.style         = CS_VREDRAW | CS_HREDRAW | CS_OWNDC;
+  wcx.lpfnWndProc   = &_FocusWindowProcW;
+  wcx.hInstance     = GetModuleHandle(NULL);
+  wcx.hCursor       = LoadCursor(NULL, IDC_ARROW);
+  wcx.hIcon         = LoadIconW(wcx.hInstance, MAKEINTRESOURCEW(IDI_APPLICATION));
+  wcx.hIconSm       = LoadIconW(wcx.hInstance, MAKEINTRESOURCEW(IDI_APPLICATION));
+  wcx.lpszClassName = szClassName;
+
+  const BOOL bRegisteredClass = (RegisterClassExW(&wcx) != 0);
+  gala_assertf(bRegisteredClass,
+               "Unable to create focus window at RegisterClassExW! (%d)",
+               GetLastError());
+
+  const DWORD dwStyles = WS_DISABLED;
+  const DWORD dwExStyles = WS_EX_NOACTIVATE;
+
+  RECT rClientArea = { 0, 0, 1, 1 };
+  AdjustWindowRectEx(&rClientArea, dwStyles, FALSE, dwExStyles);
+  const DWORD dwAdjustedWidth = rClientArea.right - rClientArea.left;
+  const DWORD dwAdjustedHeight = rClientArea.bottom - rClientArea.top;
+
+  context->hFocusWindow = CreateWindowExW(dwExStyles, szClassName, L"", dwStyles,
+                                          0, 0, dwAdjustedWidth, dwAdjustedHeight, NULL,
+                                          NULL, GetModuleHandle(NULL), NULL);
+
+  gala_assertf(context->hFocusWindow != NULL,
+               "Unable to create focus window at CreateWindowExW! (%d)",
+               GetLastError());
+
+  const BOOL bInsertedReferenceToInstance =
+    SetPropA(context->hFocusWindow, "gala_context_t", (HANDLE)context);
+  gala_assertf(bInsertedReferenceToInstance,
+               "Unable to create focus window at SetPropA! (%d)",
+               GetLastError());
+
+  static const DWORD dwBehaviourFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING |
+                                        D3DCREATE_MULTITHREADED |
+                                        D3DCREATE_PUREDEVICE
+                                        /* D3DCREATE_FPU_PRESERVE */;
+
+  D3DPRESENT_PARAMETERS PresentParameters;
+  PresentParameters.BackBufferWidth = 0;
+  PresentParameters.BackBufferHeight = 0;
+  PresentParameters.BackBufferFormat = D3DFMT_UNKNOWN;
+  PresentParameters.BackBufferCount = 0;
+  PresentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;
+  PresentParameters.MultiSampleQuality = 0;
+  PresentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
+  PresentParameters.hDeviceWindow = NULL;
+  PresentParameters.Windowed = TRUE;
+  PresentParameters.EnableAutoDepthStencil = FALSE;
+  PresentParameters.AutoDepthStencilFormat = D3DFMT_UNKNOWN;
+  PresentParameters.Flags = 0;
+  PresentParameters.FullScreen_RefreshRateInHz = 0;
+  PresentParameters.PresentationInterval = 0;
+
+  const HRESULT hrCreateDevice = backend->D3D9->CreateDevice(adapter->uiAdapter,
+                                                             D3DDEVTYPE_HAL,
+                                                             context->hFocusWindow,
+                                                             dwBehaviourFlags,
+                                                             &PresentParameters,
+                                                             &context->Direct3DDevice9);
+
+  gala_assertf(hrCreateDevice == D3D_OK, "Unable to create device. (hresult=%x)", hrCreateDevice);
+
+  *context_ = (gala_context_t *)context;
   if (error_details)
     *error_details = NULL;
   return GALA_ERROR_NONE;
