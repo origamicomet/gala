@@ -1,4 +1,4 @@
-//===-- gala/output.h -------------------------------------------*- C++ -*-===//
+//===-- gala/output_mode.h --------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_OUTPUT_H_
-#define _GALA_OUTPUT_H_
+#ifndef _GALA_OUTPUT_MODE_H_
+#define _GALA_OUTPUT_MODE_H_
 
 //============================================================================//
 
@@ -24,10 +24,7 @@
 #include "gala/linkage.h"
 #include "gala/foundation.h"
 #include "gala/error.h"
-
-//===----------------------------------------------------------------------===//
-
-#include "gala/output_mode.h"
+#include "gala/pixel_format.h"
 
 //============================================================================//
 
@@ -39,18 +36,22 @@ extern "C" {
 
 /// \brief
 ///
-typedef struct gala_output {
-  /// TODO(mike): Document this.
-  bool primary;
-  /// TODO(mike): Document this.
+typedef struct gala_output_mode {
+  /// The back-buffer's pixel format.
+  gala_pixel_format_t format;
+
+  /// \defgroup Dimensions The back-buffer's dimensions.
+  /// @{
+  uint32_t width;
+  uint32_t height;
+  /// @}
+
+  /// The screen's refresh-rate as a rational (numer/denom) in hertz.
   struct {
-    int32_t top, left, bottom, right;
-  } bounds;
-  /// TODO(mike): Document this.
-  size_t num_modes;
-  /// TODO(mike): Document this.
-  const gala_output_mode_t * const *modes;
-} gala_output_t;
+    uint32_t numer;
+    uint32_t denom;
+  } refresh_rate;
+} gala_output_mode_t;
 
 //===----------------------------------------------------------------------===//
 
@@ -63,8 +64,8 @@ typedef struct gala_output {
 ///
 extern
 GALA_PUBLIC
-gala_error_t gala_output_to_s(
-  const gala_output_t *output,
+gala_error_t gala_output_mode_to_s(
+  const gala_output_mode_t *output_mode,
   char *buf,
   const size_t buf_sz,
   const gala_error_details_t **error_details);
@@ -85,36 +86,38 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-/// \copydoc ::gala_aoutputr_t
-class Output {
+/// \copydoc ::gala_output_mode_t
+class OutputMode {
  public:
-  /// \copydoc ::gala_output_to_s
+  /// \copydoc ::gala_output_mode_to_s
   ::gala::Error to_s(
     char *buf,
     const size_t buf_sz,
     const ::gala::ErrorDetails **error_details = NULL) const
   {
-    return (::gala::Error)::gala_output_to_s(&__output__,
-                                              buf, buf_sz,
-                                              (const ::gala_error_details_t **)error_details);
+    return (::gala::Error)::gala_output_mode_to_s(&__output_mode__,
+                                             buf, buf_sz,
+                                             (const ::gala_error_details_t **)error_details);
   }
 
  public:
-  /// \copydoc ::gala_output_t::primary
-  bool primary() const {
-    return __output__.primary;
-  }
+  /// \copydoc ::gala_output_mode_t::format
+  const ::gala::PixelFormat format() const { return ::gala::PixelFormat(__output_mode__.format); }
 
-  /// \copydoc ::gala_output_t::bounds
-  void bounds(int32_t *top, int32_t *left, int32_t *bottom, int32_t *right) const {
-    *top = __output__.bounds.top;
-    *left = __output__.bounds.left;
-    *bottom = __output__.bounds.bottom;
-    *right = __output__.bounds.right;
+  /// \copydoc ::gala_output_mode_t::width
+  uint32_t width() const { return __output_mode__.width; }
+
+  /// \copydoc ::gala_output_mode_t::height
+  uint32_t height() const { return __output_mode__.height; }
+
+  /// \copydoc ::gala_output_mode_t::refresh_rate
+  void refresh_rate(uint32_t *numer, uint32_t *denom) const {
+    *numer = __output_mode__.refresh_rate.numer;
+    *denom = __output_mode__.refresh_rate.denom;
   }
 
  public:
-  ::gala_output_t __output__;
+  ::gala_output_mode_t __output_mode__;
 };
 
 //===----------------------------------------------------------------------===//
@@ -127,6 +130,6 @@ class Output {
 
 //============================================================================//
 
-#endif // _GALA_OUTPUT_H_
+#endif // _GALA_OUTPUT_MODE_H_
 
 //============================================================================//

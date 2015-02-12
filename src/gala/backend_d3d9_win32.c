@@ -195,9 +195,81 @@ gala_error_t gala_backend_initialize_d3d9(
     outputs[0].__output__.bounds.right = MonitorInfo.rcMonitor.right;
     outputs[0].ModeCount.uiA8R8G8B8 = backend->D3D9->GetAdapterModeCount(uiAdapter, D3DFMT_A8R8G8B8);
     outputs[0].ModeCount.uiX8R8G8B8 = backend->D3D9->GetAdapterModeCount(uiAdapter, D3DFMT_X8R8G8B8);
+
     outputs[0].__output__.num_modes = outputs[0].ModeCount.uiA8R8G8B8 + outputs[0].ModeCount.uiX8R8G8B8;
-    // TODO(mike):
-    outputs[0].__output__.modes = NULL;
+    gala_output_mode_d3d9_t *output_modes = (gala_output_mode_d3d9_t *)calloc((size_t)outputs[0].__output__.num_modes,
+                                                                              sizeof(gala_output_mode_d3d9_t));
+    gala_output_mode_t **output_modes_ = (gala_output_mode_t **)calloc((size_t)outputs[0].__output__.num_modes,
+                                                                       sizeof(gala_output_mode_t *));
+    outputs[0].__output__.modes = (const gala_output_mode_t * const *)output_modes_;
+
+  #ifndef GALA_DISABLE_ERROR_CHECKS
+    if ((output_modes == NULL) || (output_modes_ == NULL)) {
+      free((void *)output_modes);
+      free((void *)output_modes_);
+      free((void *)adapters[uiAdapter].__adapter__.outputs[0]);
+      free((void *)adapters[uiAdapter].__adapter__.outputs);
+      free((void *)adapters);
+      free((void *)adapters_);
+      FreeLibrary(backend->hDll);
+      free((void *)backend);
+      if (error_details) {
+        *error_details = gala_error_details_create_unformatted(
+          GALA_ERROR_UNKNOWN,
+          "Failed to query an adapter's output's display modes.");
+      }
+      return GALA_ERROR_UNKNOWN;
+    }
+  #endif // !GALA_DISABLE_ERROR_CHECKS
+
+    for (UINT uiMode = 0; uiMode < outputs[0].ModeCount.uiA8R8G8B8; ++uiMode) {
+      output_modes_[uiMode] = (gala_output_mode_t *)&output_modes[uiMode];
+      D3DDISPLAYMODE DisplayMode;
+      if (FAILED(backend->D3D9->EnumAdapterModes(uiAdapter, D3DFMT_A8R8G8B8, uiMode, &DisplayMode))) {
+        // TODO(mike): Free memory.
+        if (error_details)
+          *error_details = NULL;
+        return GALA_ERROR_UNKNOWN;
+      }
+      output_modes[uiMode].uiMode = uiMode;
+      output_modes[uiMode].__output_mode__.format = GALA_PIXEL_FORMAT_R8G8B8A8;
+      output_modes[uiMode].__output_mode__.width = DisplayMode.Width;
+      output_modes[uiMode].__output_mode__.height = DisplayMode.Height;
+      if (DisplayMode.RefreshRate == 0) {
+        // Default to the monitor's refresh rate. This might not be strictly
+        // correct but it appears to be fine on AMD/nVidia.
+        output_modes[uiMode].__output_mode__.refresh_rate.numer = DevMode.dmDisplayFrequency;
+        output_modes[uiMode].__output_mode__.refresh_rate.denom = 1;
+      } else {
+        output_modes[uiMode].__output_mode__.refresh_rate.numer = DisplayMode.RefreshRate;
+        output_modes[uiMode].__output_mode__.refresh_rate.denom = 1;
+      }
+    }
+
+    for (UINT uiMode = 0; uiMode < outputs[0].ModeCount.uiX8R8G8B8; ++uiMode) {
+      const UINT uiAdjustedMode = uiMode + outputs[0].ModeCount.uiA8R8G8B8;
+      output_modes_[uiAdjustedMode] = (gala_output_mode_t *)&output_modes[uiAdjustedMode];
+      D3DDISPLAYMODE DisplayMode;
+      if (FAILED(backend->D3D9->EnumAdapterModes(uiAdapter, D3DFMT_X8R8G8B8, uiMode, &DisplayMode))) {
+        // TODO(mike): Free memory.
+        if (error_details)
+          *error_details = NULL;
+        return GALA_ERROR_UNKNOWN;
+      }
+      output_modes[uiAdjustedMode].uiMode = uiMode;
+      output_modes[uiAdjustedMode].__output_mode__.format = GALA_PIXEL_FORMAT_R8G8B8;
+      output_modes[uiAdjustedMode].__output_mode__.width = DisplayMode.Width;
+      output_modes[uiAdjustedMode].__output_mode__.height = DisplayMode.Height;
+      if (DisplayMode.RefreshRate == 0) {
+        // Default to the monitor's refresh rate. This might not be strictly
+        // correct but it appears to be fine on AMD/nVidia.
+        output_modes[uiAdjustedMode].__output_mode__.refresh_rate.numer = DevMode.dmDisplayFrequency;
+        output_modes[uiAdjustedMode].__output_mode__.refresh_rate.denom = 1;
+      } else {
+        output_modes[uiAdjustedMode].__output_mode__.refresh_rate.numer = DisplayMode.RefreshRate;
+        output_modes[uiAdjustedMode].__output_mode__.refresh_rate.denom = 1;
+      }
+    }
   }
 
   *backend_ = (gala_backend_t *)backend;
