@@ -25,6 +25,10 @@
 #include "gala/foundation.h"
 #include "gala/error.h"
 
+//===----------------------------------------------------------------------===//
+
+#include "gala/output.h"
+
 //============================================================================//
 
 #ifdef __cplusplus
@@ -58,7 +62,7 @@ typedef struct gala_adapter {
   /// TODO(mike): Document this.
   size_t num_outputs;
   /// TODO(mike): Document this.
-  const struct gala_output **outputs;
+  const gala_output_t **outputs;
   /// The backend this belongs to.
   struct gala_backend *_backend;
 } gala_adapter_t;

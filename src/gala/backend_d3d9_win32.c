@@ -12,12 +12,6 @@
 
 #include "gala/backend_d3d9_win32.h"
 
-//===----------------------------------------------------------------------===//
-
-#include "gala/adapter_d3d9_win32.h"
-#include "gala/output_d3d9_win32.h"
-// #include "gala/output_mode_d3d9_win32.h"
-
 //============================================================================//
 
 #ifdef __cplusplus
