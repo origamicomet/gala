@@ -148,7 +148,7 @@ namespace gala {
 //===----------------------------------------------------------------------===//
 
 /// \copydoc ::gala_pixel_format_t
-class PixelFormat {
+class GALA_PUBLIC PixelFormat {
  public:
   /// \copydoc ::GALA_PIXEL_FORMAT_UNKNOWN
   static const PixelFormat kUnknown;
