@@ -54,6 +54,7 @@ gala_error_t gala_output_mode_to_s(
 #endif // !GALA_DISABLE_ARGUMENT_CHECKS
   // TODO(mike): Defer to implementation specific implementation.
   const int written = snprintf(buf, buf_sz, "#<gala_output_mode_t:%.16" PRIxPTR "16 format=`%s' width=%u height=%u refresh_rate=%3.02fHz>",
+                               output_mode,
                                gala_pixel_format_to_s(output_mode->format),
                                output_mode->width, output_mode->height,
                                (float)output_mode->refresh_rate.numer/(float)output_mode->refresh_rate.denom);
