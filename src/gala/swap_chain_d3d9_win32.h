@@ -1,4 +1,4 @@
-//===-- gala/context_d3d9_win32.h -------------------------------*- C++ -*-===//
+//===-- gala/swap_chain_d3d9_win32.h ----------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_CONTEXT_D3D9_WIN32_H_
-#define _GALA_CONTEXT_D3D9_WIN32_H_
+#ifndef _GALA_SWAP_CHAIN_D3D9_WIN32_H_
+#define _GALA_SWAP_CHAIN_D3D9_WIN32_H_
 
 //============================================================================//
 
@@ -24,7 +24,7 @@
 #include "gala/linkage.h"
 #include "gala/foundation.h"
 #include "gala/error.h"
-#include "gala/context.h"
+#include "gala/swap_chain.h"
 
 //===----------------------------------------------------------------------===//
 
@@ -42,23 +42,12 @@ extern "C" {
 
 /// \brief
 ///
-typedef struct gala_context_d3d9 {
-  /// \copydoc ::gala_context_t
-  gala_context_t __context__;
+typedef struct gala_swap_chain_d3d9 {
+  /// \copydoc ::gala_swap_chain_t
+  gala_swap_chain_t __swap_chain__;
   /// TODO(mike): Document this.
-  IDirect3DDevice9 *Direct3DDevice9;
-  /// TODO(mike): Document this.
-  HWND hFocusWindow;
-} gala_context_d3d9_t;
-
-//===----------------------------------------------------------------------===//
-
-extern
-gala_error_t gala_context_create_swap_chain_d3d9(
-  gala_context_t *context,
-  const gala_swap_chain_opts_t *opts,
-  gala_swap_chain_t **swap_chain,
-  const gala_error_details_t **error_details);
+  IDirect3DSwapChain9 *Direct3DSwapChain9;
+} gala_swap_chain_d3d9_t;
 
 //===----------------------------------------------------------------------===//
 
@@ -68,6 +57,6 @@ gala_error_t gala_context_create_swap_chain_d3d9(
 
 //============================================================================//
 
-#endif // _GALA_CONTEXT_D3D9_WIN32_H_
+#endif // _GALA_SWAP_CHAIN_D3D9_WIN32_H_
 
 //============================================================================//

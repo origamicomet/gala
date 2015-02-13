@@ -1,4 +1,4 @@
-//===-- gala/context.h ------------------------------------------*- C++ -*-===//
+//===-- gala/swap_chain.h ---------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_CONTEXT_H_
-#define _GALA_CONTEXT_H_
+#ifndef _GALA_SWAP_CHAIN_H_
+#define _GALA_SWAP_CHAIN_H_
 
 //============================================================================//
 
@@ -27,8 +27,14 @@
 
 //===----------------------------------------------------------------------===//
 
-#include "gala/adapter.h"
-#include "gala/swap_chain.h"
+#include "gala/pixel_format.h"
+
+//===----------------------------------------------------------------------===//
+
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 //============================================================================//
 
@@ -40,15 +46,43 @@ extern "C" {
 
 /// \brief
 ///
-typedef struct gala_context {
-  /// The backend this belongs to.
-  struct gala_backend *_backend;
-} gala_context_t;
+typedef struct gala_swap_chain_opts {
+  ///
+  gala_pixel_format_t format;
+  ///
+  /// @{
+  uint32_t width;
+  uint32_t height;
+  /// @}
+  struct {
+    ///
+    uint32_t numer;
+    ///
+    uint32_t denom;
+  } refresh_rate;
+  ///
+  bool fullscreen;
+  ///
+  bool vsync;
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+  ///
+  HWND hWnd;
+#endif
+} gala_swap_chain_opts_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param context
+///
+typedef struct gala_swap_chain {
+  /// The backend this belongs to.
+  struct gala_backend *_backend;
+} gala_swap_chain_t;
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param swap_chain
 /// \param buf
 /// \param buf_sz
 /// \param error_details
@@ -56,8 +90,8 @@ typedef struct gala_context {
 ///
 extern
 GALA_PUBLIC
-gala_error_t gala_context_to_s(
-  const gala_context_t *context,
+gala_error_t gala_swap_chain_to_s(
+  const gala_swap_chain_t *swap_chain,
   char *buf,
   const size_t buf_sz,
   const gala_error_details_t **error_details);
@@ -78,22 +112,22 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-/// \copydoc ::gala_context_t
-class Context {
+/// \copydoc ::gala_swap_chain_t
+class SwapChain {
  public:
-  /// \copydoc ::gala_context_to_s
+  /// \copydoc ::gala_swap_chain_to_s
   ::gala::Error to_s(
     char *buf,
     const size_t buf_sz,
     const ::gala::ErrorDetails **error_details = NULL) const
   {
-    return (::gala::Error)::gala_context_to_s(&__context__,
-                                              buf, buf_sz,
-                                              (const ::gala_error_details_t **)error_details);
+    return (::gala::Error)::gala_swap_chain_to_s(&__swap_chain__,
+                                                 buf, buf_sz,
+                                                 (const ::gala_error_details_t **)error_details);
   }
 
  public:
-  ::gala_context_t __context__;
+  ::gala_swap_chain_t __swap_chain__;
 };
 
 //===----------------------------------------------------------------------===//
@@ -106,6 +140,6 @@ class Context {
 
 //============================================================================//
 
-#endif // _GALA_CONTEXT_H_
+#endif // _GALA_SWAP_CHAIN_H_
 
 //============================================================================//

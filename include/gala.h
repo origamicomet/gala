@@ -29,6 +29,7 @@
 #include "gala/adapter.h"
 #include "gala/output.h"
 #include "gala/context.h"
+#include "gala/swap_chain.h"
 
 //============================================================================//
 
