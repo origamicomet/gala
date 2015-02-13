@@ -1,4 +1,4 @@
-//===-- gala/backend.h ------------------------------------------*- C++ -*-===//
+//===-- gala/adapter.h ------------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,18 +15,14 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_BACKEND_H_
-#define _GALA_BACKEND_H_
+#ifndef _GALA_ADAPTER_H_
+#define _GALA_ADAPTER_H_
 
 //============================================================================//
 
 #include "gala/config.h"
 #include "gala/linkage.h"
 #include "gala/foundation.h"
-
-//===----------------------------------------------------------------------===//
-
-#include "gala/adapter.h"
 
 //============================================================================//
 
@@ -38,37 +34,56 @@ extern "C" {
 
 /// \brief
 ///
-typedef struct gala_backend {
-} gala_backend_t;
+typedef enum gala_adapter_type {
+  /// Unknown.
+  GALA_ADAPTER_UNKNOWN = 0,
+  /// Software.
+  GALA_ADAPTER_SOFTWARE = 1,
+  /// Hardware.
+  GALA_ADAPTER_HARDWARE = 2,
+  /// Proxy.
+  GALA_ADAPTER_PROXY = 3
+} gala_adapter_type_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param backend
+///
+typedef struct gala_adapter {
+  ///
+  gala_adapter_type_t type;
+  ///
+  char desc[65];
+} gala_adapter_t;
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param adapter
 /// \returns
 ///
 extern
 GALA_PUBLIC
 void
-gala_backend_init(
-  gala_backend_t *backend);
+gala_adapter_init(
+  gala_adapter_t *adapter);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param backend
+/// \param adapter
 /// \returns
 ///
 extern
 GALA_PUBLIC
 void
-gala_backend_shutdown(
-  gala_backend_t *backend);
+gala_adapter_destroy(
+  gala_adapter_t *adapter);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param backend
+/// \param adapter
 /// \param buf
 /// \param buf_sz
 /// \returns
@@ -76,8 +91,8 @@ gala_backend_shutdown(
 extern
 GALA_PUBLIC
 int
-gala_backend_to_s(
-  const gala_backend_t *backend,
+gala_adapter_to_s(
+  const gala_adapter_t *adapter,
   char buf[],
   const int buf_sz);
 
@@ -97,27 +112,51 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-/// \copydoc ::gala_backend_t
-class GALA_PUBLIC Backend {
+/// \copydoc ::gala_adapter_t
+class GALA_PUBLIC Adapter {
  public:
-  /// \copydoc ::gala_backend_init
-  static void init(::gala::Backend *backend) {
-    ::gala_backend_init(&backend->__backend__);
+  /// \copydoc ::gala_adapter_type_t
+  enum Type {
+    /// \copydoc ::GALA_ADAPTER_UNKNOWN
+    kUnknown = ::GALA_ADAPTER_UNKNOWN,
+    /// \copydoc ::GALA_ADAPTER_SOFTWARE
+    kSoftware = ::GALA_ADAPTER_SOFTWARE,
+    /// \copydoc ::GALA_ADAPTER_HARDWARE
+    kHardware = ::GALA_ADAPTER_HARDWARE,
+    /// \copydoc ::GALA_ADAPTER_PROXY
+    kProxy = ::GALA_ADAPTER_PROXY
+  };
+
+ public:
+  /// \copydoc ::gala_adapter_init
+  static void init(::gala::Adapter *adapter) {
+    ::gala_adapter_init(&adapter->__adapter__);
   }
 
-  /// \copydoc ::gala_backend_shutdown
-  void shutdown() {
-    ::gala_backend_shutdown(&this->__backend__);
+  /// \copydoc ::gala_adapter_destroy
+  void destroy() {
+    ::gala_adapter_destroy(&this->__adapter__);
   }
 
  public:
-  /// \copydoc ::gala_backend_to_s
+  /// \copydoc ::gala_adapter_to_s
   int to_s(char buf[], const int buf_sz) const {
-    return ::gala_backend_to_s(&this->__backend__, buf, buf_sz);
+    return ::gala_adapter_to_s(&this->__adapter__, buf, buf_sz);
   }
 
  public:
-  ::gala_backend_t __backend__;
+  /// \copydoc ::gala_adapter_t::type
+  ::gala::Adapter::Type type() const {
+    return (::gala::Adapter::Type)this->__adapter__.type;
+  }
+
+  /// \copydoc ::gala_adapter_t::desc
+  const char *desc() const {
+    return &this->__adapter__.desc[0];
+  }
+
+ public:
+  ::gala_adapter_t __adapter__;
 };
 
 //===----------------------------------------------------------------------===//
@@ -130,6 +169,6 @@ class GALA_PUBLIC Backend {
 
 //============================================================================//
 
-#endif // _GALA_BACKEND_H_
+#endif // _GALA_ADAPTER_H_
 
 //============================================================================//

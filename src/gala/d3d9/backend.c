@@ -20,6 +20,14 @@ extern "C" {
 
 //===----------------------------------------------------------------------===//
 
+extern
+GALA_LOCAL
+void
+gala_adapter_d3d9_init(
+  gala_adapter_d3d9_t **adapter);
+
+//===----------------------------------------------------------------------===//
+
 void
 gala_backend_d3d9_init(
   gala_backend_d3d9_t **backend)
@@ -41,9 +49,6 @@ gala_backend_d3d9_init(
 
   (*backend)->_D3D9 = Direct3DCreate9_(D3D_SDK_VERSION);
   gala_assertf((*backend)->_D3D9 != NULL, "Unable to initialize Direct3D9 runtime.");
-
-  // TODO(mtwilliams): Query adapters, outputs, and display modes? Or provide
-  // a standard interface to query?
 #endif
 }
 
@@ -80,6 +85,66 @@ int gala_backend_d3d9_to_s(
   gala_backend_to_s(&backend->__backend__, backend_as_str, sizeof(backend_as_str));
   return snprintf(buf, buf_sz, "#<gala_backend_d3d9_t:%.16" PRIxPTR " [%s] _D3D9=%.16" PRIxPTR ">",
                   backend, backend_as_str, backend->_D3D9);
+}
+
+//===----------------------------------------------------------------------===//
+
+size_t
+gala_backend_d3d9_num_adapters(
+  const gala_backend_d3d9_t *backend)
+{
+  gala_assert_debug(backend != NULL);
+  return (size_t)backend->_D3D9->GetAdapterCount();
+}
+
+//===----------------------------------------------------------------------===//
+
+gala_adapter_d3d9_t *
+gala_backend_d3d9_adapter(
+  const gala_backend_d3d9_t *backend,
+  const size_t adapter)
+{
+  gala_assert_debug(backend != NULL);
+  gala_assert_debug(adapter < backend->_D3D9->GetAdapterCount());
+
+  const UINT uiAdapter = (UINT)adapter;
+
+  gala_adapter_d3d9_t *adapter_ = NULL;
+  gala_adapter_d3d9_init(&adapter_);
+  adapter_->_uiAdapter = uiAdapter;
+
+{
+  const HRESULT hr = backend->_D3D9->GetAdapterIdentifier(uiAdapter, 0, &adapter_->_Identifier);
+  gala_assertf(hr == D3D_OK, "GetAdapterIdentifier failed, hresult=%x", hr);
+}
+
+  if (strstr(adapter_->_Identifier.Description, "PerfHUD") != NULL) {
+    adapter_->__adapter__.type = GALA_ADAPTER_PROXY;
+  } else {
+    const BOOL bHardware =
+      (backend->_D3D9->CheckDeviceType(uiAdapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, FALSE) == D3D_OK) &&
+      (backend->_D3D9->CheckDeviceType(uiAdapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, TRUE) == D3D_OK);
+    if (bHardware) {
+      adapter_->__adapter__.type = GALA_ADAPTER_HARDWARE;
+    } else {
+      const BOOL bSoftware =
+        (backend->_D3D9->CheckDeviceType(uiAdapter, D3DDEVTYPE_SW, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, FALSE) == D3D_OK) &&
+        (backend->_D3D9->CheckDeviceType(uiAdapter, D3DDEVTYPE_SW, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, TRUE) == D3D_OK);
+      if (bSoftware) {
+        adapter_->__adapter__.type = GALA_ADAPTER_SOFTWARE;
+      } else {
+        const BOOL bReference =
+          (backend->_D3D9->CheckDeviceType(uiAdapter, D3DDEVTYPE_REF, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, FALSE) == D3D_OK) &&
+          (backend->_D3D9->CheckDeviceType(uiAdapter, D3DDEVTYPE_REF, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, TRUE) == D3D_OK);
+        adapter_->__adapter__.type = bReference ? GALA_ADAPTER_SOFTWARE : GALA_ADAPTER_UNKNOWN;
+      }
+    }
+  }
+
+  memcpy((void *)adapter_->__adapter__.desc, (const void *)adapter_->_Identifier.Description, 64);
+  adapter_->__adapter__.desc[64] = '\0';
+
+  return adapter_;
 }
 
 //===----------------------------------------------------------------------===//

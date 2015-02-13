@@ -32,6 +32,9 @@
 
 #include "gala/system.h"
 #include <D3D9.h>
+//===----------------------------------------------------------------------===//
+
+#include "gala/d3d9/adapter.h"
 
 //============================================================================//
 
@@ -93,6 +96,32 @@ gala_backend_d3d9_to_s(
 
 //===----------------------------------------------------------------------===//
 
+/// \brief
+/// \param backend
+/// \returns
+///
+extern
+GALA_PUBLIC
+size_t
+gala_backend_d3d9_num_adapters(
+  const gala_backend_d3d9_t *backend);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param backend
+/// \param adapter
+/// \returns
+///
+extern
+GALA_PUBLIC
+gala_adapter_d3d9_t *
+gala_backend_d3d9_adapter(
+  const gala_backend_d3d9_t *backend,
+  const size_t adapter);
+
+//===----------------------------------------------------------------------===//
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
@@ -124,6 +153,17 @@ class GALA_PUBLIC D3D9Backend : public ::gala::Backend {
   /// \copydoc ::gala_backend_d3d9_to_s
   int to_s(char buf[], const int buf_sz) const {
     return ::gala_backend_d3d9_to_s((::gala_backend_d3d9_t *)&this->__backend__, buf, buf_sz);
+  }
+
+ public:
+  /// \copydoc ::gala_backend_d3d9_num_adapters
+  size_t num_adapters() const {
+    return ::gala_backend_d3d9_num_adapters((const ::gala_backend_d3d9_t *)&this->__backend__);
+  }
+
+  /// \copydoc ::gala_backend_d3d9_adapter
+  ::gala::D3D9Adapter *adapter(const size_t adapter) const {
+    return (::gala::D3D9Adapter *)::gala_backend_d3d9_adapter((const ::gala_backend_d3d9_t *)&this->__backend__, adapter);
   }
 };
 

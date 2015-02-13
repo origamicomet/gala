@@ -1,4 +1,4 @@
-//===-- gala/backend.h ------------------------------------------*- C++ -*-===//
+//===-- gala/d3d9/adapter.h -------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_BACKEND_H_
-#define _GALA_BACKEND_H_
+#ifndef _GALA_D3D9_ADAPTER_H_
+#define _GALA_D3D9_ADAPTER_H_
 
 //============================================================================//
 
@@ -28,6 +28,11 @@
 
 #include "gala/adapter.h"
 
+//===----------------------------------------------------------------------===//
+
+#include "gala/system.h"
+#include <D3D9.h>
+
 //============================================================================//
 
 #ifdef __cplusplus
@@ -38,37 +43,30 @@ extern "C" {
 
 /// \brief
 ///
-typedef struct gala_backend {
-} gala_backend_t;
+typedef struct gala_adapter_d3d9 {
+  gala_adapter_t __adapter__;
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+  UINT _uiAdapter;
+  D3DADAPTER_IDENTIFIER9 _Identifier;
+#endif
+} gala_adapter_d3d9_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param backend
+/// \param adapter
 /// \returns
 ///
 extern
 GALA_PUBLIC
 void
-gala_backend_init(
-  gala_backend_t *backend);
+gala_adapter_d3d9_destroy(
+  gala_adapter_d3d9_t *adapter);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param backend
-/// \returns
-///
-extern
-GALA_PUBLIC
-void
-gala_backend_shutdown(
-  gala_backend_t *backend);
-
-//===----------------------------------------------------------------------===//
-
-/// \brief
-/// \param backend
+/// \param adapter
 /// \param buf
 /// \param buf_sz
 /// \returns
@@ -76,8 +74,8 @@ gala_backend_shutdown(
 extern
 GALA_PUBLIC
 int
-gala_backend_to_s(
-  const gala_backend_t *backend,
+gala_adapter_d3d9_to_s(
+  const gala_adapter_d3d9_t *adapter,
   char buf[],
   const int buf_sz);
 
@@ -97,27 +95,19 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-/// \copydoc ::gala_backend_t
-class GALA_PUBLIC Backend {
+/// \copydoc ::gala_adapter_d3d9_t
+class GALA_PUBLIC D3D9Adapter : public ::gala::Adapter {
  public:
-  /// \copydoc ::gala_backend_init
-  static void init(::gala::Backend *backend) {
-    ::gala_backend_init(&backend->__backend__);
-  }
-
-  /// \copydoc ::gala_backend_shutdown
-  void shutdown() {
-    ::gala_backend_shutdown(&this->__backend__);
+  /// \copydoc ::gala_adapter_d3d9_destroy
+  void destroy() {
+    ::gala_adapter_d3d9_destroy((::gala_adapter_d3d9_t *)&this->__adapter__);
   }
 
  public:
-  /// \copydoc ::gala_backend_to_s
+  /// \copydoc ::gala_adapter_d3d9_to_s
   int to_s(char buf[], const int buf_sz) const {
-    return ::gala_backend_to_s(&this->__backend__, buf, buf_sz);
+    return ::gala_adapter_d3d9_to_s((::gala_adapter_d3d9_t *)&this->__adapter__, buf, buf_sz);
   }
-
- public:
-  ::gala_backend_t __backend__;
 };
 
 //===----------------------------------------------------------------------===//
@@ -130,6 +120,6 @@ class GALA_PUBLIC Backend {
 
 //============================================================================//
 
-#endif // _GALA_BACKEND_H_
+#endif // _GALA_D3D9_ADAPTER_H_
 
 //============================================================================//
