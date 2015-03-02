@@ -24,10 +24,6 @@
 #include "gala/linkage.h"
 #include "gala/foundation.h"
 
-//===----------------------------------------------------------------------===//
-
-#include "gala/adapter.h"
-
 //============================================================================//
 
 #ifdef __cplusplus
@@ -38,7 +34,24 @@ extern "C" {
 
 /// \brief
 ///
+typedef enum gala_backend_type {
+  /// Invalid.
+  GALA_BACKEND_TYPE_INVALID = 0,
+  /// Null.
+  GALA_BACKEND_TYPE_NULL = 1,
+  /// Direct3D9(Ex).
+  GALA_BACKEND_TYPE_D3D9 = 2,
+  /// \internal Force at least uint32_t storage and alignment.
+  GALA_BACKEND_TYPE_FORCE_UINT32 = 0x7fffffff
+} gala_backend_type_t;
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+///
 typedef struct gala_backend {
+  /// \copydoc ::gala_backend_type_t
+  gala_backend_type_t type;
 } gala_backend_t;
 
 //===----------------------------------------------------------------------===//
@@ -47,9 +60,7 @@ typedef struct gala_backend {
 /// \param backend
 /// \returns
 ///
-extern
-GALA_PUBLIC
-void
+extern GALA_PUBLIC void
 gala_backend_init(
   gala_backend_t *backend);
 
@@ -59,9 +70,7 @@ gala_backend_init(
 /// \param backend
 /// \returns
 ///
-extern
-GALA_PUBLIC
-void
+extern GALA_PUBLIC void
 gala_backend_shutdown(
   gala_backend_t *backend);
 
@@ -73,9 +82,7 @@ gala_backend_shutdown(
 /// \param buf_sz
 /// \returns
 ///
-extern
-GALA_PUBLIC
-int
+extern GALA_PUBLIC int
 gala_backend_to_s(
   const gala_backend_t *backend,
   char buf[],
@@ -100,6 +107,17 @@ namespace gala {
 /// \copydoc ::gala_backend_t
 class GALA_PUBLIC Backend {
  public:
+  /// \copydoc ::gala_backend_type_t
+  enum Type {
+    /// \copydoc ::GALA_BACKEND_TYPE_INVALID
+    kUnknown = ::GALA_BACKEND_TYPE_INVALID,
+    /// \copydoc ::GALA_BACKEND_TYPE_NULL
+    kNull = ::GALA_BACKEND_TYPE_NULL,
+    /// \copydoc ::GALA_BACKEND_TYPE_D3D9
+    kDirect3D9 = ::GALA_BACKEND_TYPE_D3D9
+  };
+
+ public:
   /// \copydoc ::gala_backend_init
   static void init(::gala::Backend *backend) {
     ::gala_backend_init(&backend->__backend__);
@@ -113,7 +131,7 @@ class GALA_PUBLIC Backend {
  public:
   /// \copydoc ::gala_backend_to_s
   int to_s(char buf[], const int buf_sz) const {
-    return ::gala_backend_to_s(&this->__backend__, buf, buf_sz);
+    return snprintf(buf, buf_sz, "#<gala::Backend:%.16" PRIxPTR ">", this);
   }
 
  public:

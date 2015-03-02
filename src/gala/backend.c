@@ -25,6 +25,7 @@ gala_backend_init(
   gala_backend_t *backend)
 {
   gala_assert_debug(backend != NULL);
+  backend->type = GALA_BACKEND_TYPE_INVALID;
 }
 
 //===----------------------------------------------------------------------===//
@@ -40,7 +41,8 @@ gala_backend_shutdown(
 
 int gala_backend_to_s(
   const gala_backend_t *backend,
-  char buf[], const int buf_sz)
+  char buf[],
+  const int buf_sz)
 {
   gala_assert_debug(backend != NULL);
   return snprintf(buf, buf_sz, "#<gala_backend_t:%.16" PRIxPTR ">", backend);
