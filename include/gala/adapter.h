@@ -1,4 +1,4 @@
-//===-- gala/backend.h ------------------------------------------*- C++ -*-===//
+//===-- gala/adapter.h ------------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,18 +15,14 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_BACKEND_H_
-#define _GALA_BACKEND_H_
+#ifndef _GALA_ADAPTER_H_
+#define _GALA_ADAPTER_H_
 
 //============================================================================//
 
 #include "gala/config.h"
 #include "gala/linkage.h"
 #include "gala/foundation.h"
-
-//===----------------------------------------------------------------------===//
-
-#include "gala/adapter.h"
 
 //============================================================================//
 
@@ -38,57 +34,49 @@ extern "C" {
 
 /// \brief
 ///
-typedef enum gala_backend_type {
+typedef enum gala_adapter_type {
   /// Invalid.
-  GALA_BACKEND_TYPE_INVALID = 0,
-  /// Null.
-  GALA_BACKEND_TYPE_NULL = 1,
-  /// Direct3D9(Ex).
-  GALA_BACKEND_TYPE_D3D9 = 2,
+  GALA_ADAPTER_TYPE_INVALID = 0,
+  /// Software.
+  GALA_ADAPTER_TYPE_SOFTWARE = 1,
+  /// Hardware accelerated.
+  GALA_ADAPTER_TYPE_HARDWARE = 2,
+  /// Proxying, i.e. nVidia PerfHUD.
+  GALA_ADAPTER_TYPE_PROXY = 3,
   /// \internal Force at least uint32_t storage and alignment.
-  GALA_BACKEND_TYPE_FORCE_UINT32 = 0x7fffffff
-} gala_backend_type_t;
+  GALA_ADAPTER_TYPE_FORCE_UINT32 = 0x7fffffff
+} gala_adapter_type_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
 ///
-typedef struct gala_backend {
-  /// \copydoc ::gala_backend_type_t
-  gala_backend_type_t type;
-} gala_backend_t;
+typedef struct gala_adapter {
+  /// \copydoc ::gala_adapter_type_t
+  gala_adapter_type_t type;
+} gala_adapter_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param backend
+/// \param adapter
 /// \returns
 ///
 extern GALA_PUBLIC void
-gala_backend_init(
-  gala_backend_t *backend);
+gala_adapter_init(
+  gala_adapter_t *adapter);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param backend
-/// \returns
-///
-extern GALA_PUBLIC void
-gala_backend_shutdown(
-  gala_backend_t *backend);
-
-//===----------------------------------------------------------------------===//
-
-/// \brief
-/// \param backend
+/// \param adapter
 /// \param buf
 /// \param buf_sz
 /// \returns
 ///
 extern GALA_PUBLIC int
-gala_backend_to_s(
-  const gala_backend_t *backend,
+gala_adapter_to_s(
+  const gala_adapter_t *adapter,
   char buf[],
   const int buf_sz);
 
@@ -108,38 +96,42 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-/// \copydoc ::gala_backend_t
-class GALA_PUBLIC Backend {
+/// \copydoc ::gala_adapter_t
+class GALA_PUBLIC Adapter {
  public:
-  /// \copydoc ::gala_backend_type_t
+  /// \copydoc ::gala_adapter_type_t
   enum Type {
-    /// \copydoc ::GALA_BACKEND_TYPE_INVALID
-    kInvalid = ::GALA_BACKEND_TYPE_INVALID,
-    /// \copydoc ::GALA_BACKEND_TYPE_NULL
-    kNull = ::GALA_BACKEND_TYPE_NULL,
-    /// \copydoc ::GALA_BACKEND_TYPE_D3D9
-    kDirect3D9 = ::GALA_BACKEND_TYPE_D3D9
+    /// \copydoc ::GALA_ADAPTER_TYPE_INVALID
+    kInvalid = ::GALA_ADAPTER_TYPE_INVALID,
+    /// \copydoc ::GALA_ADAPTER_TYPE_SOFTWARE
+    kSoftware = ::GALA_ADAPTER_TYPE_SOFTWARE,
+    /// \copydoc ::GALA_ADAPTER_TYPE_HARDWARE
+    kHardware = ::GALA_ADAPTER_TYPE_HARDWARE,
+    /// \copydoc ::GALA_ADAPTER_TYPE_PROXY
+    kProxy = ::GALA_ADAPTER_TYPE_PROXY
   };
 
  public:
-  /// \copydoc ::gala_backend_init
-  static void init(::gala::Backend *backend) {
-    ::gala_backend_init(&backend->__backend__);
-  }
-
-  /// \copydoc ::gala_backend_shutdown
-  void shutdown() {
-    ::gala_backend_shutdown(&this->__backend__);
+  /// \copydoc ::gala_adapter_init
+  static void init(::gala::Adapter *adapter) {
+    ::gala_adapter_init(&adapter->__adapter__);
   }
 
  public:
-  /// \copydoc ::gala_backend_to_s
+  /// \copydoc ::gala_adapter_to_s
   int to_s(char buf[], const int buf_sz) const {
-    return snprintf(buf, buf_sz, "#<gala::Backend:%.16" PRIxPTR ">", this);
+    const char *type_as_str;
+    switch (this->__adapter__.type) {
+      default: type_as_str = "<invalid>"; break;
+      case kSoftware: type_as_str = "software"; break;
+      case kHardware: type_as_str = "hardware"; break;
+      case kProxy: type_as_str = "proxy"; break;
+    }
+    return snprintf(buf, buf_sz, "#<gala::Adapter:%.16" PRIxPTR ">", this);
   }
 
  public:
-  ::gala_backend_t __backend__;
+  ::gala_adapter_t __adapter__;
 };
 
 //===----------------------------------------------------------------------===//
@@ -152,6 +144,6 @@ class GALA_PUBLIC Backend {
 
 //============================================================================//
 
-#endif // _GALA_BACKEND_H_
+#endif // _GALA_ADAPTER_H_
 
 //============================================================================//
