@@ -1,4 +1,4 @@
-//===-- gala/backend.h ------------------------------------------*- C++ -*-===//
+//===-- gala/d3d9.h ---------------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,14 +15,49 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_BACKEND_H_
-#define _GALA_BACKEND_H_
+#ifndef _GALA_D3D9_H_
+#define _GALA_D3D9_H_
 
 //============================================================================//
 
 #include "gala/config.h"
 #include "gala/linkage.h"
 #include "gala/foundation.h"
+
+//===----------------------------------------------------------------------===//
+
+#include "gala/backend.h"
+
+//===----------------------------------------------------------------------===//
+
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+  #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+  #endif
+  #ifndef WIN32_EXTRA_LEAN
+    #define WIN32_EXTRA_LEAN
+  #endif
+
+  #include <windows.h>
+  #include <d3d9.h>
+
+  #undef WIN32_EXTRA_LEAN
+  #undef WIN32_LEAN_AND_MEAN
+
+  #undef NEAR
+  #undef FAR
+  #undef near
+  #undef far
+  #undef NO_ERROR
+  #undef ERROR
+  #undef MK_SHIFT
+  #undef MK_ALT
+  #undef min
+  #undef max
+  #undef rad1
+#else
+  #error ("Direct3D 9 is not available on non-Windows systems!")
+#endif
 
 //============================================================================//
 
@@ -34,57 +69,27 @@ extern "C" {
 
 /// \brief
 ///
-typedef enum gala_backend_type {
-  /// Invalid.
-  GALA_BACKEND_TYPE_INVALID = 0,
-  /// Null.
-  GALA_BACKEND_TYPE_NULL = 1,
-  /// Direct3D9(Ex).
-  GALA_BACKEND_TYPE_D3D9 = 2,
-  /// \internal Force at least uint32_t storage and alignment.
-  GALA_BACKEND_TYPE_FORCE_UINT32 = 0x7fffffff
-} gala_backend_type_t;
+typedef struct gala_backend_d3d9 gala_backend_d3d9_t;
 
 //===----------------------------------------------------------------------===//
 
-/// \brief
-///
-typedef struct gala_backend {
-  /// \copydoc ::gala_backend_type_t
-  gala_backend_type_t type;
-} gala_backend_t;
+/// \copydoc ::gala_backend_t
+extern GALA_PUBLIC gala_backend_d3d9_t *
+gala_backend_d3d9_init(void);
 
 //===----------------------------------------------------------------------===//
 
-/// \brief
-/// \param backend
-/// \returns
-///
+/// \copydoc ::gala_backend_d3d9_t
 extern GALA_PUBLIC void
-gala_backend_init(
-  gala_backend_t *backend);
+gala_backend_d3d9_shutdown(
+  gala_backend_d3d9_t *backend);
 
 //===----------------------------------------------------------------------===//
 
-/// \brief
-/// \param backend
-/// \returns
-///
-extern GALA_PUBLIC void
-gala_backend_shutdown(
-  gala_backend_t *backend);
-
-//===----------------------------------------------------------------------===//
-
-/// \brief
-/// \param backend
-/// \param buf
-/// \param buf_sz
-/// \returns
-///
+/// \copydoc ::gala_backend_to_s
 extern GALA_PUBLIC int
-gala_backend_to_s(
-  const gala_backend_t *backend,
+gala_backend_d3d9_to_s(
+  const gala_backend_d3d9_t *backend,
   char buf[],
   const int buf_sz);
 
@@ -104,38 +109,27 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-/// \copydoc ::gala_backend_t
-class GALA_PUBLIC Backend {
+/// \copydoc ::gala_backend_d3d9_t
+class GALA_PUBLIC D3D9Backend
+  : public ::gala::Backend
+{
  public:
-  /// \copydoc ::gala_backend_type_t
-  enum Type {
-    /// \copydoc ::GALA_BACKEND_TYPE_INVALID
-    kInvalid = ::GALA_BACKEND_TYPE_INVALID,
-    /// \copydoc ::GALA_BACKEND_TYPE_NULL
-    kNull = ::GALA_BACKEND_TYPE_NULL,
-    /// \copydoc ::GALA_BACKEND_TYPE_D3D9
-    kDirect3D9 = ::GALA_BACKEND_TYPE_D3D9
-  };
-
- public:
-  /// \copydoc ::gala_backend_init
-  static void init(::gala::Backend *backend) {
-    ::gala_backend_init(&backend->__backend__);
+  /// \copydoc ::gala_backend_d3d9_init
+  static ::gala::D3D9Backend *init() {
+    return (::gala::D3D9Backend *)::gala_backend_d3d9_init();
   }
 
-  /// \copydoc ::gala_backend_shutdown
+  /// \copydoc ::gala_backend_d3d9_shutdown
   void shutdown() {
-    ::gala_backend_shutdown(&this->__backend__);
+    ::gala_backend_d3d9_shutdown((::gala_backend_d3d9_t *)&this->__backend__);
   }
 
  public:
-  /// \copydoc ::gala_backend_to_s
+  /// \copydoc ::gala_backend_d3d9_to_s
   int to_s(char buf[], const int buf_sz) const {
-    return snprintf(buf, buf_sz, "#<gala::Backend:%.16" PRIxPTR ">", this);
+    // TODO(mike): Move to src/gala/d3d9.c
+    return snprintf(buf, buf_sz, "#<gala::D3D9Backend:%.16" PRIxPTR ">", this);
   }
-
- public:
-  ::gala_backend_t __backend__;
 };
 
 //===----------------------------------------------------------------------===//
@@ -148,6 +142,6 @@ class GALA_PUBLIC Backend {
 
 //============================================================================//
 
-#endif // _GALA_BACKEND_H_
+#endif // _GALA_D3D9_H_
 
 //============================================================================//
