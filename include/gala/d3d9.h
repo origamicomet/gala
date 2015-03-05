@@ -127,8 +127,87 @@ class GALA_PUBLIC D3D9Backend
  public:
   /// \copydoc ::gala_backend_d3d9_to_s
   int to_s(char buf[], const int buf_sz) const {
-    // TODO(mike): Move to src/gala/d3d9.c
+    // TODO(mtwilliams): Move to src/gala/d3d9.c
     return snprintf(buf, buf_sz, "#<gala::D3D9Backend:%.16" PRIxPTR ">", this);
+  }
+};
+
+//===----------------------------------------------------------------------===//
+
+} // gala
+
+//===----------------------------------------------------------------------===//
+
+#endif // __cplusplus
+
+//============================================================================//
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+///
+typedef struct gala_adapter_d3d9 gala_adapter_d3d9_t;
+
+//===----------------------------------------------------------------------===//
+
+///
+extern GALA_PUBLIC size_t
+gala_backend_d3d9_num_adapters(
+  const gala_backend_d3d9_t *backend);
+
+//===----------------------------------------------------------------------===//
+
+///
+extern GALA_PUBLIC const gala_adapter_d3d9_t *
+gala_backend_d3d9_adapter(
+  const gala_backend_d3d9_t *backend,
+  const size_t idx);
+
+//===----------------------------------------------------------------------===//
+
+///
+extern GALA_PUBLIC void
+gala_adapter_d3d9_destroy(
+  const gala_adapter_d3d9_t *adapter);
+
+//===----------------------------------------------------------------------===//
+
+/// \copydoc ::gala_adapter_to_s
+extern GALA_PUBLIC int
+gala_adapter_d3d9_to_s(
+  const gala_adapter_d3d9_t *adapter,
+  char buf[],
+  const int buf_sz);
+
+//===----------------------------------------------------------------------===//
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+//============================================================================//
+
+#ifdef __cplusplus
+
+//===----------------------------------------------------------------------===//
+
+namespace gala {
+
+//===----------------------------------------------------------------------===//
+
+/// \copydoc ::gala_adapter_d3d9_t
+class GALA_PUBLIC D3D9Adapter
+  : public ::gala::Adapter
+{
+ public:
+  /// \copydoc ::gala_adapter_d3d9_to_s
+  int to_s(char buf[], const int buf_sz) const {
+    // TODO(mtwilliams): Move to src/gala/d3d9.c
+    return snprintf(buf, buf_sz, "#<gala::D3D9Adapter:%.16" PRIxPTR ">", this);
   }
 };
 
