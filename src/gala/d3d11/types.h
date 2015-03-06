@@ -65,6 +65,19 @@ struct gala_d3d11_backend {
     HMODULE dll;
     IDXGIFactory *factory;
   } dxgi;
+  struct {
+    UINT count;
+    IDXGIAdapter **itfs;
+  } adapters;
+#endif
+};
+
+//===----------------------------------------------------------------------===//
+
+struct gala_d3d11_adapter {
+  gala_adapter_t __adapter__;
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+  IDXGIAdapter *itf;
 #endif
 };
 

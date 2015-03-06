@@ -1,4 +1,4 @@
-//===-- gala/d3d11/backend.h ------------------------------------*- C++ -*-===//
+//===-- gala/d3d11/adapter.h ------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_D3D11_BACKEND_H_
-#define _GALA_D3D11_BACKEND_H_
+#ifndef _GALA_D3D11_ADAPTER_H_
+#define _GALA_D3D11_ADAPTER_H_
 
 //============================================================================//
 
@@ -26,11 +26,7 @@
 
 //===----------------------------------------------------------------------===//
 
-#include "gala/backend.h"
-
-//===----------------------------------------------------------------------===//
-
-#include "gala/d3d11/adapter.h"
+#include "gala/adapter.h"
 
 //============================================================================//
 
@@ -42,59 +38,39 @@ extern "C" {
 
 /// \brief
 ///
-typedef struct gala_d3d11_backend gala_d3d11_backend_t;
+typedef struct gala_d3d11_adapter gala_d3d11_adapter_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param backend
+/// \param adapter
 /// \returns
 ///
 extern GALA_PUBLIC void
-gala_d3d11_backend_init(
-  gala_d3d11_backend_t **backend);
+gala_d3d11_adapter_init(
+  gala_d3d11_adapter_t **adapter);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param backend
+/// \param adapter
 /// \returns
 ///
 extern GALA_PUBLIC void
-gala_d3d11_backend_shutdown(
-  gala_d3d11_backend_t *backend);
+gala_d3d11_adapter_destroy(
+  gala_d3d11_adapter_t *adapter);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param backend
-/// \returns
-extern GALA_PUBLIC size_t
-gala_d3d11_backend_num_adapters(
-  const gala_d3d11_backend_t *backend);
-
-//===----------------------------------------------------------------------===//
-
-/// \brief
-/// \param backend
-/// \param idx
-/// \returns
-extern GALA_PUBLIC gala_d3d11_adapter_t *
-gala_d3d11_backend_adapter(
-  const gala_d3d11_backend_t *backend,
-  const size_t idx);
-
-//===----------------------------------------------------------------------===//
-
-/// \brief
-/// \param backend
+/// \param adapter
 /// \param buf
 /// \param buf_sz
 /// \returns
 ///
 extern GALA_PUBLIC int
-gala_d3d11_backend_to_s(
-  const gala_d3d11_backend_t *backend,
+gala_d3d11_adapter_to_s(
+  const gala_d3d11_adapter_t *adapter,
   char buf[],
   const int buf_sz);
 
@@ -114,24 +90,14 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-/// \copydoc ::gala_d3d11_backend_t
-class GALA_PUBLIC D3D11Backend : public ::gala::Backend {
+/// \copydoc ::gala_d3d11_adapter_t
+class GALA_PUBLIC D3D11Adapter : public ::gala::Adapter {
  public:
-  /// \copydoc ::gala_d3d11_backend_init
-  static void init(::gala::D3D11Backend **backend);
-
-  /// \copydoc ::gala_d3d11_backend_shutdown
-  void shutdown();
+  /// \copydoc ::gala_d3d11_adapter_destroy
+  void destroy();
 
  public:
-  /// \copyodc ::gala_d3d11_num_adapters
-  size_t num_adapters() const;
-
-  /// \copyodc ::gala_d3d11_adapter
-  ::gala::D3D11Adapter *adapter(const size_t idx) const;
-
- public:
-  /// \copydoc ::gala_d3d11_backend_to_s
+  /// \copydoc ::gala_d3d11_adapter_to_s
   int to_s(char buf[], const int buf_sz) const;
 };
 
@@ -145,6 +111,6 @@ class GALA_PUBLIC D3D11Backend : public ::gala::Backend {
 
 //============================================================================//
 
-#endif // _GALA_D3D11_BACKEND_H_
+#endif // _GALA_D3D11_ADAPTER_H_
 
 //============================================================================//
