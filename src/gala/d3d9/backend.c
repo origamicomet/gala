@@ -109,7 +109,7 @@ int gala_d3d9_backend_to_s(
   const int buf_sz)
 {
   gala_assert_debug(backend != NULL);
-  return snprintf(buf, buf_sz, "#<gala_d3d9_backend_t:%.16" PRIxPTR " IDirect3D9=%.16" PRIxPTR " >", backend, backend->d3d9);
+  return snprintf(buf, buf_sz, "#<gala_d3d9_backend_t:%.16" PRIxPTR " IDirect3D9=%.16" PRIxPTR ">", backend, backend->d3d9);
 }
 
 //===----------------------------------------------------------------------===//
@@ -142,7 +142,7 @@ void D3D9Backend::shutdown() {
 
 int D3D9Backend::to_s(char buf[], const int buf_sz) const {
   const ::gala_d3d9_backend_t *backend = (const ::gala_d3d9_backend_t *)this;
-  return snprintf(buf, buf_sz, "#<gala::D3D9Backend:%.16" PRIxPTR " IDirect3D9=%.16" PRIxPTR " >", backend, backend->d3d9);
+  return snprintf(buf, buf_sz, "#<gala::D3D9Backend:%.16" PRIxPTR " IDirect3D9=%.16" PRIxPTR ">", backend, backend->d3d9);
 }
 
 //===----------------------------------------------------------------------===//
