@@ -26,9 +26,10 @@
 
 //===----------------------------------------------------------------------===//
 
-#include "gala/output.h"
 #include "gala/adapter.h"
 #include "gala/backend.h"
+#include "gala/output.h"
+#include "gala/pixel_format.h"
 
 //============================================================================//
 
