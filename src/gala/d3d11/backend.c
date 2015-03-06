@@ -45,6 +45,8 @@ gala_d3d11_backend_init(
     gala_assertf(hr == S_OK, "Unable to initialize Direct3D 11 runtime; CreateDXGIFactory failed (%x)!", hr);
   }
   for (backend->adapters.count = 0; /* ... */; backend->adapters.count++) {
+    // TODO(mtwilliams): Allocate enough room on the stack to store all the
+    // returned interfaces then conpy them to a tightly fit backend->adapters.itfs.
     IDXGIAdapter *adapter;
     if (backend->dxgi.factory->EnumAdapters(backend->adapters.count, &adapter) == DXGI_ERROR_NOT_FOUND) {
       break;
