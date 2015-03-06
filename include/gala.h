@@ -29,6 +29,7 @@
 #include "gala/adapter.h"
 #include "gala/backend.h"
 #include "gala/display_mode.h"
+#include "gala/engine.h"
 #include "gala/output.h"
 #include "gala/pixel_format.h"
 
