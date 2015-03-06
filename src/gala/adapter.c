@@ -30,6 +30,19 @@ gala_adapter_init(
 
 //===----------------------------------------------------------------------===//
 
+void
+gala_adapter_destroy(
+  gala_adapter_t *adapter)
+{
+  gala_assert_debug(adapter != NULL);
+#if GALA_CONFIGURATION == GALA_CONFIGURATION_DEBUG
+  // This might help find some (stupid) bugs.
+  adapter->type = GALA_ADAPTER_TYPE_INVALID;
+#endif
+}
+
+//===----------------------------------------------------------------------===//
+
 int gala_adapter_to_s(
   const gala_adapter_t *adapter,
   char buf[],
@@ -50,6 +63,47 @@ int gala_adapter_to_s(
 
 #ifdef __cplusplus
 }
+#endif // __cplusplus
+
+//============================================================================//
+
+#ifdef __cplusplus
+
+//===----------------------------------------------------------------------===//
+
+namespace gala {
+
+//===----------------------------------------------------------------------===//
+
+void Adapter::init(::gala::Adapter *adapter) {
+  ::gala_adapter_init(&adapter->__adapter__);
+}
+
+//===----------------------------------------------------------------------===//
+
+void Adapter::destroy() {
+  ::gala_adapter_destroy(&this->__adapter__);
+}
+
+//===----------------------------------------------------------------------===//
+
+int Adapter::to_s(char buf[], const int buf_sz) const {
+  const char *type_as_str;
+  switch (this->__adapter__.type) {
+    default: type_as_str = "<invalid>"; break;
+    case kSoftware: type_as_str = "software"; break;
+    case kHardware: type_as_str = "hardware"; break;
+    case kProxy: type_as_str = "proxy"; break;
+  }
+  return snprintf(buf, buf_sz, "#<gala::Adapter:%.16" PRIxPTR ">", this);
+}
+
+//===----------------------------------------------------------------------===//
+
+} // gala
+
+//===----------------------------------------------------------------------===//
+
 #endif // __cplusplus
 
 //============================================================================//

@@ -70,6 +70,15 @@ gala_adapter_init(
 
 /// \brief
 /// \param adapter
+///
+extern GALA_PUBLIC void
+gala_adapter_destroy(
+  gala_adapter_t *adapter);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param adapter
 /// \param buf
 /// \param buf_sz
 /// \returns
@@ -113,22 +122,14 @@ class GALA_PUBLIC Adapter {
 
  public:
   /// \copydoc ::gala_adapter_init
-  static void init(::gala::Adapter *adapter) {
-    ::gala_adapter_init(&adapter->__adapter__);
-  }
+  static void init(::gala::Adapter *adapter);
+
+  /// \copydoc ::gala_adapter_destroy
+  void destroy();
 
  public:
   /// \copydoc ::gala_adapter_to_s
-  int to_s(char buf[], const int buf_sz) const {
-    const char *type_as_str;
-    switch (this->__adapter__.type) {
-      default: type_as_str = "<invalid>"; break;
-      case kSoftware: type_as_str = "software"; break;
-      case kHardware: type_as_str = "hardware"; break;
-      case kProxy: type_as_str = "proxy"; break;
-    }
-    return snprintf(buf, buf_sz, "#<gala::Adapter:%.16" PRIxPTR ">", this);
-  }
+  int to_s(char buf[], const int buf_sz) const;
 
  public:
   ::gala_adapter_t __adapter__;
