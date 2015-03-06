@@ -94,21 +94,14 @@ namespace gala {
 class GALA_PUBLIC D3D9Backend : public ::gala::Backend {
  public:
   /// \copydoc ::gala_d3d9_backend_init
-  static void init(::gala::D3D9Backend **backend) {
-    ::gala_d3d9_backend_init((::gala_d3d9_backend_t **)backend);
-  }
+  static void init(::gala::D3D9Backend **backend);
 
   /// \copydoc ::gala_d3d9_backend_shutdown
-  void shutdown() {
-    ::gala_d3d9_backend_shutdown((::gala_d3d9_backend_t *)&this->__backend__);
-  }
+  void shutdown();
 
  public:
   /// \copydoc ::gala_d3d9_backend_to_s
-  int to_s(char buf[], const int buf_sz) const {
-    // TODO(mtwilliams): Implement in src/gala/d3d9/backend.c.
-    return snprintf(buf, buf_sz, "#<gala::D3D9Backend:%.16" PRIxPTR ">", this);
-  }
+  int to_s(char buf[], const int buf_sz) const;
 };
 
 //===----------------------------------------------------------------------===//
