@@ -35,6 +35,10 @@ gala_backend_shutdown(
   gala_backend_t *backend)
 {
   gala_assert_debug(backend != NULL);
+#if GALA_CONFIGURATION == GALA_CONFIGURATION_DEBUG
+  // This might help find some (stupid) bugs.
+  backend->type = GALA_BACKEND_TYPE_INVALID;
+#endif
 }
 
 //===----------------------------------------------------------------------===//
