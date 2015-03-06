@@ -54,6 +54,29 @@ gala_d3d11_output_destroy(
 
 /// \brief
 /// \param output
+/// \returns
+///
+extern GALA_PUBLIC size_t
+gala_d3d11_output_num_display_modes(
+  const gala_d3d11_output_t *output);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param output
+/// \param display_mode
+/// \returns
+///
+extern GALA_PUBLIC void
+gala_d3d11_output_display_mode(
+  const gala_d3d11_output_t *output,
+  const size_t idx,
+  gala_display_mode_t *display_mode);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param output
 /// \param buf
 /// \param buf_sz
 /// \returns
@@ -85,6 +108,13 @@ class GALA_PUBLIC D3D11Output : public ::gala::Output {
  public:
   /// \copydoc ::gala_d3d11_output_destroy
   void destroy();
+
+ public:
+  /// \copydoc ::gala_d3d11_output_num_display_modes
+  size_t num_display_modes() const;
+
+  /// \copyodc ::gala_d3d11_output_display_mode
+  void display_mode(const size_t idx, ::gala::DisplayMode *display_mode) const;
 
  public:
   /// \copydoc ::gala_d3d11_output_to_s

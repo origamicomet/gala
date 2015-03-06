@@ -79,6 +79,18 @@ gala_d3d11_adapter_output(
 #if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
   adapter->outputs.itfs[idx]->AddRef();
   output->itf = adapter->outputs.itfs[idx];
+  /* output->display_modes.count = */ {
+    /// TODO(mtwilliams): Support more formats.
+    const HRESULT hr = output->itf->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0x00000000, &output->display_modes.count, NULL);
+    gala_assertf(hr == S_OK, "Unable to determine number of display modes; IDXGIOutput::GetDisplayModeList failed (%x)!", hr);
+  }
+  output->display_modes.descs = (DXGI_MODE_DESC *)heap->alloc(heap,
+                                                              output->display_modes.count * sizeof(DXGI_MODE_DESC),
+                                                              _Alignof(DXGI_MODE_DESC));
+  {
+    const HRESULT hr = output->itf->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0x00000000, &output->display_modes.count, output->display_modes.descs);
+    gala_assertf(hr == S_OK, "Unable to query descriptions of display modes; IDXGIOutput::GetDisplayModeList failed (%x)!", hr);
+  }
 #endif
   return output;
 }

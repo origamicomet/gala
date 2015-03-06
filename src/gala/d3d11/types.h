@@ -91,6 +91,10 @@ struct gala_d3d11_output {
   gala_output_t __output__;
 #if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
   IDXGIOutput *itf;
+  struct {
+    UINT count;
+    DXGI_MODE_DESC *descs;
+  } display_modes;
 #endif
 };
 

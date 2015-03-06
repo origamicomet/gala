@@ -1,4 +1,4 @@
-//===-- gala/output.h -------------------------------------------*- C++ -*-===//
+//===-- gala/display_mode.h -------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_OUTPUT_H_
-#define _GALA_OUTPUT_H_
+#ifndef _GALA_DISPLAY_MODE_H_
+#define _GALA_DISPLAY_MODE_H_
 
 //============================================================================//
 
@@ -26,7 +26,7 @@
 
 //===----------------------------------------------------------------------===//
 
-#include "gala/display_mode.h"
+#include "gala/pixel_format.h"
 
 //============================================================================//
 
@@ -38,67 +38,53 @@ extern "C" {
 
 /// \brief
 ///
-typedef enum gala_output_type {
-  /// Invalid.
-  GALA_OUTPUT_TYPE_INVALID = 0,
-  /// Monitor.
-  GALA_OUTPUT_TYPE_MONITOR = 1,
-  /// Television.
-  GALA_OUTPUT_TYPE_TELEVISION = 2,
-  /// \internal Force at least uint32_t storage and alignment.
-  GALA_OUTPUT_TYPE_FORCE_UINT32 = 0x7fffffff
-} gala_output_type_t;
+typedef struct gala_display_mode {
+  /// \defgroup Dimensions The back-buffer's dimensions.
+  /// @{
+  uint32_t width;
+  uint32_t height;
+  /// @}
+
+  /// The screen's refresh-rate as a rational (numer/denom) in hertz.
+  struct {
+    uint32_t numer;
+    uint32_t denom;
+  } refresh_rate;
+
+  /// The back-buffer's display format.
+  gala_pixel_format_t format;
+} gala_display_mode_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-///
-typedef enum gala_output_flags {
-  /// Primary.
-  GALA_OUTPUT_PRIMARY = (1 << 0)
-} gala_output_flags_t;
-
-//===----------------------------------------------------------------------===//
-
-/// \brief
-///
-typedef struct gala_output {
-  /// \copyodc :;gala_output_type_t
-  gala_output_type_t type;
-  /// \copydoc ::gala_output_flags_t
-  uint32_t flags;
-} gala_output_t;
-
-//===----------------------------------------------------------------------===//
-
-/// \brief
-/// \param output
+/// \param display_mode
 /// \returns
 ///
 extern GALA_PUBLIC void
-gala_output_init(
-  gala_output_t *output);
+gala_display_mode_init(
+  gala_display_mode_t *display_mode);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param output
+/// \param display_mode
 ///
 extern GALA_PUBLIC void
-gala_output_destroy(
-  gala_output_t *output);
+gala_display_mode_destroy(
+  gala_display_mode_t *display_mode);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param output
+/// \param display_mode
 /// \param buf
 /// \param buf_sz
 /// \returns
 ///
 extern GALA_PUBLIC int
-gala_output_to_s(
-  const gala_output_t *output,
+gala_display_mode_to_s(
+  const gala_display_mode_t *display_mode,
   char buf[],
   const int buf_sz);
 
@@ -118,38 +104,21 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-/// \copydoc ::gala_output_t
-class GALA_PUBLIC Output {
+/// \copydoc ::gala_display_mode_t
+class GALA_PUBLIC DisplayMode {
  public:
-  /// \copydoc ::gala_output_type_t
-  enum Type {
-    /// \copydoc ::GALA_OUTPUT_TYPE_INVALID
-    kInvalid = ::GALA_OUTPUT_TYPE_INVALID,
-    /// \copydoc ::GALA_OUTPUT_TYPE_MONITOR
-    kMonitor = ::GALA_OUTPUT_TYPE_MONITOR,
-    /// \copydoc ::GALA_OUTPUT_TYPE_TELEVISION
-    kTelevision = ::GALA_OUTPUT_TYPE_TELEVISION,
-  };
+  /// \copydoc ::gala_display_mode_init
+  static void init(::gala::DisplayMode *display_mode);
 
-  /// \copydoc ::gala_output_flags_t
-  enum Flags {
-    /// \copydoc ::GALA_OUTPUT_PRIMARY
-    kPrimary = ::GALA_OUTPUT_PRIMARY
-  };
-
- public:
-  /// \copydoc ::gala_output_init
-  static void init(::gala::Output *output);
-
-  /// \copydoc ::gala_output_destroy
+  /// \copydoc ::gala_display_mode_destroy
   void destroy();
 
  public:
-  /// \copydoc ::gala_output_to_s
+  /// \copydoc ::gala_display_mode_to_s
   int to_s(char buf[], const int buf_sz) const;
 
  public:
-  ::gala_output_t __output__;
+  ::gala_display_mode_t __display_mode__;
 };
 
 //===----------------------------------------------------------------------===//
@@ -162,6 +131,6 @@ class GALA_PUBLIC Output {
 
 //============================================================================//
 
-#endif // _GALA_OUTPUT_H_
+#endif // _GALA_DISPLAY_MODE_H_
 
 //============================================================================//
