@@ -1,4 +1,4 @@
-//===-- gala/adapter.h ------------------------------------------*- C++ -*-===//
+//===-- gala/output.h -------------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,18 +15,14 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_ADAPTER_H_
-#define _GALA_ADAPTER_H_
+#ifndef _GALA_OUTPUT_H_
+#define _GALA_OUTPUT_H_
 
 //============================================================================//
 
 #include "gala/config.h"
 #include "gala/linkage.h"
 #include "gala/foundation.h"
-
-//===----------------------------------------------------------------------===//
-
-#include "gala/output.h"
 
 //============================================================================//
 
@@ -38,58 +34,67 @@ extern "C" {
 
 /// \brief
 ///
-typedef enum gala_adapter_type {
+typedef enum gala_output_type {
   /// Invalid.
-  GALA_ADAPTER_TYPE_INVALID = 0,
-  /// Software.
-  GALA_ADAPTER_TYPE_SOFTWARE = 1,
-  /// Hardware accelerated.
-  GALA_ADAPTER_TYPE_HARDWARE = 2,
-  /// Proxying, i.e. nVidia PerfHUD.
-  GALA_ADAPTER_TYPE_PROXY = 3,
+  GALA_OUTPUT_TYPE_INVALID = 0,
+  /// Monitor.
+  GALA_OUTPUT_TYPE_MONITOR = 1,
+  /// Television.
+  GALA_OUTPUT_TYPE_TELEVISION = 2,
   /// \internal Force at least uint32_t storage and alignment.
-  GALA_ADAPTER_TYPE_FORCE_UINT32 = 0x7fffffff
-} gala_adapter_type_t;
+  GALA_OUTPUT_TYPE_FORCE_UINT32 = 0x7fffffff
+} gala_output_type_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
 ///
-typedef struct gala_adapter {
-  /// \copydoc ::gala_adapter_type_t
-  gala_adapter_type_t type;
-} gala_adapter_t;
+typedef enum gala_output_flags {
+  /// Primary.
+  GALA_OUTPUT_PRIMARY = (1 << 0)
+} gala_output_flags_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param adapter
+///
+typedef struct gala_output {
+  /// \copyodc :;gala_output_type_t
+  gala_output_type_t type;
+  /// \copydoc ::gala_output_flags_t
+  uint32_t flags;
+} gala_output_t;
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param output
 /// \returns
 ///
 extern GALA_PUBLIC void
-gala_adapter_init(
-  gala_adapter_t *adapter);
+gala_output_init(
+  gala_output_t *output);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param adapter
+/// \param output
 ///
 extern GALA_PUBLIC void
-gala_adapter_destroy(
-  gala_adapter_t *adapter);
+gala_output_destroy(
+  gala_output_t *output);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param adapter
+/// \param output
 /// \param buf
 /// \param buf_sz
 /// \returns
 ///
 extern GALA_PUBLIC int
-gala_adapter_to_s(
-  const gala_adapter_t *adapter,
+gala_output_to_s(
+  const gala_output_t *output,
   char buf[],
   const int buf_sz);
 
@@ -109,34 +114,38 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-/// \copydoc ::gala_adapter_t
-class GALA_PUBLIC Adapter {
+/// \copydoc ::gala_output_t
+class GALA_PUBLIC Output {
  public:
-  /// \copydoc ::gala_adapter_type_t
+  /// \copydoc ::gala_output_type_t
   enum Type {
-    /// \copydoc ::GALA_ADAPTER_TYPE_INVALID
-    kInvalid = ::GALA_ADAPTER_TYPE_INVALID,
-    /// \copydoc ::GALA_ADAPTER_TYPE_SOFTWARE
-    kSoftware = ::GALA_ADAPTER_TYPE_SOFTWARE,
-    /// \copydoc ::GALA_ADAPTER_TYPE_HARDWARE
-    kHardware = ::GALA_ADAPTER_TYPE_HARDWARE,
-    /// \copydoc ::GALA_ADAPTER_TYPE_PROXY
-    kProxy = ::GALA_ADAPTER_TYPE_PROXY
+    /// \copydoc ::GALA_OUTPUT_TYPE_INVALID
+    kInvalid = ::GALA_OUTPUT_TYPE_INVALID,
+    /// \copydoc ::GALA_OUTPUT_TYPE_MONITOR
+    kMonitor = ::GALA_OUTPUT_TYPE_MONITOR,
+    /// \copydoc ::GALA_OUTPUT_TYPE_TELEVISION
+    kTelevision = ::GALA_OUTPUT_TYPE_TELEVISION,
+  };
+
+  /// \copydoc ::gala_output_flags_t
+  enum Flags {
+    /// \copydoc ::GALA_OUTPUT_PRIMARY
+    kPrimary = ::GALA_OUTPUT_PRIMARY
   };
 
  public:
-  /// \copydoc ::gala_adapter_init
-  static void init(::gala::Adapter *adapter);
+  /// \copydoc ::gala_output_init
+  static void init(::gala::Output *output);
 
-  /// \copydoc ::gala_adapter_destroy
+  /// \copydoc ::gala_output_destroy
   void destroy();
 
  public:
-  /// \copydoc ::gala_adapter_to_s
+  /// \copydoc ::gala_output_to_s
   int to_s(char buf[], const int buf_sz) const;
 
  public:
-  ::gala_adapter_t __adapter__;
+  ::gala_output_t __output__;
 };
 
 //===----------------------------------------------------------------------===//
@@ -149,6 +158,6 @@ class GALA_PUBLIC Adapter {
 
 //============================================================================//
 
-#endif // _GALA_ADAPTER_H_
+#endif // _GALA_OUTPUT_H_
 
 //============================================================================//
