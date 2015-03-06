@@ -1,4 +1,4 @@
-//===-- gala/d3d11/adapter.h ------------------------------------*- C++ -*-===//
+//===-- gala/d3d11/output.h -------------------------------------*- C++ -*-===//
 //
 //  Gala
 //
@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_D3D11_ADAPTER_H_
-#define _GALA_D3D11_ADAPTER_H_
+#ifndef _GALA_D3D11_OUTPUT_H_
+#define _GALA_D3D11_OUTPUT_H_
 
 //============================================================================//
 
@@ -26,11 +26,7 @@
 
 //===----------------------------------------------------------------------===//
 
-#include "gala/adapter.h"
-
-//===----------------------------------------------------------------------===//
-
-#include "gala/d3d11/output.h"
+#include "gala/output.h"
 
 //============================================================================//
 
@@ -42,51 +38,29 @@ extern "C" {
 
 /// \brief
 ///
-typedef struct gala_d3d11_adapter gala_d3d11_adapter_t;
+typedef struct gala_d3d11_output gala_d3d11_output_t;
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param adapter
+/// \param output
 /// \returns
 ///
 extern GALA_PUBLIC void
-gala_d3d11_adapter_destroy(
-  gala_d3d11_adapter_t *adapter);
+gala_d3d11_output_destroy(
+  gala_d3d11_output_t *output);
 
 //===----------------------------------------------------------------------===//
 
 /// \brief
-/// \param adapter
-/// \returns
-///
-extern GALA_PUBLIC size_t
-gala_d3d11_adapter_num_outputs(
-  const gala_d3d11_adapter_t *adapter);
-
-//===----------------------------------------------------------------------===//
-
-/// \brief
-/// \param adapter
-/// \param idx
-/// \returns
-///
-extern GALA_PUBLIC gala_d3d11_output_t *
-gala_d3d11_adapter_output(
-  const gala_d3d11_adapter_t *adapter,
-  const size_t idx);
-
-//===----------------------------------------------------------------------===//
-
-/// \brief
-/// \param adapter
+/// \param output
 /// \param buf
 /// \param buf_sz
 /// \returns
 ///
 extern GALA_PUBLIC int
-gala_d3d11_adapter_to_s(
-  const gala_d3d11_adapter_t *adapter,
+gala_d3d11_output_to_s(
+  const gala_d3d11_output_t *output,
   char buf[],
   const int buf_sz);
 
@@ -106,21 +80,14 @@ namespace gala {
 
 //===----------------------------------------------------------------------===//
 
-/// \copydoc ::gala_d3d11_adapter_t
-class GALA_PUBLIC D3D11Adapter : public ::gala::Adapter {
+/// \copydoc ::gala_d3d11_output_t
+class GALA_PUBLIC D3D11Output : public ::gala::Output {
  public:
-  /// \copydoc ::gala_d3d11_adapter_destroy
+  /// \copydoc ::gala_d3d11_output_destroy
   void destroy();
 
  public:
-  /// \copydoc ::gala_d3d11_adapter_num_outputs
-  size_t num_outputs() const;
-
-  /// \copydoc ::gala_d3d11_adapter_output
-  ::gala::D3D11Output *output(const size_t idx) const;
-
- public:
-  /// \copydoc ::gala_d3d11_adapter_to_s
+  /// \copydoc ::gala_d3d11_output_to_s
   int to_s(char buf[], const int buf_sz) const;
 };
 
@@ -134,6 +101,6 @@ class GALA_PUBLIC D3D11Adapter : public ::gala::Adapter {
 
 //============================================================================//
 
-#endif // _GALA_D3D11_ADAPTER_H_
+#endif // _GALA_D3D11_OUTPUT_H_
 
 //============================================================================//

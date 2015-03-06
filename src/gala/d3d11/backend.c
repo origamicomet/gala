@@ -46,7 +46,7 @@ gala_d3d11_backend_init(
   }
   for (backend->adapters.count = 0; /* ... */; backend->adapters.count++) {
     // TODO(mtwilliams): Allocate enough room on the stack to store all the
-    // returned interfaces then conpy them to a tightly fit backend->adapters.itfs.
+    // returned interfaces then copy them to a tightly fit backend->adapters.itfs.
     IDXGIAdapter *adapter;
     if (backend->dxgi.factory->EnumAdapters(backend->adapters.count, &adapter) == DXGI_ERROR_NOT_FOUND) {
       break;
@@ -57,7 +57,7 @@ gala_d3d11_backend_init(
   backend->adapters.itfs = (IDXGIAdapter **)heap->alloc(heap,
                                                         backend->adapters.count * sizeof(IDXGIAdapter *),
                                                         _Alignof(IDXGIAdapter *));
-  for (UINT adapter = 0; adapter < backend->adapters.count; ++adapter) {
+  for (UINT adapter = 0; adapter < backend->adapters.count; adapter++) {
     const HRESULT hr = backend->dxgi.factory->EnumAdapters(adapter, &backend->adapters.itfs[adapter]);
     gala_assertf(hr == S_OK, "Unable to initialize Direct3D 11 runtime; IDXGIFactory::EnumAdapters failed (%x)!", hr);
   }
@@ -123,6 +123,23 @@ gala_d3d11_backend_adapter(
 #if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
   backend->adapters.itfs[idx]->AddRef();
   adapter->itf = backend->adapters.itfs[idx];
+  for (adapter->outputs.count = 0; /* ... */; adapter->outputs.count++) {
+    // TODO(mtwilliams): Allocate enough room on the stack to store all the
+    // returned interfaces then copy them to a tightly fit adapter->outputs.itfs.
+    IDXGIOutput *output;
+    if (adapter->itf->EnumOutputs(adapter->outputs.count, &output) == DXGI_ERROR_NOT_FOUND) {
+      break;
+    } else {
+      output->Release();
+    }
+  }
+  adapter->outputs.itfs = (IDXGIOutput **)heap->alloc(heap,
+                                                      adapter->outputs.count * sizeof(IDXGIOutput *),
+                                                      _Alignof(IDXGIOutput *));
+  for (UINT output = 0; output < adapter->outputs.count; output++) {
+    const HRESULT hr = adapter->itf->EnumOutputs(output, &adapter->outputs.itfs[output]);
+    gala_assertf(hr == S_OK, "Unable to initialize Direct3D 11 runtime; IDXGIAdapter::EnumOutputs failed (%x)!", hr);
+  }
 #endif
   return adapter;
 }

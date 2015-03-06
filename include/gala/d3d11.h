@@ -20,6 +20,7 @@
 
 //============================================================================//
 
+#include "gala/d3d11/output.h"
 #include "gala/d3d11/adapter.h"
 #include "gala/d3d11/backend.h"
 

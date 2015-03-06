@@ -78,6 +78,19 @@ struct gala_d3d11_adapter {
   gala_adapter_t __adapter__;
 #if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
   IDXGIAdapter *itf;
+  struct {
+    UINT count;
+    IDXGIOutput **itfs;
+  } outputs;
+#endif
+};
+
+//===----------------------------------------------------------------------===//
+
+struct gala_d3d11_output {
+  gala_output_t __output__;
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+  IDXGIOutput *itf;
 #endif
 };
 
