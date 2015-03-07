@@ -96,6 +96,65 @@ gala_d3d11_backend_shutdown(
 
 //===----------------------------------------------------------------------===//
 
+void
+gala_d3d11_backend_create_and_init_engine(
+  const gala_d3d11_backend_t *backend,
+  const gala_engine_creation_params_t *params,
+  gala_d3d11_engine_t **engine_)
+{
+  gala_assert_debug(backend != NULL);
+  gala_assert_debug(engine_ != NULL);
+  gala_assert_debug(params != NULL);
+  gala_assert_debug((params->type == GALA_ENGINE_TYPE_SOFTWARE) ||
+                    (params->type == GALA_ENGINE_TYPE_HARDWARE));
+  bitbyte_foundation_tier4_allocator_t *heap = bitbyte_foundation_tier4_heap();
+  *engine_ = (gala_d3d11_engine_t *)heap->alloc(heap,
+                                                sizeof(gala_d3d11_engine_t),
+                                                _Alignof(gala_d3d11_engine_t));
+  gala_engine_init(&(*engine_)->__engine__);
+  gala_d3d11_engine_t *engine = *engine_;
+  engine->__engine__.type = params->type;
+  engine->__engine__.flags = params->flags;
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+  backend->dxgi.factory->AddRef();
+  engine->dxgi.factory = backend->dxgi.factory;
+  engine->d3d11.dll = LoadLibraryA("D3D11.dll");
+  gala_assertf(engine->d3d11.dll != NULL, "Unable to load Direct3D 11 runtime; could not load 'D3D11.dll'!");
+  // TODO(mtwilliams): Get debug layers?
+  typedef HRESULT (WINAPI *D3D11CreateDevice_fn)(IDXGIAdapter *, D3D_DRIVER_TYPE, HMODULE, UINT, const D3D_FEATURE_LEVEL *, UINT, UINT, ID3D11Device **, D3D_FEATURE_LEVEL *, ID3D11DeviceContext **);
+  D3D11CreateDevice_fn D3D11CreateDevice_ = (D3D11CreateDevice_fn)GetProcAddress(engine->d3d11.dll, "D3D11CreateDevice");
+  gala_assertf(D3D11CreateDevice_ != NULL, "Unable to initialize Direct3D 11 runtime; could not find 'D3D11CreateDevice'!");
+  UINT flags = 0x00000000ul;
+  if (params->flags & GALA_ENGINE_DEBUG)
+    flags |= D3D11_CREATE_DEVICE_DEBUG;
+  D3D_DRIVER_TYPE driver_type;
+  // TODO(mtwilliams): Support GALA_ENGINE_TYPE_SOFTWARE?
+  // if (params->type == GALA_ENGINE_TYPE_SOFTWARE)
+  //   driver_type = D3D_DRIVER_TYPE_WARP;
+  // else if (params->type == GALA_ENGINE_TYPE_HARDWARE)
+  //   driver_type = D3D_DRIVER_TYPE_HARDWARE;
+  gala_assert(params->type == GALA_ENGINE_TYPE_HARDWARE);
+  driver_type = D3D_DRIVER_TYPE_HARDWARE;
+  IDXGIAdapter *adapter = NULL;
+  if (params->adapter != NULL)
+    adapter = ((gala_d3d11_adapter_t *)params->adapter)->itf;
+  /* engine->d3d11.device/feature_level/immediate_context = */ {
+    // TODO(mtwilliams): Bump minimum requirements to Direct3D 10?
+    static const D3D_FEATURE_LEVEL kFeatureLevels[] = {
+      D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
+      D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
+    const HRESULT hr = D3D11CreateDevice_(adapter, driver_type, NULL, flags,
+                                          kFeatureLevels, 6, D3D11_SDK_VERSION,
+                                          &engine->d3d11.device,
+                                          &engine->d3d11.feature_level,
+                                          &engine->d3d11.immediate_context);
+    gala_assertf(hr == S_OK, "Unable to initialize Direct3D 11 runtime; D3D11CreateDevice failed (%x)!", hr);
+  }
+#endif
+}
+
+//===----------------------------------------------------------------------===//
+
 size_t
 gala_d3d11_backend_num_adapters(
   const gala_d3d11_backend_t *backend)
@@ -179,6 +238,17 @@ void D3D11Backend::init(::gala::D3D11Backend **backend) {
 
 void D3D11Backend::shutdown() {
   ::gala_d3d11_backend_shutdown((::gala_d3d11_backend_t *)&this->__backend__);
+}
+
+//===----------------------------------------------------------------------===//
+
+void D3D11Backend::create_and_init_engine(
+    const ::gala_engine_creation_params_t &params,
+    ::gala::D3D11Engine **engine) const
+{
+  ::gala_d3d11_backend_create_and_init_engine(
+    (const ::gala_d3d11_backend_t *)&this->__backend__,
+    &params, (::gala_d3d11_engine_t **)engine);
 }
 
 //===----------------------------------------------------------------------===//

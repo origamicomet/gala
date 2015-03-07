@@ -100,6 +100,23 @@ struct gala_d3d11_output {
 
 //===----------------------------------------------------------------------===//
 
+struct gala_d3d11_engine {
+  gala_engine_t __engine__;
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+  struct {
+    IDXGIFactory *factory;
+  } dxgi;
+  struct {
+    HMODULE dll;
+    ID3D11Device *device;
+    D3D_FEATURE_LEVEL feature_level;
+    ID3D11DeviceContext *immediate_context;
+  } d3d11;
+#endif
+};
+
+//===----------------------------------------------------------------------===//
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

@@ -62,6 +62,19 @@ typedef enum gala_engine_flags {
 
 /// \brief
 ///
+typedef struct gala_engine_creation_params {
+  ///
+  gala_engine_type_t type;
+  ///
+  uint32_t flags;
+  ///
+  gala_adapter_t *adapter;
+} gala_engine_creation_params_t;
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+///
 typedef struct gala_engine {
   /// \copydoc ::gala_engine_type_t
   gala_engine_type_t type;

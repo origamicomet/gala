@@ -31,6 +31,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "gala/d3d11/adapter.h"
+#include "gala/d3d11/engine.h"
 
 //============================================================================//
 
@@ -63,6 +64,20 @@ gala_d3d11_backend_init(
 extern GALA_PUBLIC void
 gala_d3d11_backend_shutdown(
   gala_d3d11_backend_t *backend);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param backend
+/// \param params
+/// \param engine
+/// \returns
+///
+extern GALA_PUBLIC void
+gala_d3d11_backend_create_and_init_engine(
+  const gala_d3d11_backend_t *backend,
+  const gala_engine_creation_params_t *params,
+  gala_d3d11_engine_t **engine);
 
 //===----------------------------------------------------------------------===//
 
@@ -122,6 +137,12 @@ class GALA_PUBLIC D3D11Backend : public ::gala::Backend {
 
   /// \copydoc ::gala_d3d11_backend_shutdown
   void shutdown();
+
+ public:
+  /// \copyodd ::gala_d3d11_backend_create_and_init_engine
+  void create_and_init_engine(
+    const ::gala_engine_creation_params_t &params,
+    ::gala::D3D11Engine **engine) const;
 
  public:
   /// \copyodc ::gala_d3d11_num_adapters
