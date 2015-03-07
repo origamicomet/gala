@@ -32,7 +32,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif // __cplusplus
+#endif /* __cplusplus */
 
 /*===----------------------------------------------------------------------===*/
 
@@ -65,10 +65,10 @@ typedef struct gala_command {
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif /* __cplusplus */
 
 /*============================================================================*/
 
-#endif // _GALA_COMMAND_H_
+#endif /* _GALA_COMMAND_H_ */
 
 /*============================================================================*/
