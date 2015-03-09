@@ -33,7 +33,7 @@ extern "C" {
 /*===----------------------------------------------------------------------===*/
 
 /*! ... */
-typedef uint64_t gala_fence_t;
+typedef bitbyte_foundation_atomic_uint64_t gala_fence_t;
 
 /*===----------------------------------------------------------------------===*/
 
@@ -60,12 +60,7 @@ namespace gala {
 /*===----------------------------------------------------------------------===*/
 
 /*! \copydoc ::gala_fence_t */
-typedef ::gala_fence_t Fence;
-
-/*===----------------------------------------------------------------------===*/
-
-/*! \copydoc GALA_INVALID_FENCE */
-static const ::gala::Fence kInvalidFence = (::gala::Fence)GALA_INVALID_FENCE;
+typedef ::bitbyte::foundation::Atomic<::gala_fence_t> Fence;
 
 /*===----------------------------------------------------------------------===*/
 
