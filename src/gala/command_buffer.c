@@ -185,7 +185,7 @@ void CommandBuffer::insert_fence_on_submission(
   ::gala::Fence fence, ::gala::Fence *writeback)
 {
   ::gala_command_buffer_insert_fence_on_submission(&this->__command_buffer__,
-                                                   (::gala_fence_t)fence,
+                                                   fence.load_relaxed(),
                                                    (::gala_fence_t *)writeback);
 }
 
@@ -195,7 +195,7 @@ void CommandBuffer::insert_fence_on_completion(
   ::gala::Fence fence, ::gala::Fence *writeback)
 {
   ::gala_command_buffer_insert_fence_on_completion(&this->__command_buffer__,
-                                                   (::gala_fence_t)fence,
+                                                   fence.load_relaxed(),
                                                    (::gala_fence_t *)writeback);
 }
 
