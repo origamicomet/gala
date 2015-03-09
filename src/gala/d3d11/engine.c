@@ -70,7 +70,21 @@ gala_d3d11_engine_execute(
         bitbyte_foundation_atomic_uint64_store_relaxed(fence->writeback, fence->fence);
       } break;
       case GALA_COMMAND_TYPE_FENCE_ON_COMPLETION: {
-        // TODO(mtwilliams): Implement FENNCE_ON_COMPLETION.
+        const gala_command_fence_t *fence = (const gala_command_fence_t *)command;
+        ID3D11Query *query; {
+          D3D11_QUERY_DESC qd;
+          qd.Query = D3D11_QUERY_EVENT;
+          qd.MiscFlags = 0x00000000ul;
+          const HRESULT hr = engine->d3d11.device->CreateQuery(&qd, &query);
+          gala_assertf(hr == S_OK, "Unable to create query object; ID3D11Device::CreateQuery failed (%x)!", hr);
+        }
+        engine->d3d11.immediate_context->End(query);
+        // HACK(mtwilliams): Poll until the GPU is complete.
+        // NOTE(mtwilliams): This isn't truely asynchronous. There might still
+        // be another way to achieve this, though.
+        while (engine->d3d11.immediate_context->GetData(query, NULL, 0, 0) == S_FALSE);
+        query->Release();
+        bitbyte_foundation_atomic_uint64_store_relaxed(fence->writeback, fence->fence);
       } break;
     }
     current += command->len;
