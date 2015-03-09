@@ -28,6 +28,10 @@
 
 #include "gala/engine.h"
 
+//===----------------------------------------------------------------------===//
+
+#include "gala/d3d11/swap_chain.h"
+
 //============================================================================//
 
 #ifdef __cplusplus
@@ -48,6 +52,16 @@ typedef struct gala_d3d11_engine gala_d3d11_engine_t;
 ///
 extern GALA_PUBLIC void
 gala_d3d11_engine_shutdown_and_destroy(
+  gala_d3d11_engine_t *engine);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param engine
+/// \returns
+///
+extern GALA_PUBLIC gala_swap_chain_hndl_t
+gala_d3d11_engine_create_swap_chain(
   gala_d3d11_engine_t *engine);
 
 //===----------------------------------------------------------------------===//
@@ -98,6 +112,9 @@ class GALA_PUBLIC D3D11Engine : public ::gala::Engine {
   void shutdown_and_destroy();
 
  public:
+  /// \copydoc ::gala_d3d11_engine_create_swap_chain
+  ::gala::SwapChain::Handle create_swap_chain();
+
   /// \copydoc ::gala_d3d11_engine_execute
   void execute(const gala::CommandBuffer &commands);
 

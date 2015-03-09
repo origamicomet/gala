@@ -135,14 +135,6 @@ struct GALA_PUBLIC Resource : public ::gala_resource_t {
 /*===----------------------------------------------------------------------===*/
 
 /*! ... */
-struct GALA_PUBLIC SwapChain : public ::gala::Resource {
-  /*! \copydoc ::gala_swap_chain_hndl_t */
-  typedef ::gala_swap_chain_hndl_t Handle;
-};
-
-/*===----------------------------------------------------------------------===*/
-
-/*! ... */
 struct GALA_PUBLIC RenderTargetView : public ::gala::Resource {
   /*! \copydoc ::gala_render_target_view_hndl_t */
   typedef ::gala_render_target_view_hndl_t Handle;

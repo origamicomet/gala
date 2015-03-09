@@ -150,6 +150,10 @@ gala_d3d11_backend_create_and_init_engine(
                                           &engine->d3d11.immediate_context);
     gala_assertf(hr == S_OK, "Unable to initialize Direct3D 11 runtime; D3D11CreateDevice failed (%x)!", hr);
   }
+  engine->resources.lock = bitbyte_foundation_mutex_create();
+  // TODO(mtwilliams): Release associated interfaces on shutdown?
+  bitbyte_foundation_atomic_uint32_store_relaxed(&engine->resources.swap_chains.count, 0);
+  memset((void *)&engine->resources.swap_chains.pool, 0, sizeof(engine->resources.swap_chains.pool));
 #endif
 }
 

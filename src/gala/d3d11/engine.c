@@ -31,12 +31,14 @@ gala_d3d11_engine_shutdown_and_destroy(
 {
   gala_assert_debug(engine != NULL);
 #if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+  bitbyte_foundation_mutex_destroy(engine->resources.lock);
   engine->dxgi.factory->Release();
   engine->d3d11.immediate_context->Release();
   engine->d3d11.device->Release();
   FreeLibrary(engine->d3d11.dll);
 #if GALA_CONFIGURATION == GALA_CONFIGURATION_DEBUG
   // This might help find some (stupid) bugs.
+  engine->resources.lock = (bitbyte_foundation_mutex_t *)NULL;
   engine->dxgi.factory = (IDXGIFactory *)NULL;
   engine->d3d11.immediate_context = (ID3D11DeviceContext *)NULL;
   engine->d3d11.device = (ID3D11Device *)NULL;
@@ -46,6 +48,24 @@ gala_d3d11_engine_shutdown_and_destroy(
   gala_engine_shutdown(&engine->__engine__);
   bitbyte_foundation_tier4_allocator_t *heap = bitbyte_foundation_tier4_heap();
   heap->free(heap, (void *)engine);
+}
+
+//===----------------------------------------------------------------------===//
+
+gala_swap_chain_hndl_t
+gala_d3d11_engine_create_swap_chain(
+  gala_d3d11_engine_t *engine)
+{
+  gala_assert_debug(engine != NULL);
+  bitbyte_foundation_mutex_lock(engine->resources.lock);
+  const uint32_t slot = bitbyte_foundation_atomic_uint32_fetch_and_incr_relaxed(&engine->resources.swap_chains.count);
+  gala_assertf(slot < GALA_D3D11_ENGINE_MAX_NUM_SWAP_CHAINS, "Exceeded maximum number of swap-chains!");
+  struct gala_d3d11_swap_chain *swap_chain = &engine->resources.swap_chains.pool[slot];
+  gala_swap_chain_init(&swap_chain->__swap_chain__);
+  swap_chain->itf = (IDXGISwapChain *)NULL;
+  gala_swap_chain_hndl_t swap_chain_hndl = (gala_swap_chain_hndl_t)swap_chain;
+  bitbyte_foundation_mutex_unlock(engine->resources.lock);
+  return swap_chain_hndl;
 }
 
 //===----------------------------------------------------------------------===//
@@ -120,6 +140,12 @@ namespace gala {
 
 void D3D11Engine::shutdown_and_destroy() {
   ::gala_d3d11_engine_shutdown_and_destroy((::gala_d3d11_engine_t *)&this->__engine__);
+}
+
+//===----------------------------------------------------------------------===//
+
+::gala::SwapChain::Handle D3D11Engine::create_swap_chain() {
+  return (::gala::SwapChain::Handle)::gala_d3d11_engine_create_swap_chain((::gala_d3d11_engine_t *)&this->__engine__);
 }
 
 //===----------------------------------------------------------------------===//

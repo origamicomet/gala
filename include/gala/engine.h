@@ -28,6 +28,8 @@
 
 #include "gala/adapter.h"
 #include "gala/command_buffer.h"
+#include "gala/resource.h"
+#include "gala/swap_chain.h"
 
 //============================================================================//
 

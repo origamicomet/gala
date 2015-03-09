@@ -100,6 +100,17 @@ struct gala_d3d11_output {
 
 //===----------------------------------------------------------------------===//
 
+#define GALA_D3D11_ENGINE_MAX_NUM_SWAP_CHAINS 8
+
+struct gala_d3d11_swap_chain {
+  gala_swap_chain_t __swap_chain__;
+#if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
+  IDXGISwapChain *itf;
+#endif
+};
+
+//===----------------------------------------------------------------------===//
+
 struct gala_d3d11_engine {
   gala_engine_t __engine__;
 #if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
@@ -112,6 +123,14 @@ struct gala_d3d11_engine {
     D3D_FEATURE_LEVEL feature_level;
     ID3D11DeviceContext *immediate_context;
   } d3d11;
+  struct {
+    // HACK(mtwilliams): Use a mutex to make resource access thread-safe.
+    bitbyte_foundation_mutex_t *lock;
+    struct {
+      bitbyte_foundation_atomic_uint32_t count;
+      struct gala_d3d11_swap_chain pool[GALA_D3D11_ENGINE_MAX_NUM_SWAP_CHAINS];
+    } swap_chains;
+  } resources;
 #endif
 };
 
