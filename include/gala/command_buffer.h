@@ -128,6 +128,13 @@ class GALA_PUBLIC CommandBuffer {
   virtual ~CommandBuffer();
 
  public:
+  /*! Returns the underlying ::gala_command_buffer_t. */
+  ::gala_command_buffer_t *underlying() { return &__command_buffer__; }
+
+  /*! Returns the underlying ::gala_command_buffer_t. */
+  const ::gala_command_buffer_t *underlying() const { return &__command_buffer__; }
+
+ public:
   /*! \copydoc ::gala_command_buffer::exhausted */
   virtual bool exhausted();
 

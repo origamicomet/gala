@@ -54,6 +54,17 @@ gala_d3d11_engine_shutdown_and_destroy(
 
 /// \brief
 /// \param engine
+/// \param commands
+///
+extern GALA_PUBLIC void
+gala_d3d11_engine_execute(
+  gala_d3d11_engine_t *engine,
+  const gala_command_buffer_t *commands);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param engine
 /// \param buf
 /// \param buf_sz
 /// \returns
@@ -85,6 +96,10 @@ class GALA_PUBLIC D3D11Engine : public ::gala::Engine {
  public:
   /// \copydoc ::gala_d3d11_engine_shutdown_and_destroy
   void shutdown_and_destroy();
+
+ public:
+  /// \copydoc ::gala_d3d11_engine_execute
+  void execute(const gala::CommandBuffer &commands);
 
  public:
   /// \copydoc ::gala_d3d11_engine_to_s

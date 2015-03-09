@@ -13,6 +13,10 @@
 #include "gala/d3d11/types.h"
 #include "gala/d3d11/engine.h"
 
+//===----------------------------------------------------------------------===//
+
+#include "gala/commands.h"
+
 //============================================================================//
 
 #ifdef __cplusplus
@@ -46,6 +50,35 @@ gala_d3d11_engine_shutdown_and_destroy(
 
 //===----------------------------------------------------------------------===//
 
+void
+gala_d3d11_engine_execute(
+  gala_d3d11_engine_t *engine,
+  const gala_command_buffer_t *commands)
+{
+  gala_assert_debug(engine != NULL);
+  gala_assert_debug(commands->start <= commands->current);
+
+  uintptr_t current = commands->start;
+  do {
+    const gala_command_t *command = (const gala_command_t *)current;
+    switch (command->type) {
+      case GALA_COMMAND_TYPE_NOP: {
+        // Do nothing.
+      } break;
+      case GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION: {
+        const gala_command_fence_t *fence = (const gala_command_fence_t *)command;
+        bitbyte_foundation_atomic_uint64_store_relaxed(fence->writeback, fence->fence);
+      } break;
+      case GALA_COMMAND_TYPE_FENCE_ON_COMPLETION: {
+        // TODO(mtwilliams): Implement FENNCE_ON_COMPLETION.
+      } break;
+    }
+    current += command->len;
+  } while (current < commands->current);
+}
+
+//===----------------------------------------------------------------------===//
+
 int gala_d3d11_engine_to_s(
   const gala_d3d11_engine_t *engine,
   char buf[],
@@ -73,6 +106,12 @@ namespace gala {
 
 void D3D11Engine::shutdown_and_destroy() {
   ::gala_d3d11_engine_shutdown_and_destroy((::gala_d3d11_engine_t *)&this->__engine__);
+}
+
+//===----------------------------------------------------------------------===//
+
+void D3D11Engine::execute(const gala::CommandBuffer &commands) {
+  ::gala_d3d11_engine_execute((::gala_d3d11_engine_t *)&this->__engine__, commands.underlying());
 }
 
 //===----------------------------------------------------------------------===//
