@@ -32,6 +32,7 @@
 #include "gala/engine.h"
 #include "gala/output.h"
 #include "gala/pixel_format.h"
+#include "gala/resource.h"
 
 //============================================================================//
 
