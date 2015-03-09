@@ -62,6 +62,14 @@ typedef struct gala_adapter {
 
 //===----------------------------------------------------------------------===//
 
+/// \def GAlA_DEFAULT_ADAPTER
+/// \brief
+///
+#define GAlA_DEFAULT_ADAPTER \
+  ((gala_adapter_t *)NULL)
+
+//===----------------------------------------------------------------------===//
+
 /// \brief
 /// \param adapter
 /// \returns
