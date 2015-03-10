@@ -34,12 +34,44 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/*===----------------------------------------------------------------------===*/
+//===----------------------------------------------------------------------===//
 
 /*! ... */
 typedef struct gala_swap_chain {
   gala_resource_t __resource__;
 } gala_swap_chain_t;
+
+/*! ... */
+typedef enum gala_swap_chain_flags {
+  /*! Fullscreen. */
+  GALA_SWAP_CHAIN_FULLSCREEN = (1 << 0)
+} gala_swap_chain_flags_t;
+
+/*! ... */
+typedef struct gala_swap_chain_desc {
+  /*! \defgroup Dimensions ... */
+  /*! @{ */
+  uint32_t width;
+  uint32_t height;
+  /*! @} */
+
+  /*! ... */
+  struct {
+    uint32_t numer;
+    uint32_t denom;
+  } refresh_rate;
+
+  /*! ... */
+  gala_pixel_format_t format;
+
+  /*! ... */
+  uint32_t flags;
+
+  /*! ... */
+  uintptr_t surface;
+} gala_swap_chain_desc_t;
+
+/*===----------------------------------------------------------------------===*/
 
 /*! ... */
 typedef gala_resource_hndl_t gala_swap_chain_hndl_t;
@@ -87,6 +119,15 @@ namespace gala {
 /*! ... */
 class GALA_PUBLIC SwapChain {
  public:
+  /*! \copydoc ::gala_swap_chain_flags_t */
+  enum Flags {
+    /*! \copydoc ::GALA_SWAP_CHAIN_FULLSCREEN */
+    kFullscreen = ::GALA_SWAP_CHAIN_FULLSCREEN
+  };
+
+  /*! \copydoc ::gala_swap_chain_desc_t */
+  typedef ::gala_swap_chain_desc_t Description;
+
   /*! \copydoc ::gala_swap_chain_hndl_t */
   typedef ::gala_swap_chain_hndl_t Handle;
 

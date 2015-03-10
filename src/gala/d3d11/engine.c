@@ -16,6 +16,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "gala/commands.h"
+#include "gala/d3d11/commands.h"
 
 //============================================================================//
 
@@ -63,9 +64,74 @@ gala_d3d11_engine_create_swap_chain(
   struct gala_d3d11_swap_chain *swap_chain = &engine->resources.swap_chains.pool[slot];
   gala_swap_chain_init(&swap_chain->__swap_chain__);
   swap_chain->itf = (IDXGISwapChain *)NULL;
+  swap_chain->rtv = (ID3D11RenderTargetView *)NULL;
   gala_swap_chain_hndl_t swap_chain_hndl = (gala_swap_chain_hndl_t)swap_chain;
   bitbyte_foundation_mutex_unlock(engine->resources.lock);
   return swap_chain_hndl;
+}
+
+//===----------------------------------------------------------------------===//
+
+void
+gala_d3d11_engine_insert_init_swap_chain(
+  const gala_d3d11_engine_t *engine,
+  gala_command_buffer_t *command_buffer,
+  const gala_swap_chain_hndl_t swap_chain,
+  const gala_swap_chain_desc_t *desc)
+{
+  gala_assert_debug(engine != NULL);
+
+  gala_assert_debug(command_buffer != NULL);
+  gala_d3d11_command_init_swap_chain_t *cmd =
+    (gala_d3d11_command_init_swap_chain_t *)gala_command_buffer_insert_yielded(command_buffer, sizeof(gala_d3d11_command_init_swap_chain_t));
+  cmd->__command__.type = (gala_command_type_t)GALA_D3D11_COMMAND_TYPE_INIT_SWAP_CHAIN;
+  cmd->__command__.len = sizeof(gala_d3d11_command_init_swap_chain_t);
+
+  gala_assert_debug(desc != NULL);
+  gala_assert_debug((desc->width >= 1) && (desc->width % 2) == 0);
+  cmd->swap_chain_desc.BufferDesc.Width = desc->width;
+  gala_assert_debug((desc->height >= 1) && (desc->height % 2) == 0);
+  cmd->swap_chain_desc.BufferDesc.Height = desc->height;
+  if (desc->flags & GALA_SWAP_CHAIN_FULLSCREEN) {
+    // FIXME(mtwilliams): Create windowed, THEN upgrade to fullscreen.
+    cmd->swap_chain_desc.BufferDesc.RefreshRate.Numerator = desc->refresh_rate.numer;
+    if (desc->refresh_rate.denom > 0) {
+      cmd->swap_chain_desc.BufferDesc.RefreshRate.Denominator = desc->refresh_rate.denom;
+    } else {
+      cmd->swap_chain_desc.BufferDesc.RefreshRate.Denominator = 1;
+    }
+    cmd->swap_chain_desc.Windowed = FALSE;
+  } else {
+    cmd->swap_chain_desc.BufferDesc.RefreshRate.Numerator = 0;
+    cmd->swap_chain_desc.BufferDesc.RefreshRate.Denominator = 1;
+    cmd->swap_chain_desc.Windowed = TRUE;
+  }
+  // TODO(mtwilliams): Support more back-buffer formats than R8G8B8A8.
+  gala_assert_debug(desc->format == GALA_PIXEL_FORMAT_R8G8B8A8);
+  cmd->swap_chain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  cmd->swap_chain_desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+  cmd->swap_chain_desc.BufferDesc.Scaling = DXGI_MODE_SCALING_STRETCHED;
+  // TODO(mtwilliams): Expose multisampling.
+  cmd->swap_chain_desc.SampleDesc.Count = 1;
+  cmd->swap_chain_desc.SampleDesc.Quality = 0;
+  cmd->swap_chain_desc.BufferUsage = DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT;
+  cmd->swap_chain_desc.BufferCount = (!!(desc->flags & GALA_SWAP_CHAIN_FULLSCREEN) ? 2 : 1);
+  gala_assert_debug(desc->surface != NULL);
+  gala_assert_debug(IsWindow((HWND)desc->surface));
+  cmd->swap_chain_desc.OutputWindow = (HWND)desc->surface;
+  cmd->swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+  // TODO(mtwilliams): Should we specify DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH?
+  cmd->swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+  gala_assert_debug(swap_chain != GALA_INVALID_SWAP_CHAIN_HANDLE);
+  bitbyte_foundation_mutex_lock(engine->resources.lock);
+  gala_assert_debug(((gala_resource_t *)swap_chain)->type == GALA_RESOURCE_TYPE_SWAP_CHAIN);
+  gala_assert_debug(((struct gala_d3d11_swap_chain *)swap_chain)->itf == (IDXGISwapChain *)NULL);
+  cmd->swap_chain = &((struct gala_d3d11_swap_chain *)swap_chain)->itf;
+  gala_assert_debug(((struct gala_d3d11_swap_chain *)swap_chain)->rtv == (ID3D11RenderTargetView *)NULL);
+  cmd->rtv = &((struct gala_d3d11_swap_chain *)swap_chain)->rtv;
+  bitbyte_foundation_mutex_unlock(engine->resources.lock);
+
+  gala_command_buffer_insert_yielded_finish(command_buffer, (void *)cmd);
 }
 
 //===----------------------------------------------------------------------===//
@@ -80,17 +146,17 @@ gala_d3d11_engine_execute(
 
   uintptr_t current = commands->start;
   do {
-    const gala_command_t *command = (const gala_command_t *)current;
-    switch (command->type) {
+    const gala_command_t *cmd = (const gala_command_t *)current;
+    switch (cmd->type) {
       case GALA_COMMAND_TYPE_NOP: {
         // Do nothing.
       } break;
       case GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION: {
-        const gala_command_fence_t *fence = (const gala_command_fence_t *)command;
+        const gala_command_fence_t *fence = (const gala_command_fence_t *)cmd;
         bitbyte_foundation_atomic_uint64_store_relaxed(fence->writeback, fence->fence);
       } break;
       case GALA_COMMAND_TYPE_FENCE_ON_COMPLETION: {
-        const gala_command_fence_t *fence = (const gala_command_fence_t *)command;
+        const gala_command_fence_t *fence = (const gala_command_fence_t *)cmd;
         ID3D11Query *query; {
           D3D11_QUERY_DESC qd;
           qd.Query = D3D11_QUERY_EVENT;
@@ -106,8 +172,32 @@ gala_d3d11_engine_execute(
         query->Release();
         bitbyte_foundation_atomic_uint64_store_relaxed(fence->writeback, fence->fence);
       } break;
+      case GALA_D3D11_COMMAND_TYPE_INIT_SWAP_CHAIN: {
+        const gala_d3d11_command_init_swap_chain_t *init_swap_chain = (const gala_d3d11_command_init_swap_chain_t *)cmd;
+        bitbyte_foundation_mutex_lock(engine->resources.lock);
+        /* *init_swap_chain->swap_chain = */ {
+          const HRESULT hr = engine->dxgi.factory->CreateSwapChain(engine->d3d11.device,
+                                                                   (DXGI_SWAP_CHAIN_DESC *)&init_swap_chain->swap_chain_desc,
+                                                                   init_swap_chain->swap_chain);
+          gala_assertf(hr == S_OK, "Unable to initalize swap-chain; IDXGIFactory::CreateSwapChain failed (%x)!", hr);
+        }
+        /* *init_swap_chain->rtv = */ {
+          ID3D11Texture2D* back_buffer; {
+            const HRESULT hr = (*init_swap_chain->swap_chain)->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&back_buffer);
+            gala_assertf(hr == S_OK, "Unable to initalize swap-chain; IDXGISwapChain::GetBuffer failed (%x)!", hr);
+          }
+          D3D11_RENDER_TARGET_VIEW_DESC rtvd;
+          rtvd.Format = init_swap_chain->swap_chain_desc.BufferDesc.Format;
+          rtvd.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+          rtvd.Texture2D.MipSlice = 0;
+          const HRESULT hr = engine->d3d11.device->CreateRenderTargetView((ID3D11Resource *)back_buffer, &rtvd, init_swap_chain->rtv);
+          gala_assertf(hr == S_OK, "Unable to initalize swap-chain; ID3D11Device::CreateRenderTargetView failed (%x)!", hr);
+          back_buffer->Release();
+        }
+        bitbyte_foundation_mutex_unlock(engine->resources.lock);
+      };
     }
-    current += command->len;
+    current += cmd->len;
   } while (current < commands->current);
 }
 
@@ -146,6 +236,19 @@ void D3D11Engine::shutdown_and_destroy() {
 
 ::gala::SwapChain::Handle D3D11Engine::create_swap_chain() {
   return (::gala::SwapChain::Handle)::gala_d3d11_engine_create_swap_chain((::gala_d3d11_engine_t *)&this->__engine__);
+}
+
+//===----------------------------------------------------------------------===//
+
+void D3D11Engine::insert_init_swap_chain(
+  ::gala::CommandBuffer *command_buffer,
+  const ::gala::SwapChain::Handle swap_chain,
+  const ::gala::SwapChain::Description &desc) const
+{
+  ::gala_d3d11_engine_insert_init_swap_chain((::gala_d3d11_engine_t *)&this->__engine__,
+                                        command_buffer->underlying(),
+                                        (::gala_swap_chain_hndl_t)swap_chain,
+                                        (const ::gala_swap_chain_desc_t *)&desc);
 }
 
 //===----------------------------------------------------------------------===//

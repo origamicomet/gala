@@ -106,6 +106,7 @@ struct gala_d3d11_swap_chain {
   gala_swap_chain_t __swap_chain__;
 #if BITBYTE_FOUNDATION_TIER0_SYSTEM == __BITBYTE_FOUNDATION_TIER0_SYSTEM_WINDOWS__
   IDXGISwapChain *itf;
+  ID3D11RenderTargetView *rtv;
 #endif
 };
 

@@ -68,6 +68,20 @@ gala_d3d11_engine_create_swap_chain(
 
 /// \brief
 /// \param engine
+/// \param engine
+/// \returns
+///
+extern GALA_PUBLIC void
+gala_d3d11_engine_insert_init_swap_chain(
+  const gala_d3d11_engine_t *engine,
+  gala_command_buffer_t *command_buffer,
+  const gala_swap_chain_hndl_t swap_chain,
+  const gala_swap_chain_desc_t *desc);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param engine
 /// \param commands
 ///
 extern GALA_PUBLIC void
@@ -115,6 +129,13 @@ class GALA_PUBLIC D3D11Engine : public ::gala::Engine {
   /// \copydoc ::gala_d3d11_engine_create_swap_chain
   ::gala::SwapChain::Handle create_swap_chain();
 
+  /// \copydoc ::gala_d3d11_engine_insert_init_swap_chain
+  void insert_init_swap_chain(
+    ::gala::CommandBuffer *command_buffer,
+    ::gala::SwapChain::Handle swap_chain,
+    const ::gala::SwapChain::Description &desc) const;
+
+ public:
   /// \copydoc ::gala_d3d11_engine_execute
   void execute(const gala::CommandBuffer &commands);
 
