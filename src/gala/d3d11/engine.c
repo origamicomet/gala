@@ -88,9 +88,9 @@ gala_d3d11_engine_insert_init_swap_chain(
   cmd->__command__.len = sizeof(gala_d3d11_command_init_swap_chain_t);
 
   gala_assert_debug(desc != NULL);
-  gala_assert_debug((desc->width >= 1) && (desc->width % 2) == 0);
+  gala_assert_debug((desc->width >= 1));
   cmd->swap_chain_desc.BufferDesc.Width = desc->width;
-  gala_assert_debug((desc->height >= 1) && (desc->height % 2) == 0);
+  gala_assert_debug((desc->height >= 1));
   cmd->swap_chain_desc.BufferDesc.Height = desc->height;
   if (desc->flags & GALA_SWAP_CHAIN_FULLSCREEN) {
     // FIXME(mtwilliams): Create windowed, THEN upgrade to fullscreen.
