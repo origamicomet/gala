@@ -137,6 +137,33 @@ gala_d3d11_engine_insert_init_swap_chain(
 //===----------------------------------------------------------------------===//
 
 void
+gala_d3d11_engine_insert_present(
+  const gala_d3d11_engine_t *engine,
+  gala_command_buffer_t *command_buffer,
+  const gala_swap_chain_hndl_t swap_chain)
+{
+  gala_assert_debug(engine != NULL);
+
+  gala_assert_debug(command_buffer != NULL);
+  gala_d3d11_command_present_t *cmd =
+    (gala_d3d11_command_present_t *)gala_command_buffer_insert_yielded(command_buffer, sizeof(gala_d3d11_command_present_t));
+  cmd->__command__.type = (gala_command_type_t)GALA_D3D11_COMMAND_TYPE_PRESENT;
+  cmd->__command__.len = sizeof(gala_d3d11_command_present_t);
+
+  gala_assert_debug(swap_chain != GALA_INVALID_SWAP_CHAIN_HANDLE);
+  bitbyte_foundation_mutex_lock(engine->resources.lock);
+  // TODO(mtwilliams): Implement render target views.
+  gala_assert_debug(((gala_resource_t *)swap_chain)->type == GALA_RESOURCE_TYPE_SWAP_CHAIN);
+  gala_assert_debug(((struct gala_d3d11_swap_chain *)swap_chain)->itf != (IDXGISwapChain *)NULL);
+  cmd->swap_chain = ((struct gala_d3d11_swap_chain *)swap_chain)->itf;
+  bitbyte_foundation_mutex_unlock(engine->resources.lock);
+
+  gala_command_buffer_insert_yielded_finish(command_buffer, (void *)cmd);
+}
+
+//===----------------------------------------------------------------------===//
+
+void
 gala_d3d11_engine_insert_clear_render_target_view(
   const gala_d3d11_engine_t *engine,
   gala_command_buffer_t *command_buffer,
@@ -225,6 +252,13 @@ gala_d3d11_engine_execute(
         }
         bitbyte_foundation_mutex_unlock(engine->resources.lock);
       } break;
+      case GALA_D3D11_COMMAND_TYPE_PRESENT: {
+        const gala_d3d11_command_present_t *present = (const gala_d3d11_command_present_t *)cmd;
+        // TODO(mtwilliams): Expose vertical-sync flag.
+        // TODO(mtwilliams): Expose DXGI_PRESENT_DO_NOT_WAIT?
+        const HRESULT hr = present->swap_chain->Present(0, 0);
+        gala_assertf(hr == S_OK, "Unable to present swap-chain; IDXGISwapChain::Present failed (%x)!", hr);
+      } break;
       case GALA_D3D11_COMMAND_TYPE_CLEAR_RENDER_TARGET_VIEW: {
         const gala_d3d11_command_clear_render_target_view_t *clear_render_target_view = (const gala_d3d11_command_clear_render_target_view_t *)cmd;
         engine->d3d11.immediate_context->ClearRenderTargetView(clear_render_target_view->rtv, &clear_render_target_view->rgba[0]);
@@ -282,6 +316,17 @@ void D3D11Engine::insert_init_swap_chain(
                                         command_buffer->underlying(),
                                         (::gala_swap_chain_hndl_t)swap_chain,
                                         (const ::gala_swap_chain_desc_t *)&desc);
+}
+
+//===----------------------------------------------------------------------===//
+
+void D3D11Engine::insert_present(
+  ::gala::CommandBuffer *command_buffer,
+  ::gala::SwapChain::Handle swap_chain) const
+{
+  ::gala_d3d11_engine_insert_present((::gala_d3d11_engine_t *)&this->__engine__,
+                                     command_buffer->underlying(),
+                                     (::gala_swap_chain_hndl_t)swap_chain);
 }
 
 //===----------------------------------------------------------------------===//

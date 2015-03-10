@@ -41,8 +41,10 @@ extern "C" {
 typedef enum gala_d3d11_command_type {
   /*! Initializes a swap-chain. */
   GALA_D3D11_COMMAND_TYPE_INIT_SWAP_CHAIN = 1 | (1 << 31u),
+  /*! Presents a swap-chain. */
+  GALA_D3D11_COMMAND_TYPE_PRESENT = 2 | (1 << 31u),
   /*! Clears a render target view or swap-chain. */
-  GALA_D3D11_COMMAND_TYPE_CLEAR_RENDER_TARGET_VIEW = 2 | (1 << 31u),
+  GALA_D3D11_COMMAND_TYPE_CLEAR_RENDER_TARGET_VIEW = 3 | (1 << 31u)
 } gala_d3d11_command_type_t;
 
 /*===----------------------------------------------------------------------===*/
@@ -54,6 +56,14 @@ typedef struct gala_d3d11_command_init_swap_chain {
   IDXGISwapChain **swap_chain;
   ID3D11RenderTargetView **rtv;
 } gala_d3d11_command_init_swap_chain_t;
+
+/*===----------------------------------------------------------------------===*/
+
+/*! ... */
+typedef struct gala_d3d11_command_present {
+  struct gala_command __command__;
+  IDXGISwapChain *swap_chain;
+} gala_d3d11_command_present_t;
 
 /*===----------------------------------------------------------------------===*/
 
