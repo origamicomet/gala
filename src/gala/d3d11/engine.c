@@ -137,6 +137,35 @@ gala_d3d11_engine_insert_init_swap_chain(
 //===----------------------------------------------------------------------===//
 
 void
+gala_d3d11_engine_insert_clear_render_target_view(
+  const gala_d3d11_engine_t *engine,
+  gala_command_buffer_t *command_buffer,
+  const gala_resource_hndl_t render_target_view,
+  const float rgba[4])
+{
+  gala_assert_debug(engine != NULL);
+
+  gala_assert_debug(command_buffer != NULL);
+  gala_d3d11_command_clear_render_target_view_t *cmd =
+    (gala_d3d11_command_clear_render_target_view_t *)gala_command_buffer_insert_yielded(command_buffer, sizeof(gala_d3d11_command_clear_render_target_view_t));
+  cmd->__command__.type = (gala_command_type_t)GALA_D3D11_COMMAND_TYPE_CLEAR_RENDER_TARGET_VIEW;
+  cmd->__command__.len = sizeof(gala_d3d11_command_clear_render_target_view_t);
+
+  gala_assert_debug(render_target_view != GALA_INVALID_RESOURCE_HANDLE);
+  bitbyte_foundation_mutex_lock(engine->resources.lock);
+  // TODO(mtwilliams): Implement render target views.
+  gala_assert_debug(((gala_resource_t *)render_target_view)->type == GALA_RESOURCE_TYPE_SWAP_CHAIN);
+  gala_assert_debug(((struct gala_d3d11_swap_chain *)render_target_view)->rtv != (ID3D11RenderTargetView *)NULL);
+  cmd->rtv = ((struct gala_d3d11_swap_chain *)render_target_view)->rtv;
+  bitbyte_foundation_mutex_unlock(engine->resources.lock);
+  memcpy((void *)&cmd->rgba[0], (const void *)&rgba[0], 4 * sizeof(float));
+
+  gala_command_buffer_insert_yielded_finish(command_buffer, (void *)cmd);
+}
+
+//===----------------------------------------------------------------------===//
+
+void
 gala_d3d11_engine_execute(
   gala_d3d11_engine_t *engine,
   const gala_command_buffer_t *commands)
@@ -195,7 +224,11 @@ gala_d3d11_engine_execute(
           back_buffer->Release();
         }
         bitbyte_foundation_mutex_unlock(engine->resources.lock);
-      };
+      } break;
+      case GALA_D3D11_COMMAND_TYPE_CLEAR_RENDER_TARGET_VIEW: {
+        const gala_d3d11_command_clear_render_target_view_t *clear_render_target_view = (const gala_d3d11_command_clear_render_target_view_t *)cmd;
+        engine->d3d11.immediate_context->ClearRenderTargetView(clear_render_target_view->rtv, &clear_render_target_view->rgba[0]);
+      } break;
     }
     current += cmd->len;
   } while (current < commands->current);
@@ -249,6 +282,19 @@ void D3D11Engine::insert_init_swap_chain(
                                         command_buffer->underlying(),
                                         (::gala_swap_chain_hndl_t)swap_chain,
                                         (const ::gala_swap_chain_desc_t *)&desc);
+}
+
+//===----------------------------------------------------------------------===//
+
+void D3D11Engine::insert_clear_render_target_view(
+  ::gala::CommandBuffer *command_buffer,
+  ::gala::Resource::Handle render_target_view,
+  const float rgba[4]) const
+{
+  ::gala_d3d11_engine_insert_clear_render_target_view((::gala_d3d11_engine_t *)&this->__engine__,
+                                                      command_buffer->underlying(),
+                                                      (::gala_resource_hndl_t)render_target_view,
+                                                      rgba);
 }
 
 //===----------------------------------------------------------------------===//

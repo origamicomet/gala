@@ -68,7 +68,9 @@ gala_d3d11_engine_create_swap_chain(
 
 /// \brief
 /// \param engine
-/// \param engine
+/// \param command_buffer
+/// \param swap_chain
+/// \param desc
 /// \returns
 ///
 extern GALA_PUBLIC void
@@ -77,6 +79,22 @@ gala_d3d11_engine_insert_init_swap_chain(
   gala_command_buffer_t *command_buffer,
   const gala_swap_chain_hndl_t swap_chain,
   const gala_swap_chain_desc_t *desc);
+
+//===----------------------------------------------------------------------===//
+
+/// \brief
+/// \param engine
+/// \param command_buffer
+/// \param render_target_view
+/// \param rgba
+/// \returns
+///
+extern GALA_PUBLIC void
+gala_d3d11_engine_insert_clear_render_target_view(
+  const gala_d3d11_engine_t *engine,
+  gala_command_buffer_t *command_buffer,
+  const gala_resource_hndl_t render_target_view,
+  const float rgba[4]);
 
 //===----------------------------------------------------------------------===//
 
@@ -129,11 +147,18 @@ class GALA_PUBLIC D3D11Engine : public ::gala::Engine {
   /// \copydoc ::gala_d3d11_engine_create_swap_chain
   ::gala::SwapChain::Handle create_swap_chain();
 
+ public:
   /// \copydoc ::gala_d3d11_engine_insert_init_swap_chain
   void insert_init_swap_chain(
     ::gala::CommandBuffer *command_buffer,
     ::gala::SwapChain::Handle swap_chain,
     const ::gala::SwapChain::Description &desc) const;
+
+  /// \copydoc ::gala_d3d11_engine_insert_clear_render_target_view
+  void insert_clear_render_target_view(
+    ::gala::CommandBuffer *command_buffer,
+    ::gala::Resource::Handle render_target_view,
+    const float rgba[4]) const;
 
  public:
   /// \copydoc ::gala_d3d11_engine_execute
