@@ -26,7 +26,6 @@ void __gala__(void)
 {
   // HACK(mike): We need to export at least one symbol for Microsoft's linker
   // to actually produce a dynamically linked library.
-  //
 }
 
 //===----------------------------------------------------------------------===//

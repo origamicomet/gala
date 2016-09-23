@@ -1,10 +1,47 @@
 !.gitignore
+
+# Ryb
+_build/
 Makefile
+build.ninja
+.ninja_deps
+.ninja_log
 
-#
+# Sublime Text 2/3
+*.sublime-workspace
+
+# TextMate
+*.tmproj
+*.tmproject
+tmtags
+
+# Vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+.org-id-locations
+*_archive
+*_flymake.*
+/eshell/history
+/eshell/lastdir
+/elpa/
+*.rel
+/auto/
+
 # Windows
-#
-
 Thumbs.db
 ehthumbs.db
 Desktop.ini
@@ -14,10 +51,7 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 
-#
 # Mac OS X
-#
-
 .DS_Store
 .AppleDouble
 .LSOverride
@@ -31,17 +65,11 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-#
 # Linux
-#
-
 *~
 .directory
 
-#
 # Visual Studio
-#
-
 *.suo
 *.user
 *.sln.docstates
@@ -154,10 +182,7 @@ UpgradeLog*.htm
 *.bim_*.settings
 FakesAssemblies/
 
-#
 # XCode
-#
-
 # build/
 *.pbxuser
 !default.pbxuser
@@ -173,71 +198,7 @@ xcuserdata
 DerivedData
 *.xcuserstate
 
-#
-# Vim
-#
-
-[._]*.s[a-w][a-z]
-[._]s[a-w][a-z]
-*.un~
-Session.vim
-.netrwhist
-*~
-
-#
-# Emacs
-#
-
-# -*- mode: gitignore; -*-
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-auto-save-list
-tramp
-.\#*
-.org-id-locations
-*_archive
-*_flymake.*
-/eshell/history
-/eshell/lastdir
-/elpa/
-*.rel
-/auto/
-
-#
-# SublimeText
-#
-
-# *.sublime-project
-*.sublime-workspace
-
-sftp-config.json
-
-#
-# TextMate
-#
-
-*.tmproj
-*.tmproject
-tmtags
-
-#
-# SlickEdit
-#
-
-*.vpw
-*.vpj
-
-*.vpwhistu
-*.vpwhist
-*.vtg
-
-#
 # Archives
-#
-
 *.7z
 *.jar
 *.rar
@@ -248,10 +209,8 @@ tmtags
 *.xz
 *.lzma
 *.cab
-
 *.iso
 *.tar
-
 *.dmg
 *.xpi
 *.gem

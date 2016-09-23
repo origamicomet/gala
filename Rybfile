@@ -1,0 +1,2 @@
+project :gala, pretty: 'Gala' do |proj|
+end
