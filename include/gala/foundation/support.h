@@ -1,4 +1,4 @@
-//===-- gala/foundation.h -------------------------------*- mode: C++11 -*-===//
+//===-- gala/foundation/support.h -----------------------*- mode: C++11 -*-===//
 //
 //                              _____     _
 //                             |   __|___| |___
@@ -13,17 +13,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _GALA_FOUNDATION_H_
-#define _GALA_FOUNDATION_H_
+#ifndef _GALA_FOUNDATION_SUPPORT_H_
+#define _GALA_FOUNDATION_SUPPORT_H_
 
 #include "gala/config.h"
 #include "gala/linkage.h"
 
-#include "gala/foundation/types.h"
-#include "gala/foundation/support.h"
+#include "gala/foundation/support/reachability.h"
+#include "gala/foundation/support/inlining.h"
 
-#include "gala/foundation/atomics.h"
-
-#include "gala/foundation/assert.h"
-
-#endif // _GALA_FOUNDATION_H_
+#endif // _GALA_FOUNDATION_SUPPORT_H_

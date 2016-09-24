@@ -1,2 +1,126 @@
+# ===-- Rybfile ------------------------------------------*- mode: Ruby -*-=== #
+#
+#                               _____     _
+#                              |   __|___| |___
+#                              |  |  | .'| | .'|
+#                              |_____|__,|_|__,|
+#
+#        This file is distributed under the terms described in LICENSE.
+#
+# ===----------------------------------------------------------------------=== #
+
 project :gala, pretty: 'Gala' do |proj|
+  # Statically link to Gala for the (small) optimization wins.
+  proj.define 'GALA_LINKAGE' => 'GALA_LINKAGE_STATIC'
+
+  # # TODO(mtwilliams): User-specified configuration matrix.
+  # proj.configurations %i(debug development).product(%i(static dynamic))
+  #
+  # proj.configuration :static, pretty: 'Static' do |config|
+  #   # Statically link to Gala for the (small) optimization wins.
+  #   proj.define 'GALA_LINKAGE' => 'GALA_LINKAGE_STATIC'
+  # end
+  #
+  # proj.configuration :dynamic, pretty: 'Dynamic' do |config|
+  #   # Dynamically link to Gala to reduce unnecessary bloat.
+  #   proj.define 'GALA_LINKAGE' => 'GALA_LINKAGE_DYNAMIC'
+  # end
+
+  # Supress all of Visual Studio's bullshit.
+  # TODO(mtwilliams): Refactor into Ryb.
+  proj.define '_HAS_EXCEPTIONS' => false,
+              '_SCL_SECURE_NO_WARNINGS' => true,
+              '_CRT_SECURE_NO_WARNINGS' => true,
+              '_CRT_SECURE_NO_DEPRECATE' => true,
+              '_SECURE_SCL_THROWS' => false,
+              '_SILENCE_DEPRECATION_OF_SECURE_SCL_THROWS' => true,
+              # See http://stackoverflow.com/questions/14363929
+              '_USING_V110_SDK71_' => true
+
+  # Suffix builds in the form: _{configuration}_{platform}_{32,64}.
+   # e.g. libgala_macosx_64.dylib or gala_windows_32.dll
+  proj.architecture :x86 do |arch| arch.suffix = '_32'; end
+  proj.architecture :x86_64 do |arch| arch.suffix = '_64'; end
+  proj.platform :windows do |platform| platform.suffix = '_windows'; end
+  proj.platform :macosx do |platform| platform.suffix = '_macosx'; end
+  proj.platform :linux do |platform| platform.suffix = '_linux'; end
+  proj.configuration :debug do |config| config.suffix = '_debug'; end
+  proj.configuration :release do |config| config.suffix = '_release'; end
+
+  # # We target Windows 7 and later.
+  # proj.platform :windows do |platform| platform.sdk = '7.1'; end
+  # # We target Lion and later.
+  # proj.platform :macosx do |platform| platform.version = '10.7'; end
+  # # TODO(mtwilliams): Determine the minimum kernel we'll support.
+  # proj.platform :linux do |platform| end
+
+  proj.configuration :debug, pretty: 'Debug' do |config|
+    config.define 'GALA_CONFIGURATION' => 'GALA_CONFIGURATION_DEBUG'
+
+    config.define '_DEBUG' => true,
+                  '_HAS_ITERATOR_DEBUGGING' => true,
+                  '_SECURE_SCL' => true
+
+    config.generate_debug_symbols = true
+    config.link_time_code_generation = false
+    config.optimize = :nothing
+  end
+
+  proj.configuration :release, pretty: 'Release' do |config|
+    config.define 'GALA_CONFIGURATION' => 'GALA_CONFIGURATION_RELEASE'
+
+    config.define 'NDEBUG' => true,
+                  '_HAS_ITERATOR_DEBUGGING' => false,
+                  '_SECURE_SCL' => false
+
+    config.generate_debug_symbols = true
+    config.link_time_code_generation = true
+    config.optimize = :speed
+  end
+
+  proj.library :gala, pretty: 'Gala' do |lib|
+    lib.linkage = :static
+
+    # # TODO(mtwilliams): User-specified configuration matrix.
+    # lib.configuration :static do |config|
+    #   config.linkage = :static
+    # end
+    #
+    # lib.configuration :dynamic do |config|
+    #   config.linkage = :dynamic
+    # end
+
+    lib.author = 'Origami Comet Games, Inc.'
+    lib.description = 'A low-level abstraction layer for rendering.'
+    lib.license = 'CC0'
+
+    lib.define '__GALA_IS_BEING_COMPILED__' => true
+    lib.define '__GALA_VERSION__' => "\"\\\"#{`git rev-parse HEAD`.rstrip}\\\"\""
+    lib.define '__GALA_REVISION__' => `git rev-list --count HEAD`.strip.to_i
+
+    lib.add_include_paths 'include/'
+    lib.add_library_paths '$build/lib/', '$build/bin/'
+    lib.add_binary_paths '$build/bin/'
+
+    lib.add_source_files 'include/**/*.{h,hpp,inl}'
+    lib.add_source_files 'src/**/*.{c,cc,cpp}'
+
+    lib.platform :windows do |platform|
+      platform.add_external_dependencies %w(kernel32 user32 gdi32)
+    end
+  end
+
+  proj.application :tests, pretty: 'Tests' do |app|
+    app.add_include_paths 'include/', 'test/include/'
+    app.add_library_paths '$build/lib/', '$build/bin/'
+    app.add_binary_paths '$build/bin/'
+
+    app.add_source_files 'test/**/*.{h,hpp,inl,c,cc,cpp}'
+
+    app.add_dependency :gala
+
+    app.platform :windows do |platform|
+      platform.add_external_dependencies %w(kernel32 user32 gdi32)
+    end
+  end
 end
