@@ -132,7 +132,7 @@ typedef enum gala_pixel_format {
   /// 32-bit depth.
   GALA_PIXEL_FORMAT_D32 = 36 | GALA_PIXEL_FORMAT_DEPTH,
 
-  /// \internal Force at least uint32_t storage and alignment.
+  /// \internal Force gala_uint32_t storage and alignment.
   GALA_PIXEL_FORMAT_TYPE_FORCE_UINT32 = 0x7fffffff
 } gala_pixel_format_t;
 

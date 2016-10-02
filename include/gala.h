@@ -29,6 +29,11 @@
 #include "gala/resource.h"
 #include "gala/resources/swap_chain.h"
 #include "gala/resource_table.h"
+
+#include "gala/backend.h"
+
+#include "gala/d3d11.h"
+
 GALA_BEGIN_EXTERN_C
 
 extern GALA_PUBLIC void _gala__();

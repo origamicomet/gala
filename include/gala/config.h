@@ -218,4 +218,14 @@
   #endif
 #endif
 
+/// \def GALA_ENABLE_D3D11
+/// \brief Compile with support for Direct3D 11.
+#if defined(DOXYGEN)
+  #define GALA_ENABLE_D3D11
+#else // !defined(DOXYGEN)
+  #if GALA_PLATFORM == GALA_PLATFORM_WINDOWS
+    #define GALA_ENABLE_D3D11 1
+  #endif
+#endif
+
 #endif // _GALA_CONFIG_H_
