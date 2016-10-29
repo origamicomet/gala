@@ -24,7 +24,7 @@ struct gala_resource_table {
 
 // TODO(mtwilliams): Don't use `malloc` and `free`?
 
-void gala_resource_table_init(void)
+gala_resource_table_t *gala_resource_table_create(void)
 {
   gala_resource_table *resource_table =
     (gala_resource_table_t *)malloc(sizeof(gala_resource_table_t));
@@ -38,6 +38,8 @@ void gala_resource_table_init(void)
   resource_table->freed = GALA_INVALID_RESOURCE_HANDLE;
 
   resource_table->size = 65535;
+
+  return resource_table;
 }
 
 void gala_resource_table_destroy(
