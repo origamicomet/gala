@@ -106,7 +106,7 @@ project :gala, pretty: 'Gala' do |proj|
     lib.add_source_files 'src/**/*.{c,cc,cpp}'
 
     lib.platform :windows do |platform|
-      platform.add_external_dependencies %w(kernel32 user32 gdi32)
+      platform.add_external_dependencies %w(kernel32 user32 gdi32 ole32)
     end
   end
 
@@ -120,7 +120,7 @@ project :gala, pretty: 'Gala' do |proj|
     app.add_dependency :gala
 
     app.platform :windows do |platform|
-      platform.add_external_dependencies %w(kernel32 user32 gdi32)
+      platform.add_external_dependencies %w(kernel32 user32 gdi32 ole32)
     end
   end
 end
