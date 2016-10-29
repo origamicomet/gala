@@ -45,6 +45,8 @@ typedef double gala_float64_t;
 
 typedef bool gala_bool_t;
 
+typedef gala_uint64_t gala_fence_t;
+
 GALA_END_EXTERN_C // }
 
 GALA_BEGIN_NAMESPACE // {
