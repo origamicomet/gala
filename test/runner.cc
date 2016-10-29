@@ -17,7 +17,6 @@ static struct {
   #endif
 };
 
-
 int main(int argc, const char *argv[]) {
   // Initialize all available backends.
   const gala_uint32_t N = sizeof(backends) / sizeof(backends[0]);
