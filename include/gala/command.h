@@ -25,15 +25,38 @@ typedef enum gala_command_type {
   /// No operation; do nothing.
   GALA_COMMAND_TYPE_NOP = 0,
 
+  // Debug
+
+  // ...
+
+  // Profiling
+
+  // ...
+
   // Synchronization
 
   /// Writes a value when Gala has submitted all previous commands.
   GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION = 1,
 
   /// Writes a value when the GPU has processed all previous commands.
-  /// \warning This can take a substantial amount of time, and may even stall,
+  /// \warning This can take a substantial amount of time and may even stall
   /// with some backends. Use sparingly.
   GALA_COMMAND_TYPE_FENCE_ON_COMPLETION = 2,
+
+  // Swap Chain
+  GALA_COMMAND_TYPE_CREATE_SWAP_CHAIN,
+  GALA_COMMAND_TYPE_DESTORY_SWAP_CHAIN,
+  GALA_COMMAND_TYPE_RESIZE_SWAP_CHAIN,
+
+  // Targets
+  GALA_COMMAND_TYPE_SET_RENDER_AND_DEPTH_STENCIL_TARGETS,
+
+  // Rendering
+  GALA_COMMAND_TYPE_CLEAR_RENDER_TARGETS,
+  GALA_COMMAND_TYPE_CLEAR_DEPTH_STENCIL_TARGET,
+
+  // Presentation
+  GALA_COMMAND_TYPE_PRESENT = 255,
 
   /// \internal Force gala_uint32_t storage and alignment.
   GALA_COMMAND_TYPE_FORCE_UINT32 = 0x7fffffff
@@ -49,29 +72,5 @@ typedef struct gala_command {
 } gala_command_t;
 
 GALA_END_EXTERN_C
-
-#ifdef __cplusplus
-namespace gala {
-
-/// \copydoc ::gala_command_t
-struct GALA_PUBLIC Command : public ::gala_command_t {
- public:
-  /// \copydoc ::gala_command_type_t
-  typedef ::gala_command_type_t Type;
-
-  /// \copydoc GALA_COMMAND_TYPE_NOP
-  static const Type NOP = ::GALA_COMMAND_TYPE_NOP;
-  /// \copydoc GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION
-  static const Type ON_SUBMISSION = ::GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION;
-  /// \copydoc GALA_COMMAND_TYPE_FENCE_ON_COMPLETION
-  static const Type FENCE_ON_COMPLETION = ::GALA_COMMAND_TYPE_FENCE_ON_COMPLETION;
-
- public:
-  /// \copydoc ::gala_command_header_t
-  typedef ::gala_command_header_t Header;
-};
-
-} // gala
-#endif // __cplusplus
 
 #endif // _GALA_COMMAND_H_
