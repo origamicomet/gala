@@ -52,6 +52,7 @@ typedef struct gala_resize_swap_chain_command {
 
 typedef struct gala_set_render_and_depth_stencil_targets_command {
   gala_command_t command;
+  gala_uint32_t num_render_target_views;
   gala_render_target_view_handle_t render_target_view_handles[8];
   gala_depth_stencil_target_view_handle_t depth_stencil_target_view_handle;
 } gala_set_render_and_depth_stencil_targets_command;
