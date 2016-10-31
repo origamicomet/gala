@@ -32,6 +32,7 @@
 #include "gala/commands.h"
 #include "gala/command_buffer.h"
 
+#include "gala/render.h"
 
 #include "gala/backend.h"
 #include "gala/engine.h"

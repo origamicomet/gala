@@ -63,6 +63,32 @@ typedef struct gala_swap_chain_desc {
 #define GALA_INVALID_SWAP_CHAIN_HANDLE \
   GALA_INVALID_RESOURCE_HANDLE
 
+// Defined in `gala/engine.h`
+typedef struct gala_engine gala_engine_t;
+
+// Defined in `gala/command_buffer.h`
+typedef struct gala_command_buffer gala_command_buffer_t;
+
+extern GALA_PUBLIC
+gala_swap_chain_handle_t gala_swap_chain_create(
+  gala_engine_t *engine,
+  gala_command_buffer_t *command_buffer,
+  const gala_swap_chain_desc_t *desc);
+
+extern GALA_PUBLIC
+void gala_swap_chain_destroy(
+  gala_engine_t *engine,
+  gala_command_buffer_t *command_buffer,
+  gala_swap_chain_handle_t handle);
+
+extern GALA_PUBLIC
+void gala_swap_chain_resize(
+  gala_engine_t *engine,
+  gala_command_buffer_t *command_buffer,
+  gala_swap_chain_handle_t handle,
+  gala_uint32_t width,
+  gala_uint32_t height);
+
 GALA_END_EXTERN_C
 
 #endif // _GALA_RESOURCES_SWAP_CHAIN_H_
