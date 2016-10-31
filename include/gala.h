@@ -22,15 +22,19 @@
 
 #include "gala/foundation.h"
 
+#include "gala/resource.h"
+#include "gala/resources.h"
+#include "gala/resource_table.h"
+
+#include "gala/fence.h"
+
 #include "gala/command.h"
 #include "gala/commands.h"
 #include "gala/command_buffer.h"
 
-#include "gala/resource.h"
-#include "gala/resources/swap_chain.h"
-#include "gala/resource_table.h"
 
 #include "gala/backend.h"
+#include "gala/engine.h"
 
 #include "gala/d3d11.h"
 

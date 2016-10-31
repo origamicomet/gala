@@ -19,10 +19,11 @@
 
 #include "gala/foundation.h"
 
-#include "gala/command.h"
-
 #include "gala/resource.h"
 #include "gala/resources.h"
+
+#include "gala/command.h"
+#include "gala/command_buffer.h"
 
 GALA_BEGIN_EXTERN_C
 
