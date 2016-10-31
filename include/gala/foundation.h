@@ -16,6 +16,10 @@
 #ifndef _GALA_FOUNDATION_H_
 #define _GALA_FOUNDATION_H_
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "gala/config.h"
 #include "gala/linkage.h"
 
