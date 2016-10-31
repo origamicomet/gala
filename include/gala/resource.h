@@ -26,7 +26,7 @@ typedef enum gala_resource_type {
   GALA_RESOURCE_TYPE_UNKNOWN = 0,
 
   /// A swap-chain.
-  GALA_RESOURCE_TYPE_SWAP_CHAIN = 0x00000000 | 1,
+  GALA_RESOURCE_TYPE_SWAP_CHAIN = 0x000 | 1,
 
   /// A texture.
   GALA_RESOURCE_TYPE_TEXTURE = 0x100,
