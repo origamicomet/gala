@@ -111,7 +111,7 @@ project :gala, pretty: 'Gala' do |proj|
   end
 
   proj.application :tests, pretty: 'Tests' do |app|
-    app.add_include_paths 'include/', 'test/include/'
+    app.add_include_paths 'include/', 'test/'
     app.add_library_paths '$build/lib/', '$build/bin/'
     app.add_binary_paths '$build/bin/'
 
