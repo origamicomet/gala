@@ -12,6 +12,8 @@
 #include "gala/d3d11.h"
 
 // TODO(mtwilliams): Improve the structure of this code.
+// TODO(mtwilliams): Add paranoid asserts to verify that resources are valid,
+// the right type, and have actually been created.
 
 #if GALA_ENABLE_D3D11
 
