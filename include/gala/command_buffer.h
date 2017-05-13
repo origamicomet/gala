@@ -76,7 +76,7 @@ class GALA_PUBLIC CommandBuffer {
   ::gala_command_buffer_t *underlying() { return &__command_buffer__; }
   const ::gala_command_buffer_t *underlying() const { return &__command_buffer__; }
 
- public:
+ protected:
   /// \copydoc ::gala_command_buffer::exhausted
   virtual bool exhausted();
 

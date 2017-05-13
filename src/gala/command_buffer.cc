@@ -52,7 +52,7 @@ void *gala_command_buffer_allocate(
     }
   } while (command_buffer->exhausted(command_buffer));
 
-  gala_assertf(0, "The command-buffer %.16" PRIxPTR " was unable to accommodate a command!");
+  gala_assertf(0, "The command-buffer %.16" PRIxPTR " was unable to accommodate a command!", command_buffer);
   return (void *)NULL;
 }
 
