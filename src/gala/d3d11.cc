@@ -258,8 +258,8 @@ static void gala_d3d11_swap_chain_create(
   swap_chain_desc.SampleDesc.Count = 1;
   swap_chain_desc.SampleDesc.Quality = 0;
 
-  swap_chain_desc.BufferUsage = DXGI_USAGE_BACK_BUFFER |
-                                DXGI_USAGE_RENDER_TARGET_OUTPUT;
+  swap_chain_desc.BufferUsage = DXGI_USAGE_BACK_BUFFER
+                              | DXGI_USAGE_RENDER_TARGET_OUTPUT;
 
   if (cmd->desc.flags & GALA_SWAP_CHAIN_FULLSCREEN)
     // We need to "allocate" the back and front buffers ourselves.
