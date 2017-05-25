@@ -53,7 +53,7 @@ void gala::test::swap_chain_tests::run(gala_engine_t *engine) {
     gala_command_buffer_t cmds = command_buffer();
 
     gala_set_render_and_depth_stencil_targets(&cmds, 1, &render_target_view, GALA_INVALID_DEPTH_STENCIL_TARGET_VIEW_HANDLE);
-    gala_clear_render_targets_command(&cmds, 159.f / 255.0f, 43.f / 255.0f, 104.f / 255.0f, 1.0f);
+    gala_clear_render_targets(&cmds, 159.f / 255.0f, 43.f / 255.0f, 104.f / 255.0f, 1.0f);
     gala_present(&cmds, swap_chain);
 
     engine->execute(engine, &cmds);

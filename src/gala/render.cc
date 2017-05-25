@@ -36,7 +36,7 @@ void gala_set_render_and_depth_stencil_targets(
   cmd->depth_stencil_target_view_handle = depth_stencil_target;
 }
 
-void gala_clear_render_targets_command(
+void gala_clear_render_targets(
   gala_command_buffer_t *command_buffer,
   gala_float32_t r,
   gala_float32_t g,

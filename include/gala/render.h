@@ -39,7 +39,7 @@ void gala_set_render_and_depth_stencil_targets(
   gala_depth_stencil_target_view_handle_t depth_stencil_target);
 
 extern GALA_PUBLIC
-void gala_clear_render_targets_command(
+void gala_clear_render_targets(
   gala_command_buffer_t *command_buffer,
   gala_float32_t r,
   gala_float32_t g,
