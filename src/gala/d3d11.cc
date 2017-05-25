@@ -143,6 +143,50 @@ void gala_d3d11_destroy_engine(
   // TODO(mtwilliams): Actually implement this. ;)
 }
 
+// TODO(mtwilliams): Expose more granular mutability hints?
+
+static void gala_mutability_to_d3d11(const gala_mutability_t mutability,
+                                            D3D11_USAGE *usage,
+                                            UINT *cpu_access_flags) {
+  switch (mutability) {
+    case GALA_MUTABILITY_IMMUTABLE:
+      *usage = D3D11_USAGE_IMMUTABLE;
+      *cpu_access_flags = 0;
+      break;
+    case GALA_MUTABILITY_MUTABLE:
+      *usage = D3D11_USAGE_DEFAULT;
+      *cpu_access_flags = 0;
+      break;
+    case GALA_MUTABILITY_DYNAMIC:
+      *usage = D3D11_USAGE_DYNAMIC;
+      *cpu_access_flags = D3D11_CPU_ACCESS_WRITE;
+      break;
+  }
+
+  GALA_TRAP();
+}
+
+static UINT gala_bindability_to_d3d11(const gala_uint32_t bindability) {
+  UINT flags = 0;
+
+  if (bindability & GALA_BIND_TO_VERTEX_BUFFER)
+    flags |= D3D11_BIND_VERTEX_BUFFER;
+  if (bindability & GALA_BIND_TO_INDEX_BUFFER)
+    flags |= D3D11_BIND_INDEX_BUFFER;
+  if (bindability & GALA_BIND_TO_CONSTANT_BUFFER)
+    flags |= D3D11_BIND_CONSTANT_BUFFER;
+
+  if (bindability & GALA_BIND_TO_SAMPLER)
+    flags |= D3D11_BIND_SHADER_RESOURCE;
+
+  if (bindability & GALA_BIND_TO_RENDER_TARGET)
+    flags |= D3D11_BIND_RENDER_TARGET;
+  if (bindability & GALA_BIND_TO_DEPTH_STENCIL_TARGET)
+    flags |= D3D11_BIND_DEPTH_STENCIL;
+
+  return flags;
+}
+
 static DXGI_FORMAT gala_pixel_format_to_dxgi(const gala_pixel_format_t pixel_format) {
   switch (pixel_format) {
     case GALA_PIXEL_FORMAT_R8:
@@ -329,11 +373,11 @@ static void gala_d3d11_render_target_view_create(
 
   render_target_view_desc.Format = gala_pixel_format_to_dxgi(cmd->desc.format);
 
-  if (cmd->desc.dimensionality == GALA_RENDER_TARGET_VIEW_1D)
+  if (cmd->desc.dimensionality == GALA_ONE_DIMENSIONAL)
     render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE1D;
-  else if (cmd->desc.dimensionality == GALA_RENDER_TARGET_VIEW_2D)
+  else if (cmd->desc.dimensionality == GALA_TWO_DIMENSIONAL)
     render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-  else if (cmd->desc.dimensionality == GALA_RENDER_TARGET_VIEW_3D)
+  else if (cmd->desc.dimensionality == GALA_THREE_DIMENSIONAL)
     render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE3D;
 
   render_target_view_desc.Texture3D.MipSlice = 0;
@@ -382,8 +426,8 @@ static void gala_d3d11_render_target_view_destroy(
   gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->render_target_view_handle);
 
   gala_d3d11_render_target_view_t *render_target_view = (gala_d3d11_render_target_view_t *)&resource->internal;
-  ID3D11RenderTargetView *render_target_view_interface = render_target_view->interface;
 
+  ID3D11RenderTargetView *render_target_view_interface = render_target_view->interface;
   render_target_view_interface->Release();
 
   gala_resource_table_free(engine->generic.resource_table, cmd->render_target_view_handle);

@@ -39,7 +39,7 @@ void gala::test::swap_chain_tests::run(gala_engine_t *engine) {
 
     gala_render_target_view_desc_t render_target_view_desc;
     render_target_view_desc.format = swap_chain_desc.format;
-    render_target_view_desc.dimensionality = GALA_RENDER_TARGET_VIEW_2D;
+    render_target_view_desc.dimensionality = GALA_TWO_DIMENSIONAL;
     render_target_view_desc.width = swap_chain_desc.width;
     render_target_view_desc.height = swap_chain_desc.height;
     render_target_view_desc.storage = swap_chain;

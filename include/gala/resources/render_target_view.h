@@ -25,23 +25,14 @@ GALA_BEGIN_EXTERN_C
 
 typedef gala_resource_handle_t gala_render_target_view_handle_t;
 
-typedef enum gala_render_target_view_dimensionality {
-  /// One dimensional.
-  GALA_RENDER_TARGET_VIEW_1D = 1,
-  /// Two dimensional.
-  GALA_RENDER_TARGET_VIEW_2D = 2,
-  /// Three dimensional.
-  GALA_RENDER_TARGET_VIEW_3D = 3
-} gala_render_target_view_dimensionality_t;
-
 typedef struct gala_render_target_view_desc {
   /// Format.
   gala_pixel_format_t format;
 
   /// One, two, or three dimensional?
-  gala_render_target_view_dimensionality_t dimensionality;
+  gala_dimensionality_t dimensionality;
 
-  /// \defgroup Dimensions */
+  /// \defgroup Dimensions
   /// @{
   uint32_t width;
   uint32_t height;

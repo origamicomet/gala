@@ -90,6 +90,47 @@ typedef struct gala_resource {
   uintptr_t internal;
 } gala_resource_t;
 
+typedef enum gala_dimensionality {
+  /// One dimensional.
+  GALA_ONE_DIMENSIONAL = 1,
+  /// Two dimensional.
+  GALA_TWO_DIMENSIONAL = 2,
+  /// Three dimensional.
+  GALA_THREE_DIMENSIONAL = 3,
+  /// \internal Force gala_uint32_t storage and alignment.
+  GALA_DIMENSIONALITY_TYPE_FORCE_UINT32 = 0x7fffffff
+} gala_dimensionality_t;
+
+typedef enum gala_mutability {
+  /// Readable by the GPU.
+  /// \note Initialized upon creation and cannot be modified after.
+  GALA_MUTABILITY_IMMUTABLE = 0,
+  /// Readable from and writeable to by the GPU.
+  GALA_MUTABILITY_MUTABLE = 1,
+  /// Written to by CPU and read from by the GPU.
+  /// \note Ideal for a resource that is updated each frame.
+  GALA_MUTABILITY_DYNAMIC = 2,
+  /// \internal Force gala_uint32_t storage and alignment.
+  GALA_MUTABILITY_TYPE_FORCE_UINT32 = 0x7fffffff
+} gala_mutability_t;
+
+typedef enum gala_bindability {
+  /// Can be bound as a vertex buffer.
+  GALA_BIND_TO_VERTEX_BUFFER = (1 << 0),
+  /// Can be bound as an index buffer.
+  GALA_BIND_TO_INDEX_BUFFER = (1 << 1),
+  /// Can be bound as a constant buffer.
+  GALA_BIND_TO_CONSTANT_BUFFER = (1 << 2),
+  /// Can be bound as a sampler.
+  GALA_BIND_TO_SAMPLER = (1 << 3),
+  /// Can be bound as a render-target.
+  GALA_BIND_TO_RENDER_TARGET = (1 << 4),
+  /// Can be bound as a depth-stencil-target.
+  GALA_BIND_TO_DEPTH_STENCIL_TARGET = (1 << 5),
+  /// \internal Force gala_uint32_t storage and alignment.
+  GALA_BINDABILITY_TYPE_FORCE_UINT32 = 0x7fffffff
+} gala_bindability_t;
+
 GALA_END_EXTERN_C
 
 #ifdef __cplusplus
@@ -156,6 +197,51 @@ struct GALA_PUBLIC Resource : public ::gala_resource_t {
   /// \copydoc ::gala_resource_handle_t
   typedef ::gala_resource_handle_t Handle;
 };
+
+/// \copydoc ::gala_dimensionality_t
+typedef gala_dimensionality_t Dimensionality;
+
+/// \copydoc ::GALA_ONE_DIMENSIONAL
+static const Dimensionality ONE_DIMENSIONAL = ::GALA_ONE_DIMENSIONAL;
+
+/// \copydoc ::GALA_TWO_DIMENSIONAL
+static const Dimensionality TWO_DIMENSIONAL = ::GALA_TWO_DIMENSIONAL;
+
+/// \copydoc ::GALA_THREE_DIMENSIONAL
+static const Dimensionality THREE_DIMENSIONAL = ::GALA_THREE_DIMENSIONAL;
+
+/// \copydoc ::gala_mutability_t
+typedef gala_mutability_t Mutability;
+
+/// \copydoc ::GALA_MUTABILITY_MUTABLE
+static const Mutability MUTABLE = ::GALA_MUTABILITY_MUTABLE;
+
+/// \copydoc ::GALA_MUTABILITY_IMMUTABLE
+static const Mutability IMMUTABLE = ::GALA_MUTABILITY_IMMUTABLE;
+
+/// \copydoc ::GALA_MUTABILITY_DYNAMIC
+static const Mutability DYNAMIC = ::GALA_MUTABILITY_DYNAMIC;
+
+/// \copydoc ::gala_bindability_t
+typedef gala_bindability_t Bindability;
+
+/// \copydoc ::GALA_BIND_TO_VERTEX_BUFFER
+static const Bindability BIND_TO_VERTEX_BUFFER = ::GALA_BIND_TO_VERTEX_BUFFER;
+
+/// \copydoc ::GALA_BIND_TO_INDEX_BUFFER
+static const Bindability BIND_TO_INDEX_BUFFER = ::GALA_BIND_TO_INDEX_BUFFER;
+
+/// \copydoc ::GALA_BIND_TO_CONSTANT_BUFFER
+static const Bindability BIND_TO_CONSTANT_BUFFER = ::GALA_BIND_TO_CONSTANT_BUFFER;
+
+/// \copydoc ::GALA_BIND_TO_SAMPLER
+static const Bindability BIND_TO_SAMPLER = ::GALA_BIND_TO_SAMPLER;
+
+/// \copydoc ::GALA_BIND_TO_RENDER_TARGET
+static const Bindability BIND_TO_RENDER_TARGET = ::GALA_BIND_TO_RENDER_TARGET;
+
+/// \copydoc ::GALA_BIND_TO_DEPTH_STENCIL_TARGET
+static const Bindability BIND_TO_DEPTH_STENCIL_TARGET = ::GALA_BIND_TO_DEPTH_STENCIL_TARGET;
 
 } // gala
 #endif // __cplusplus
