@@ -27,6 +27,9 @@ typedef enum gala_command_type {
 
   // Debug
 
+  GALA_COMMAND_TYPE_ANNOTATE,
+  GALA_COMMAND_TYPE_LABEL,
+
   // ...
 
   // Profiling
@@ -36,12 +39,12 @@ typedef enum gala_command_type {
   // Synchronization
 
   /// Writes a value when Gala has submitted all previous commands.
-  GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION = 1,
+  GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION,
 
   /// Writes a value when the GPU has processed all previous commands.
   /// \warning This can take a substantial amount of time and may even stall
   /// with some backends. Use sparingly.
-  GALA_COMMAND_TYPE_FENCE_ON_COMPLETION = 2,
+  GALA_COMMAND_TYPE_FENCE_ON_COMPLETION,
 
   // Swap Chain
   GALA_COMMAND_TYPE_CREATE_SWAP_CHAIN,
