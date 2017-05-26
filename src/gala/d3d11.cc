@@ -18,10 +18,11 @@
 #if GALA_ENABLE_D3D11
 
 #if GALA_PLATFORM == GALA_PLATFORM_WINDOWS
+  #include <InitGuid.h>
+
   #include <Windows.h>
 
   #include <DXGI.h>
-
   #define D3D11_NO_HELPERS
   #include <D3D11.h>
 
