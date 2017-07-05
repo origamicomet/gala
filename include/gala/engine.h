@@ -47,6 +47,8 @@ typedef enum gala_engine_type {
 typedef enum gala_engine_flags {
   /// Enable debugging functionality.
   GALA_ENGINE_DEBUG = (1 << 0),
+  /// Allow abuse of undefined behaviour to increase performance.
+  GALA_ENGINE_FAST_AND_LOOSE = (1 << 1),
 } gala_engine_flags_t;
 
 typedef struct gala_engine_creation_params {

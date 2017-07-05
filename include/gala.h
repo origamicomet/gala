@@ -38,6 +38,7 @@
 #include "gala/engine.h"
 
 #include "gala/d3d11.h"
+#include "gala/opengl.h"
 
 GALA_BEGIN_EXTERN_C
 

@@ -41,10 +41,7 @@ typedef enum gala_backend {
   GALA_BACKEND_D3D12 = 12,
 
   /// OpenGL 3
-  GALA_BACKEND_GL3 = 20,
-
-  /// OpenGL 4
-  GALA_BACKEND_GL4 = 21,
+  GALA_BACKEND_OPENGL = 20,
 
   /// OpenGL ES 2
   GALA_BACKEND_GLES2 = 30,
