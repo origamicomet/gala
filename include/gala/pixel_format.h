@@ -24,7 +24,13 @@ GALA_BEGIN_EXTERN_C
 /// \def GALA_PIXEL_FORMAT_COLOR
 /// \brief The pixel format has color channels.
 ///
-#define GALA_PIXEL_FORMAT_COLOR (1 << 28)
+#define GALA_PIXEL_FORMAT_COLOR (1 << 27)
+
+/// \def GALA_PIXEL_FORMAT_SRGB
+/// \brief Reads return linear values and writes expect linear values but
+/// values are stored in sRGB.
+///
+#define GALA_PIXEL_FORMAT_SRGB (1 << 28)
 
 /// \def GALA_PIXEL_FORMAT_DEPTH
 /// \brief The pixel format has a depth channel.
@@ -56,6 +62,12 @@ typedef enum gala_pixel_format {
   GALA_PIXEL_FORMAT_R8G8B8 = 3 | GALA_PIXEL_FORMAT_COLOR,
   /// Three 8-bit color channels and an 8-bit alpha channel.
   GALA_PIXEL_FORMAT_R8G8B8A8 = 4 | GALA_PIXEL_FORMAT_COLOR,
+
+  /// Three 8-bit color channels converted to and from sRGB.
+  /// \warning May be implemented as GALA_PIXEL_FORMAT_R8G8B8A8.
+  GALA_PIXEL_FORMAT_R8G8B8_SRGB = GALA_PIXEL_FORMAT_R8G8B8 | GALA_PIXEL_FORMAT_SRGB,
+  /// Four 8-bit color channels converted to and from sRGB.
+  GALA_PIXEL_FORMAT_R8G8B8A8_SRGB = GALA_PIXEL_FORMAT_R8G8B8A8 | GALA_PIXEL_FORMAT_SRGB,
 
   /// One 16-bit color channel.
   GALA_PIXEL_FORMAT_R16 = 5 | GALA_PIXEL_FORMAT_COLOR,

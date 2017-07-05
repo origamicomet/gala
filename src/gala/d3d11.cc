@@ -198,6 +198,10 @@ static DXGI_FORMAT gala_pixel_format_to_dxgi(const gala_pixel_format_t pixel_for
     case GALA_PIXEL_FORMAT_R8G8B8A8:
       return DXGI_FORMAT_R8G8B8A8_UNORM;
 
+    case GALA_PIXEL_FORMAT_R8G8B8_SRGB:
+    case GALA_PIXEL_FORMAT_R8G8B8A8_SRGB:
+      return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+
     case GALA_PIXEL_FORMAT_R16F:
       return DXGI_FORMAT_R16_FLOAT;
     case GALA_PIXEL_FORMAT_R16FG16F:
