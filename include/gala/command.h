@@ -38,6 +38,11 @@ typedef enum gala_command_type {
 
   // Synchronization
 
+  /// TODO(mtwilliams): Require frame markers.
+  ///
+  GALA_COMMAND_TYPE_START_OF_FRAME,
+  GALA_COMMAND_TYPE_END_OF_FRAME,
+
   /// Writes a value when Gala has submitted all previous commands.
   GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION,
 
