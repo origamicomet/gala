@@ -17,11 +17,21 @@ namespace test {
     gala_engine_t *(*create_and_init_engine)(const gala_engine_creation_params_t *);
     void (*destroy_engine)(gala_engine_t *);
   } backends[] = {
+    #if GALA_ENABLE_OPENGL
+      { GALA_BACKEND_OPENGL,
+        "opengl", "OpenGL",
+        &gala_ogl_init,
+        &gala_ogl_shutdown,
+        &gala_ogl_create_and_init_engine,
+        &gala_ogl_destroy_engine },
+    #endif
     #if GALA_ENABLE_D3D11
       { GALA_BACKEND_D3D11,
         "d3d11", "Direct3D 11",
-        &gala_d3d11_init, &gala_d3d11_shutdown,
-        &gala_d3d11_create_and_init_engine, &gala_d3d11_destroy_engine },
+        &gala_d3d11_init,
+        &gala_d3d11_shutdown,
+        &gala_d3d11_create_and_init_engine,
+        &gala_d3d11_destroy_engine },
     #endif
   };
 

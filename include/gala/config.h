@@ -228,4 +228,14 @@
   #endif
 #endif
 
+/// \def GALA_ENABLE_OPENGL
+/// \brief Compile with support for OpenGL.
+#if defined(DOXYGEN)
+  #define GALA_ENABLE_OPENGL
+#else // !defined(DOXYGEN)
+  #if GALA_PLATFORM == GALA_PLATFORM_WINDOWS
+    #define GALA_ENABLE_OPENGL 1
+  #endif
+#endif
+
 #endif // _GALA_CONFIG_H_
