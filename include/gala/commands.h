@@ -93,7 +93,7 @@ typedef struct gala_clear_depth_stencil_target_command {
     unsigned stencil : 1;
   } channels;
   gala_float32_t depth;
-  gala_uint8_t stencil;
+  gala_uint32_t stencil;
 } gala_clear_depth_stencil_target_command_t;
 
 typedef struct gala_present_command {
