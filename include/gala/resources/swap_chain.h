@@ -36,23 +36,25 @@ typedef struct gala_swap_chain_desc {
 
   /// \defgroup Dimensions */
   /// @{
-  uint32_t width;
-  uint32_t height;
+  gala_uint32_t width;
+  gala_uint32_t height;
   /// @}
 
   // TODO(mtwilliams): Refactor into `gala_rational_t`?
+  // TODO(mtwilliams): Replace with `GALA_SWAP_CHAIN_VERTICAL_SYNC`.
+   // Also expose `GALA_SWAP_CHAIN_TEAR_ON_MISS`.
 
   /// Refresh rate.
   ///
   /// \note To refresh as fast as possible set both the numerator and the
   /// denominator to zero.
   struct {
-    uint32_t numerator;
-    uint32_t denominator;
+    gala_uint32_t numerator;
+    gala_uint32_t denominator;
   } refresh_rate;
 
   ///
-  uint32_t flags;
+  gala_uint32_t flags;
 
   ///
   uintptr_t surface;

@@ -54,7 +54,7 @@ typedef struct gala_engine_creation_params {
   gala_engine_type_t type;
 
   ///
-  uint32_t flags;
+  gala_uint32_t flags;
 } gala_engine_creation_params_t;
 
 /// \brief

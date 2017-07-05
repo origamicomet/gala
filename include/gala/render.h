@@ -38,6 +38,8 @@ void gala_set_render_and_depth_stencil_targets(
   gala_render_target_view_handle_t *render_targets,
   gala_depth_stencil_target_view_handle_t depth_stencil_target);
 
+// TODO(mtwilliams): Expose a variant that specifies different clear values for
+// each target.
 extern GALA_PUBLIC
 void gala_clear_render_targets(
   gala_command_buffer_t *command_buffer,
@@ -50,6 +52,9 @@ extern GALA_PUBLIC
 void gala_present(
   gala_command_buffer_t *command_buffer,
   gala_swap_chain_handle_t swap_chain_handle);
+
+// PERF(mtwilliams): Expose a resource discard command that invalidates
+// contents of a resource. Would equate to `glInvalidateXxx`.
 
 GALA_END_EXTERN_C
 

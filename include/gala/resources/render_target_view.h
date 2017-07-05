@@ -34,9 +34,8 @@ typedef struct gala_render_target_view_desc {
 
   /// \defgroup Dimensions
   /// @{
-  uint32_t width;
-  uint32_t height;
-  uint32_t depth;
+  gala_uint32_t width;
+  gala_uint32_t height;
   /// @}
 
   /// Backing storage to render into.

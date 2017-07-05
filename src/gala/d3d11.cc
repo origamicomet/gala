@@ -254,7 +254,7 @@ static void gala_d3d11_fence_on_completion(
   const gala_fence_command_t *cmd)
 {
   // HACK(mtwilliams): This isn't asynchronous. There might be another way to
-  // achieve this. Perhaos by (ab)using internals?
+  // achieve this. Perhaps by (ab)using internals?
 
   ID3D11Query *query;
 
@@ -320,6 +320,7 @@ static void gala_d3d11_swap_chain_create(
 
   swap_chain_desc.OutputWindow = (HWND)cmd->desc.surface;
 
+  // TODO(mtwilliams): Investigate `DXGI_SWAP_EFFECT_FLIP_DISCARD.`
   // Anything else is stupid.
   swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
@@ -362,9 +363,116 @@ static void gala_d3d11_resize_swap_chain(
   swap_chain_interface->ResizeBuffers(0, cmd->width, cmd->height, DXGI_FORMAT_UNKNOWN, 0);
 }
 
+// TODO(mtwilliams): Expose multisampling.
+// TODO(mtwilliams): Expose mipmaps.
+
+typedef struct gala_d3d11_texture {
+  ID3D11Resource *interface;
+} gala_d3d11_texture_t;
+
+static void gala_d3d11_texture_create_1d(
+  gala_d3d11_engine_t *engine,
+  const gala_create_texture_command_t *cmd)
+{
+  gala_assertf(0, "Not implemented yet!");
+}
+
+static void gala_d3d11_texture_create_2d(
+  gala_d3d11_engine_t *engine,
+  const gala_create_texture_command_t *cmd)
+{
+  D3D11_TEXTURE2D_DESC texture_desc;
+
+  texture_desc.Width  = cmd->desc.width;
+  texture_desc.Height = cmd->desc.height;
+
+  texture_desc.MipLevels = 0;
+
+  texture_desc.ArraySize = 1;
+
+  texture_desc.Format = gala_pixel_format_to_dxgi(cmd->desc.format);
+
+  texture_desc.SampleDesc.Count = 1;
+  texture_desc.SampleDesc.Quality = 0;
+
+  gala_mutability_to_d3d11(cmd->desc.mutability,
+                           &texture_desc.Usage,
+                           &texture_desc.CPUAccessFlags);
+
+  texture_desc.BindFlags = gala_bindability_to_d3d11(cmd->desc.bindability);
+
+  texture_desc.MiscFlags = 0;
+
+  const gala_bool_t storage =
+    !!(cmd->desc.bindability & GALA_BIND_TO_RENDER_TARGET) ||
+    !!(cmd->desc.bindability & GALA_BIND_TO_DEPTH_STENCIL_TARGET);
+
+  const gala_bool_t sampleable =
+    !!(cmd->desc.bindability & GALA_BIND_TO_SAMPLER);
+
+  if (storage && sampleable)
+    // Will likely want mipmaps.
+    texture_desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+  D3D11_SUBRESOURCE_DATA data;
+
+  data.pSysMem = cmd->desc.data;
+  data.SysMemPitch = (cmd->desc.width * gala_pixel_format_stride(cmd->desc.format)) / 32;
+  data.SysMemSlicePitch = 0;
+
+  ID3D11Texture2D *texture_interface;
+
+  const HRESULT hr = engine->device->CreateTexture2D(
+    &texture_desc,
+    cmd->desc.data ? &data : NULL,
+    &texture_interface);
+
+  gala_assertf(hr == S_OK, "Unable to create texture because ID3D11Device::CreateTexture2D failed!");
+
+  // HACK(mtwilliams): Wrap without allocating.
+  gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->texture_handle);
+  gala_d3d11_texture_t *texture = (gala_d3d11_texture_t *)&resource->internal;
+  texture->interface = texture_interface;
+}
+
+static void gala_d3d11_texture_create_3d(
+  gala_d3d11_engine_t *engine,
+  const gala_create_texture_command_t *cmd)
+{
+  gala_assertf(0, "Not implemented yet!");
+}
+
+static void gala_d3d11_create_texture(
+  gala_d3d11_engine_t *engine,
+  const gala_create_texture_command_t *cmd)
+{
+  if (cmd->desc.dimensionality == GALA_ONE_DIMENSIONAL)
+    gala_d3d11_texture_create_1d(engine, cmd);
+  else if (cmd->desc.dimensionality == GALA_TWO_DIMENSIONAL)
+    gala_d3d11_texture_create_2d(engine, cmd);
+  else if (cmd->desc.dimensionality == GALA_THREE_DIMENSIONAL)
+    gala_d3d11_texture_create_3d(engine, cmd);
+}
+
+static void gala_d3d11_destroy_texture(
+  gala_d3d11_engine_t *engine,
+  const gala_destroy_texture_command_t *cmd)
+{
+  gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->texture_handle);
+
+  gala_d3d11_texture_t *texture = (gala_d3d11_texture_t *)&resource->internal;
+
+  ID3D11Resource *texture_interface = texture->interface;
+  texture_interface->Release();
+
+  gala_resource_table_free(engine->generic.resource_table, cmd->texture_handle);
+}
+
 typedef struct gala_d3d11_render_target_view {
   ID3D11RenderTargetView *interface;
 } gala_d3d11_render_target_view_t;
+
+// TODO(mtwilliams): Allow rendering into specific slices.
 
 static void gala_d3d11_render_target_view_create(
   gala_d3d11_engine_t *engine,
@@ -378,8 +486,6 @@ static void gala_d3d11_render_target_view_create(
     render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE1D;
   else if (cmd->desc.dimensionality == GALA_TWO_DIMENSIONAL)
     render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-  else if (cmd->desc.dimensionality == GALA_THREE_DIMENSIONAL)
-    render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE3D;
 
   render_target_view_desc.Texture3D.MipSlice = 0;
   render_target_view_desc.Texture3D.FirstWSlice = 0;

@@ -39,6 +39,10 @@ gala_render_target_view_handle_t gala_render_target_view_create(
   render_target_view->internal = 0;
 
   cmd->render_target_view_handle = render_target_view_handle;
+
+  gala_assert_debug((desc->dimensionality == GALA_ONE_DIMENSIONAL) ||
+                    (desc->dimensionality == GALA_TWO_DIMENSIONAL));
+
   memcpy((void *)&cmd->desc, (const void *)desc, sizeof(gala_render_target_view_desc_t));
 
   return render_target_view_handle;

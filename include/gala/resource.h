@@ -80,7 +80,7 @@ typedef enum gala_resource_type {
   GALA_RESOURCE_TYPE_FORCE_UINT32 = 0x7fffffff
 } gala_resource_type_t;
 
-typedef uint32_t gala_resource_handle_t;
+typedef gala_uint32_t gala_resource_handle_t;
 
 /// \def GALA_INVALID_RESOURCE_HANDLE
 /// \brief An invalid resource handle.
