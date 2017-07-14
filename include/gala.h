@@ -26,6 +26,8 @@
 #include "gala/resources.h"
 #include "gala/resource_table.h"
 
+#include "gala/debug.h"
+
 #include "gala/fence.h"
 
 #include "gala/command.h"

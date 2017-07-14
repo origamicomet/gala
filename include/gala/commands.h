@@ -27,6 +27,12 @@
 
 GALA_BEGIN_EXTERN_C
 
+typedef struct gala_label_command {
+  gala_command_t command;
+  gala_resource_handle_t handle;
+  char name[256];
+} gala_label_command_t;
+
 typedef struct gala_fence_command {
   gala_command_t command;
   gala_fence_t *fence;

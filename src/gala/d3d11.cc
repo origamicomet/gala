@@ -246,6 +246,37 @@ typedef struct gala_d3d11_resource {
   ID3D11Resource *interface;
 } gala_d3d11_resource_t;
 
+static void gala_d3d11_set_debug_object_name(
+  ID3D11DeviceChild *resource,
+  const char *name)
+{
+  resource->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name) - 1, name);
+}
+
+static void gala_d3d11_label(
+  gala_d3d11_engine_t *engine,
+  const gala_label_command_t *cmd)
+{
+  gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table, cmd->handle);
+
+  switch (resource->type) {
+    case GALA_RESOURCE_TYPE_TEXTURE_1D:
+    case GALA_RESOURCE_TYPE_TEXTURE_2D:
+    case GALA_RESOURCE_TYPE_TEXTURE_3D:
+    case GALA_RESOURCE_TYPE_VERTEX_BUFFER:
+    case GALA_RESOURCE_TYPE_INDEX_BUFFER:
+    case GALA_RESOURCE_TYPE_CONSTANT_BUFFER:
+    case GALA_RESOURCE_TYPE_RENDER_TARGET_VIEW:
+    case GALA_RESOURCE_TYPE_DEPTH_STENCIL_TARGET_VIEW:
+    case GALA_RESOURCE_TYPE_VERTEX_SHADER:
+    case GALA_RESOURCE_TYPE_PIXEL_SHADER: {
+      gala_d3d11_resource_t *generic = (gala_d3d11_resource_t *)&resource->internal;
+      gala_d3d11_set_debug_object_name(generic->interface, &cmd->name[0]);
+    } break;
+  }
+}
+
 static void gala_d3d11_fence_on_submission(
   gala_d3d11_engine_t *engine,
   const gala_fence_command_t *cmd)
@@ -642,6 +673,9 @@ static void gala_d3d11_engine_dispatch(
     case GALA_COMMAND_TYPE_NOP:
       // Do absolutely nothing.
       return;
+
+    case GALA_COMMAND_TYPE_LABEL:
+      return gala_d3d11_label(engine, (gala_label_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION:
       return gala_d3d11_fence_on_submission(engine, (gala_fence_command_t *)cmd);
