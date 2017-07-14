@@ -64,6 +64,19 @@ typedef struct gala_resize_swap_chain_command {
   gala_uint32_t height;
 } gala_resize_swap_chain_command_t;
 
+typedef struct gala_create_buffer_command {
+  gala_command_t command;
+  gala_buffer_handle_t buffer_handle;
+  gala_mutability_t mutability;
+  gala_uint32_t size;
+  const void *data;
+} gala_create_buffer_command_t;
+
+typedef struct gala_destroy_buffer_command {
+  gala_command_t command;
+  gala_buffer_handle_t buffer_handle;
+} gala_destroy_buffer_command_t;
+
 typedef struct gala_create_render_target_view_command {
   gala_command_t command;
   gala_render_target_view_handle_t render_target_view_handle;
@@ -108,6 +121,18 @@ typedef struct gala_clear_depth_stencil_target_command {
   gala_float32_t depth;
   gala_uint32_t stencil;
 } gala_clear_depth_stencil_target_command_t;
+
+typedef struct gala_read_from_buffer_command {
+  gala_command_t command;
+} gala_read_from_buffer_command_t;
+
+typedef struct gala_write_to_buffer_command {
+  gala_command_t command;
+  gala_buffer_handle_t buffer_handle;
+  gala_uint32_t offset;
+  gala_uint32_t length;
+  const void *data;
+} gala_write_to_buffer_command_t;
 
 typedef struct gala_present_command {
   gala_command_t command;

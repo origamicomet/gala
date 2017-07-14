@@ -1136,6 +1136,18 @@ static void gala_ogl_resize_swap_chain(
   GALA_TRAP();
 }
 
+static void gala_ogl_create_buffer(
+  gala_ogl_engine_t *engine,
+  const gala_create_buffer_command_t *cmd)
+{
+}
+
+static void gala_ogl_destroy_buffer(
+  gala_ogl_engine_t *engine,
+  const gala_destroy_buffer_command_t *cmd)
+{
+}
+
 static void gala_ogl_texture_create_1d(
   gala_ogl_engine_t *engine,
   const gala_create_texture_command_t *cmd)
@@ -1375,6 +1387,18 @@ static void gala_ogl_clear_depth_stencil_target(
   gala_ogl_reset_viewport_and_scissor(engine);
 }
 
+static void gala_ogl_read_from_buffer(
+  gala_ogl_engine_t *engine,
+  const gala_read_from_buffer_command_t *cmd)
+{
+}
+
+static void gala_ogl_write_to_buffer(
+  gala_ogl_engine_t *engine,
+  const gala_write_to_buffer_command_t *cmd)
+{
+}
+
 static void gala_ogl_read_from_texture(
   gala_ogl_engine_t *engine,
   const gala_read_from_texture_command_t *cmd)
@@ -1458,6 +1482,12 @@ static void gala_ogl_engine_dispatch(
     case GALA_COMMAND_TYPE_RESIZE_SWAP_CHAIN:
       return gala_ogl_resize_swap_chain(engine, (gala_resize_swap_chain_command_t *)cmd);
 
+    case GALA_COMMAND_TYPE_CREATE_BUFFER:
+      return gala_ogl_create_buffer(engine, (gala_create_buffer_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_DESTROY_BUFFER:
+      return gala_ogl_destroy_buffer(engine, (gala_destroy_buffer_command_t *)cmd);
+
     case GALA_COMMAND_TYPE_CREATE_TEXTURE:
       return gala_ogl_create_texture(engine, (gala_create_texture_command_t *)cmd);
 
@@ -1489,6 +1519,12 @@ static void gala_ogl_engine_dispatch(
 
     case GALA_COMMAND_TYPE_CLEAR_DEPTH_STENCIL_TARGET:
       return gala_ogl_clear_depth_stencil_target(engine, (gala_clear_depth_stencil_target_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_READ_FROM_BUFFER:
+      return gala_ogl_read_from_buffer(engine, (gala_read_from_buffer_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_WRITE_TO_BUFFER:
+      return gala_ogl_write_to_buffer(engine, (gala_write_to_buffer_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_READ_FROM_TEXTURE:
       return gala_ogl_read_from_texture(engine, (gala_read_from_texture_command_t *)cmd);
