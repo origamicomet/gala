@@ -30,4 +30,6 @@
 
 #include "gala/foundation/assert.h"
 
+#include "gala/foundation/utilities.h"
+
 #endif // _GALA_FOUNDATION_H_
