@@ -801,6 +801,407 @@ typedef struct gala_ogl_swap_chain {
   gala_uint32_t flags;
 } gala_ogl_swap_chain_t;
 
+// We maintain five pools for buffers regardless of extension availability.
+//
+// How memory is allocated and handled for the pools does differ based on
+// extension availability and the `GALA_ENGINE_FAST_AND_LOOSE` flag.
+//
+// 1) Static Indices
+// 2) Static Vertices
+// 3) Dynamic Indices
+// 4) Dynamic Verticies
+// 5) Constants
+
+#define GALA_OGL_NUM_BUFFER_POOLS 5
+
+#define GALA_OGL_STATIC_INDICES 0
+#define GALA_OGL_STATIC_VERTICES 1
+#define GALA_OGL_DYNAMIC_INDICES 2
+#define GALA_OGL_DYNAMIC_VERTICES 3
+#define GALA_OGL_CONSTANTS 4
+
+// TODO(mtwilliams): Maintain a copy of `memory` for dynamic resize?
+// TODO(mtwilliams): Use native width types for occupancy bitset.
+
+typedef struct gala_ogl_buffer_pool {
+  // Index, vertex, or constant buffer?
+  gala_uint32_t type;
+
+  // Size of pool in bytes.
+  gala_uint32_t size;
+
+  // Size of leaf in bytes.
+  gala_uint32_t leaf;
+
+  // Maximum number of levels. Derived from `size` and `leaf`.
+  gala_uint32_t levels;
+  gala_uint32_t levels_minus_one;
+
+  // Total number of blocks.
+  gala_uint32_t blocks;
+
+  // Chunk of memory to allocate from. May be `NULL` if writes are direct.
+  void *memory;
+
+  // Indicates if we own `memory` and should free it.
+  gala_bool_t owner_of_memory;
+
+  // Bitset indicating a block is not in use.
+  gala_uint32_t *unoccupied;
+
+  // Bitset indicating if a block has been split.
+  gala_uint32_t *split;
+
+  // Name of the shared buffer object.
+  gala_uint32_t id;
+
+  // Target and usage of shared buffer object.
+  gala_uint32_t target;
+  gala_uint32_t usage;
+
+  // Indicates if a complete flush is required prior to use.
+  gala_bool_t dirty;
+
+  // Statistics tracked for internal heuristics.
+  gala_uint64_t writes;
+  gala_uint64_t writes_this_frame;
+  gala_uint64_t flushes;
+  gala_uint64_t flushes_this_frame;
+} gala_ogl_buffer_pool_t;
+
+static void gala_ogl_buffer_pool_create(
+  gala_ogl_buffer_pool_t *pool,
+  gala_uint32_t type,
+  gala_uint32_t size,
+  gala_bool_t fast_and_loose)
+{
+  gala_assert_debug(pool != NULL);
+
+  pool->type = type;
+
+  pool->size = size;
+  pool->leaf = 256;
+
+  gala_assert_debug(GALA_IS_POWER_OF_TWO(pool->size));
+  gala_assert_debug(GALA_IS_POWER_OF_TWO(pool->leaf));
+
+  pool->levels = gala_log2ul(pool->size / pool->leaf) + 1;
+  pool->levels_minus_one = pool->levels - 1;
+
+  pool->blocks = (1 << pool->levels) - 1;
+
+  switch (pool->type) {
+    case GALA_OGL_STATIC_INDICES:
+    case GALA_OGL_DYNAMIC_INDICES: {
+      const gala_bool_t dynamic = (pool->type == GALA_OGL_DYNAMIC_INDICES);
+      pool->target = GL_ELEMENT_ARRAY_BUFFER;
+      pool->usage = dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
+    } break;
+
+    case GALA_OGL_STATIC_VERTICES:
+    case GALA_OGL_DYNAMIC_VERTICES: {
+      const gala_bool_t dynamic = (pool->type == GALA_OGL_DYNAMIC_INDICES);
+      pool->target = GL_ARRAY_BUFFER;
+      pool->usage = dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
+    } break;
+
+    case GALA_OGL_CONSTANTS: {
+      pool->target = GL_UNIFORM_BUFFER;
+      pool->usage = GL_STREAM_DRAW;
+    } break;
+  }
+
+  glGenBuffers(1, &pool->id);
+  glBindBuffer(pool->target, pool->id);
+
+  if (pool->type != GALA_OGL_CONSTANTS) {
+    if (GL_ARB_buffer_storage) {
+      glBufferStorage(pool->target, pool->size, NULL, GL_DYNAMIC_STORAGE_BIT |
+                                                      GL_MAP_WRITE_BIT |
+                                                      GL_MAP_PERSISTENT_BIT);
+
+      pool->memory =
+        glMapBufferRange(pool->target,0, pool->size, GL_MAP_WRITE_BIT |
+                                                     GL_MAP_PERSISTENT_BIT |
+                                                     GL_MAP_INVALIDATE_BUFFER_BIT |
+                                                     GL_MAP_FLUSH_EXPLICIT_BIT);
+
+      gala_assert(pool->memory != NULL);
+    } else {
+      glBufferData(pool->target, pool->size, NULL, pool->usage);
+
+      if (fast_and_loose) {
+        // HACK(mtwilliams): Treat `GL_MAP_UNSYNCHRONIZED_BIT` the same as a
+        // persistently mapped buffer.
+        pool->memory =
+          glMapBufferRange(pool->target,0, pool->size, GL_MAP_WRITE_BIT |
+                                                       GL_MAP_UNSYNCHRONIZED_BIT |
+                                                       GL_MAP_INVALIDATE_BUFFER_BIT |
+                                                       GL_MAP_FLUSH_EXPLICIT_BIT);
+        
+        gala_assert(pool->memory != NULL);
+      } else {
+        pool->memory = NULL;
+      }
+    }
+
+    pool->owner_of_memory = false;
+  } else {
+    pool->memory = calloc(1, pool->size);
+    pool->owner_of_memory = true;
+    memset(pool->memory, 0, pool->size);
+  }
+
+  pool->dirty = false;
+
+  // We only have 1.5 bits of overhead per block! We could reduce this to 1 bit
+  // of overhead per block by storing `a_is_allocated ^ b_is_allocated`.
+  // However that comes at the cost of a more complicated allocation strategy
+  // because we can't do a linear search to find the first available block.
+  const gala_uint32_t bits_for_occupancy = (1 << (pool->levels - 1)) - 1;
+  const gala_uint32_t bits_for_splits = (1 << pool->levels) - 1;
+
+  // We pad the allocation to a word boundary, as we perform bit operations
+  // on words not bits.
+  const gala_uint32_t bytes_for_occupancy =
+    GALA_ALIGN_TO_BOUNDARY(GALA_BITS_TO_BYTES(bits_for_occupancy), 4);
+  const gala_uint32_t bytes_for_splits =
+    GALA_ALIGN_TO_BOUNDARY(GALA_BITS_TO_BYTES(bits_for_splits), 4);
+
+  // Both bitsets are allocated separately, rather than reserving a portion of
+  // the pool as is common with buddy allocators because we have no guarantees
+  // about `pool->memory`.
+  pool->unoccupied = (gala_uint32_t *)calloc(1, bytes_for_occupancy);
+  pool->split = (gala_uint32_t *)calloc(1, bytes_for_splits);
+
+  // We set bits for unoccupied blocks. This drastically simplifies search
+  // for a suitable unoccupied block.
+  memset((void *)pool->unoccupied, 1, bytes_for_occupancy);
+
+  pool->writes = 0;
+  pool->writes_this_frame = 0;
+  pool->flushes = 0;
+  pool->flushes_this_frame = 0;
+}
+
+static void gala_ogl_buffer_pool_destroy(
+  gala_ogl_buffer_pool_t *pool)
+{
+  gala_assert_debug(pool != NULL);
+
+  glDeleteBuffers(1, &pool->id);
+  
+  if (pool->owner_of_memory)
+    free(pool->memory);
+
+  free((void *)pool->unoccupied);
+  free((void *)pool->split);
+}
+
+static gala_uint32_t gala_ogl_buffer_pool_allocate(
+  gala_ogl_buffer_pool_t *pool,
+  gala_size_t size)
+{
+  gala_assert_debug(pool != NULL);
+  gala_assert_debug(size <= pool->size);
+  gala_assert_debug(size <= 0xFFFFFFFFul);
+
+  const gala_uint32_t level = gala_log2ul_ceil(size) - 1;
+
+  const gala_uint32_t first = (1 << level) - 1;
+  const gala_uint32_t last  = 2 * first;
+
+  const gala_uint32_t f_word = first / 32;
+  const gala_uint32_t l_word = last / 32;
+
+  const gala_uint32_t f_bit = first % 32;
+  const gala_uint32_t l_bit = last % 32;
+
+  const gala_uint32_t f_mask = (f_bit < 31) ? ~((1 << (f_bit + 1)) - 1) : ~0;
+  const gala_uint32_t l_mask = (l_bit < 31) ? ((1 << (l_bit + 1)) - 1) : ~0;
+
+  // Sometimes the first and last bits are in same word. We take care to
+  // mask appropriately so as not to search preceding and following levels.
+  const gala_uint32_t same = (last - first) > (31 - f_bit);
+  const gala_uint32_t f_mask_corrected = f_mask & (l_mask | ~same);
+  const gala_uint32_t l_mask_corrected = l_mask & (f_mask | ~same);
+
+  gala_uint32_t block = 0;
+
+  // First word.
+  const gala_uint32_t f_word_masked = pool->unoccupied[f_word] & f_mask_corrected;
+  if (block = f_word_masked ? (gala_ctzul(f_word_masked) + f_word * 32) : 0)
+    goto found;
+
+  // Middle words, if any.
+  for (gala_uint32_t word = f_word + 1; word < l_word; ++word) {
+    const gala_uint32_t candidates = pool->unoccupied[word];
+    if (block = candidates ? (gala_ctzul(candidates) + word * 32) : 0)
+      goto found;
+  }
+
+  // Last word.
+  const gala_uint32_t l_word_masked = pool->unoccupied[l_word] & l_mask_corrected;
+  if (block = l_word_masked ? (gala_ctzul(l_word_masked) + l_word * 32) : 0)
+    goto found;
+
+  // No space. Bummer.
+  return 0;
+
+found:
+  // PERF(mtwilliams): Update parent and children bits a word at a time.
+  // PERF(mtwilliams): Use division remainder to calculate parent instead of
+  // relying on the compiler to optimize for us.
+
+  // Mark as occupied.
+  pool->unoccupied[block / 32] &= ~(1 << (block % 32));
+
+  // Mark parents as occupied and split.
+  for (gala_uint32_t parent = 0; parent; parent = (parent / 2) - (1 - (parent % 2))) {
+    pool->unoccupied[parent / 32] &= ~(1 << (parent % 32));
+    pool->split[parent / 32] |= 1 << (parent % 32);  
+  }
+
+  // Mark children as occupied.
+  const gala_uint32_t blocks = pool->blocks;
+  for (gala_uint32_t child = block * 2 + 1; child < blocks; child = child * 2 + 1) {
+    pool->unoccupied[child / 32] &= ~(1 << (child % 32));
+  }
+
+  return block + 1;
+}
+
+static void gala_ogl_buffer_pool_free(
+  gala_ogl_buffer_pool_t *pool,
+  gala_uint32_t id)
+{
+  gala_assert_debug(pool != NULL);
+  gala_assert_debug(id != 0);
+
+  const gala_uint32_t block = id - 1;
+
+  // Sanity check the block is in bounds.
+  gala_assert_debug(block < pool->blocks);
+
+  // Sanity check the block is occupied but not split, indicating the block
+  // was allocated.
+  gala_assert_debug(pool->unoccupied[block / 32] & (1 << (block % 32)));
+  gala_assert_debug(!(pool->split[block / 32] & (1 << (block % 32))));
+  
+  // Mark as unoccupied.
+  pool->unoccupied[block / 32] |= (1 << (block % 32));
+
+  // Mark children as unoccupied.
+  const gala_uint32_t blocks = pool->blocks;
+  for (gala_uint32_t child = block * 2 + 1; child < blocks; child = child * 2 + 1) {
+    pool->unoccupied[child / 32] |= (1 << (child % 32));
+  }
+
+  // Mark parent as unoccupied and unsplit if buddy is unoccupied.
+  for (gala_uint32_t child = block; child > 0;) {
+    const gala_uint32_t left = (child % 2);
+    const gala_uint32_t buddy = left ? (child - 1) : (child + 1);
+    const gala_bool_t mergeable = (pool->unoccupied[buddy / 32] & (1 << (buddy % 32))) > 0;
+
+    if (!mergeable)
+      return;
+
+    const gala_uint32_t parent = (child / 2) - (1 - left);
+
+    pool->unoccupied[parent / 32] |= (1 << (parent % 32));
+    pool->split[parent / 32] &= ~(1 << (parent % 32));
+
+    child = parent;
+  }
+}
+
+static void gala_ogl_buffer_pool_lookup(
+  const gala_ogl_buffer_pool_t *pool,
+  gala_uint32_t id,
+  gala_uintptr_t *offset,
+  gala_size_t *size)
+{
+  gala_assert_debug(pool != NULL);
+  gala_assert_debug(id != 0);
+
+  const gala_uint32_t block = id - 1;
+
+  const gala_uint32_t level = gala_log2ul(block);
+  const gala_uint32_t size_at_level = pool->size / (1 << level);
+
+  if (offset)
+    *offset = size_at_level * ((1 << level) - block - 1);
+  if (size)
+    *size = size_at_level;
+}
+
+// TODO(mtwilliams): If the constants pool is flushed more than once in a
+// frame raise a warning.
+// PERF(mtwilliams): If the constants pool is flushed more than once in a
+// frame then switch to `glBufferSubData` or drop the buffer entirely.
+// PERF(mtwilliams): Double or triple buffer dynamic buffers to prevent
+// blocking.
+
+typedef struct gala_ogl_buffer {
+  // Pool this buffer was allocated from.
+  gala_uint32_t pool;
+
+  // Identifier pointing to allocated region.
+  gala_uint32_t id;
+
+  // Memory region where the buffer was sub-allocated.
+  gala_uintptr_t offset;
+  gala_size_t size;
+
+  // Read and write fences we wait on to prevent hazards.
+  struct {
+    void *read;
+    void *write;
+  } fences;
+
+  // TODO(mtwilliams): Track name internally.
+} gala_ogl_buffer_t;
+
+static void gala_ogl_buffer_write(
+  gala_ogl_buffer_pool_t *pool,
+  gala_ogl_buffer_t *buffer,
+  gala_size_t offset,
+  gala_size_t length,
+  const void *data)
+{
+  // TODO(mtwilliams): Coalesce flushes.
+  // TODO(mtwilliams): Obey fences.
+  // TODO(mtwilliams): Use named variants if available.
+
+  gala_assert_debug(pool != NULL);
+  gala_assert_debug(buffer != NULL);
+  gala_assert_debug(offset + length <= buffer->size);
+
+  const gala_uintptr_t offset_in_pool = buffer->offset + offset;
+
+  if (pool->memory) {
+    memcpy((void *)((gala_uintptr_t)pool->memory + offset_in_pool), data, length);
+
+    if (pool->owner_of_memory) {
+      // We flush writes for our constant buffer as late as possible. Ideally
+      // once a frame.
+      pool->dirty = true;
+    } else {
+      glBindBuffer(pool->target, pool->id);
+      glFlushMappedBufferRange(pool->target, offset_in_pool, length);
+
+      pool->flushes += 1;
+      pool->flushes_this_frame += 1;
+    }
+  } else {
+    glBindBuffer(pool->target, pool->id);
+    glBufferSubData(pool->target, offset_in_pool, length, data);
+  }
+
+  pool->writes += 1;
+  pool->writes_this_frame += 1;
+}
+
 typedef struct gala_ogl_texture {
 } gala_ogl_texture_t;
 
@@ -854,6 +1255,10 @@ typedef struct gala_ogl_engine {
     gala_ogl_render_target_view_t *render_targets[8];
     gala_ogl_depth_stencil_target_view_t *depth_stencil_target;
   } state;
+
+  struct {
+    gala_ogl_buffer_pool_t buffers[GALA_OGL_NUM_BUFFER_POOLS];
+  } pools;
 
   struct {
     gala_uint64_t frame;
@@ -964,13 +1369,36 @@ gala_engine_t *gala_ogl_create_and_init_engine(
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
-  if (engine_creation_params->flags & GALA_ENGINE_FAST_AND_LOOSE) {
-    // If `ARB_buffer_storage` is not available, fallback to persistently
-    // mapping with `GL_UNSYNCRONIZED_BIT`.
-  } else {
-    // If `ARB_buffer_storage` is not available, fallback to mapping and
-    // unmapping.
-  }
+  // TODO(mtwilliams): Grow pools dynamically.
+  // TODO(mtwilliams): Accept hints about pool size.
+  // TODO(mtwilliams): Data drive pool initialization.
+
+  const gala_bool_t fast_and_loose = !!(engine_creation_params->flags & GALA_ENGINE_FAST_AND_LOOSE);
+
+  gala_ogl_buffer_pool_create(&engine->pools.buffers[GALA_OGL_STATIC_INDICES],
+                              GALA_OGL_STATIC_INDICES,
+                              0x2000000 /* 32MiB */,
+                              fast_and_loose);
+
+  gala_ogl_buffer_pool_create(&engine->pools.buffers[GALA_OGL_STATIC_VERTICES],
+                              GALA_OGL_STATIC_VERTICES,
+                              0x2000000 /* 32MiB */,
+                              fast_and_loose);
+
+  gala_ogl_buffer_pool_create(&engine->pools.buffers[GALA_OGL_DYNAMIC_INDICES],
+                              GALA_OGL_DYNAMIC_INDICES,
+                              0x100000 /* 1MiB */,
+                              fast_and_loose);
+
+  gala_ogl_buffer_pool_create(&engine->pools.buffers[GALA_OGL_DYNAMIC_VERTICES],
+                              GALA_OGL_DYNAMIC_VERTICES,
+                              0x100000 /* 1MiB */,
+                              fast_and_loose);
+
+  gala_ogl_buffer_pool_create(&engine->pools.buffers[GALA_OGL_CONSTANTS],
+                              GALA_OGL_CONSTANTS,
+                              0x100000 /* 1MiB */,
+                              fast_and_loose);
 
   return &engine->generic;
 }
@@ -992,6 +1420,12 @@ void gala_ogl_destroy_engine(
   // deletion.
   gala_wgl_bind(NULL, NULL);
 #endif
+
+  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_STATIC_INDICES]);
+  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_STATIC_VERTICES]);
+  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_DYNAMIC_INDICES]);
+  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_DYNAMIC_VERTICES]);
+  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_CONSTANTS]);
 
   gala_ogl_destroy_context(engine, engine->context);
   // gala_ogl_destroy_context(engine, engine->async);
@@ -1051,6 +1485,11 @@ static void gala_ogl_end_of_frame(
 
     cmd->statistics->build = cmd->timestamp - engine->statistics.start_of_build; 
     cmd->statistics->submission = 0 /* NOW() */ - engine->statistics.start_of_submission; 
+
+    for (gala_uint32_t pool = 0; pool < GALA_OGL_NUM_BUFFER_POOLS; ++pool) {
+      cmd->statistics->buffers.writes += engine->pools.buffers[pool].writes_this_frame;
+      cmd->statistics->buffers.flushes += engine->pools.buffers[pool].flushes_this_frame;
+    }
   }
 
   engine->statistics.frame = 0;
@@ -1140,12 +1579,49 @@ static void gala_ogl_create_buffer(
   gala_ogl_engine_t *engine,
   const gala_create_buffer_command_t *cmd)
 {
+  gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table,
+                               cmd->buffer_handle);
+
+  // PERF(mtwilliams): Allocate from a pool.
+  gala_ogl_buffer_t *buffer =
+    (gala_ogl_buffer_t *)calloc(sizeof(gala_ogl_buffer_t), 1);
+
+  resource->internal = (gala_uintptr_t)buffer;
+
+  const gala_bool_t immutable = (cmd->mutability == GALA_IMMUTABLE);
+
+  if (resource->type == GALA_RESOURCE_TYPE_INDEX_BUFFER) {
+    buffer->pool = immutable ? GALA_OGL_STATIC_INDICES
+                             : GALA_OGL_DYNAMIC_INDICES;
+  } else if (resource->type == GALA_RESOURCE_TYPE_VERTEX_BUFFER) {
+    buffer->pool = immutable ? GALA_OGL_STATIC_VERTICES
+                             : GALA_OGL_DYNAMIC_VERTICES;
+  } else if (resource->type == GALA_RESOURCE_TYPE_CONSTANT_BUFFER) {
+    buffer->pool = GALA_OGL_CONSTANTS;
+  }
+
+  gala_ogl_buffer_pool_t *pool = &engine->pools.buffers[buffer->pool];
+
+  buffer->id = gala_ogl_buffer_pool_allocate(pool, cmd->size);
+  gala_ogl_buffer_pool_lookup(pool, buffer->id, &buffer->offset, NULL);
+
+  if (cmd->data) {
+    gala_ogl_buffer_write(pool, buffer, 0, cmd->size, cmd->data);
+  }
 }
 
 static void gala_ogl_destroy_buffer(
   gala_ogl_engine_t *engine,
   const gala_destroy_buffer_command_t *cmd)
 {
+  gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->buffer_handle);
+  gala_ogl_buffer_t *buffer = (gala_ogl_buffer_t *)resource->internal;
+
+  gala_ogl_buffer_pool_t *pool = &engine->pools.buffers[buffer->pool];
+  gala_ogl_buffer_pool_free(pool, buffer->id);
+
+  free((void *)buffer);
 }
 
 static void gala_ogl_texture_create_1d(
@@ -1397,6 +1873,15 @@ static void gala_ogl_write_to_buffer(
   gala_ogl_engine_t *engine,
   const gala_write_to_buffer_command_t *cmd)
 {
+  gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->buffer_handle);
+
+  gala_ogl_buffer_t *buffer = (gala_ogl_buffer_t *)&resource->internal;
+  gala_ogl_buffer_pool_t *pool = &engine->pools.buffers[buffer->pool];
+
+  gala_assert_debug(buffer->pool != GALA_OGL_STATIC_INDICES ||
+                    buffer->pool != GALA_OGL_STATIC_VERTICES);
+
+  gala_ogl_buffer_write(pool, buffer, cmd->offset, cmd->length, cmd->data);
 }
 
 static void gala_ogl_read_from_texture(
