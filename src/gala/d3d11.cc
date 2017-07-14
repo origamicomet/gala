@@ -150,15 +150,15 @@ static void gala_mutability_to_d3d11(const gala_mutability_t mutability,
                                             D3D11_USAGE *usage,
                                             UINT *cpu_access_flags) {
   switch (mutability) {
-    case GALA_MUTABILITY_IMMUTABLE:
+    case GALA_IMMUTABLE:
       *usage = D3D11_USAGE_IMMUTABLE;
       *cpu_access_flags = 0;
       break;
-    case GALA_MUTABILITY_MUTABLE:
+    case GALA_MUTABLE:
       *usage = D3D11_USAGE_DEFAULT;
       *cpu_access_flags = 0;
       break;
-    case GALA_MUTABILITY_DYNAMIC:
+    case GALA_DYNAMIC:
       *usage = D3D11_USAGE_DYNAMIC;
       *cpu_access_flags = D3D11_CPU_ACCESS_WRITE;
       break;

@@ -46,11 +46,11 @@ typedef enum gala_resource_type {
   /// A buffer.
   GALA_RESOURCE_TYPE_BUFFER = 0x200,
 
-  /// A vertex buffer.
-  GALA_RESOURCE_TYPE_VERTEX_BUFFER = GALA_RESOURCE_TYPE_BUFFER | 1,
-
   /// An index Buffer.
-  GALA_RESOURCE_TYPE_INDEX_BUFFER = GALA_RESOURCE_TYPE_BUFFER | 2,
+  GALA_RESOURCE_TYPE_INDEX_BUFFER = GALA_RESOURCE_TYPE_BUFFER | 1,
+
+  /// A vertex buffer.
+  GALA_RESOURCE_TYPE_VERTEX_BUFFER = GALA_RESOURCE_TYPE_BUFFER | 2,
 
   /// A constant Buffer.
   GALA_RESOURCE_TYPE_CONSTANT_BUFFER = GALA_RESOURCE_TYPE_BUFFER | 3,
@@ -107,12 +107,12 @@ typedef enum gala_dimensionality {
 typedef enum gala_mutability {
   /// Readable by the GPU.
   /// \note Initialized upon creation and cannot be modified after.
-  GALA_MUTABILITY_IMMUTABLE = 0,
+  GALA_IMMUTABLE = 0,
   /// Readable from and writeable to by the GPU.
-  GALA_MUTABILITY_MUTABLE = 1,
+  GALA_MUTABLE = 1,
   /// Written to by CPU and read from by the GPU.
   /// \note Ideal for a resource that is updated each frame.
-  GALA_MUTABILITY_DYNAMIC = 2,
+  GALA_DYNAMIC = 2,
   /// \internal Force gala_uint32_t storage and alignment.
   GALA_MUTABILITY_TYPE_FORCE_UINT32 = 0x7fffffff
 } gala_mutability_t;
@@ -216,14 +216,14 @@ static const Dimensionality THREE_DIMENSIONAL = ::GALA_THREE_DIMENSIONAL;
 /// \copydoc ::gala_mutability_t
 typedef gala_mutability_t Mutability;
 
-/// \copydoc ::GALA_MUTABILITY_MUTABLE
-static const Mutability MUTABLE = ::GALA_MUTABILITY_MUTABLE;
+/// \copydoc ::GALA_IMMUTABLE
+static const Mutability IMMUTABLE = ::GALA_IMMUTABLE;
 
-/// \copydoc ::GALA_MUTABILITY_IMMUTABLE
-static const Mutability IMMUTABLE = ::GALA_MUTABILITY_IMMUTABLE;
+/// \copydoc ::GALA_MUTABLE
+static const Mutability MUTABLE = ::GALA_MUTABLE;
 
-/// \copydoc ::GALA_MUTABILITY_DYNAMIC
-static const Mutability DYNAMIC = ::GALA_MUTABILITY_DYNAMIC;
+/// \copydoc ::GALA_DYNAMIC
+static const Mutability DYNAMIC = ::GALA_DYNAMIC;
 
 /// \copydoc ::gala_bindability_t
 typedef gala_bindability_t Bindability;
