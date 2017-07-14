@@ -49,7 +49,19 @@ namespace test {
 } // test
 } // gala
 
+// TODO(mtwilliams): Improve assertion handler.
+static void _assertion_handler(const gala_assertion_t *assertion, void *) {
+  ::fprintf(stderr, "Assertion failed!\n");
+  ::fprintf(stderr, " predicate=\"%s\"\n", assertion->predicate);
+  if (assertion->reason)
+    ::fprintf(stderr, " reason=\"%s\"\n", assertion->reason);
+  ::fprintf(stderr, " file=\"%s\" line=%u\n\n", assertion->location.file, (unsigned int)assertion->location.line);
+  ::exit(EXIT_FAILURE);
+}
+
 int main(int argc, const char *argv[]) {
+  gala_set_assertion_handler(&_assertion_handler, NULL);
+
   const gala_uint32_t num_backends = sizeof(gala::test::backends) / sizeof(gala::test::backends[0]);
   const gala_uint32_t num_test_suites = sizeof(gala::test::suites) / sizeof(gala::test::suites[0]);
 
