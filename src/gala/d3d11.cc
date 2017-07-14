@@ -669,8 +669,8 @@ void gala_d3d11_engine_execute(
 
   gala_assert_debug(engine->meta.backend == GALA_BACKEND_D3D11);
 
-  uintptr_t current = commands->start;
-  const uintptr_t last = commands->current;
+  gala_uintptr_t current = commands->start;
+  const gala_uintptr_t last = commands->current;
 
   while (current < last) {
     const gala_command_t *command = (gala_command_t *)current;

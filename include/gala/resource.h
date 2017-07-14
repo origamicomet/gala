@@ -90,7 +90,7 @@ typedef gala_uint32_t gala_resource_handle_t;
 typedef struct gala_resource {
   gala_uint16_t type;
   gala_uint16_t meta;
-  uintptr_t internal;
+  gala_uintptr_t internal;
 } gala_resource_t;
 
 typedef enum gala_dimensionality {

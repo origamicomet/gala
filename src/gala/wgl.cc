@@ -456,7 +456,7 @@ typedef struct gala_wgl_surface {
 
 gala_wgl_surface_t *gala_wgl_create_surface(
   gala_wgl_context_t *context,
-  uintptr_t window,
+  gala_uintptr_t window,
   gala_uint32_t flags)
 {
   gala_assert_debug(context != NULL);

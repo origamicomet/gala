@@ -82,7 +82,7 @@ typedef enum gala_wgl_surface_flags {
 extern GALA_LOCAL
 gala_wgl_surface_t *gala_wgl_create_surface(
   gala_wgl_context_t *context,
-  uintptr_t window,
+  gala_uintptr_t window,
   gala_uint32_t flags);
 
 extern GALA_LOCAL

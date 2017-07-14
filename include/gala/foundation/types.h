@@ -31,6 +31,10 @@ GALA_BEGIN_EXTERN_C // {
 
 typedef size_t gala_size_t;
 
+typedef uintptr_t gala_uintptr_t;
+typedef size_t gala_size_t;
+typedef ptrdiff_t gala_ptrdiff_t;
+
 typedef int8_t gala_int8_t;
 typedef uint8_t gala_uint8_t;
 typedef int16_t gala_int16_t;

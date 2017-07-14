@@ -1011,7 +1011,7 @@ static void gala_ogl_swap_chain_create(
 #endif
 
   gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->swap_chain_handle);
-  resource->internal = (uintptr_t)swap_chain;
+  resource->internal = (gala_uintptr_t)swap_chain;
 }
 
 static void gala_ogl_swap_chain_destroy(
@@ -1073,7 +1073,7 @@ static void gala_ogl_render_target_view_create(
     (gala_ogl_render_target_view_t *)calloc(sizeof(gala_ogl_render_target_view_t), 1);
 
   gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->render_target_view_handle);
-  resource->internal = (uintptr_t)render_target_view;
+  resource->internal = (gala_uintptr_t)render_target_view;
 
   render_target_view->format = cmd->desc.format;
 
@@ -1397,8 +1397,8 @@ void gala_ogl_engine_execute(
 
   gala_assert_debug(engine->meta.backend == GALA_BACKEND_OPENGL);
 
-  uintptr_t current = commands->start;
-  const uintptr_t last = commands->current;
+  gala_uintptr_t current = commands->start;
+  const gala_uintptr_t last = commands->current;
 
   while (current < last) {
     const gala_command_t *command = (gala_command_t *)current;

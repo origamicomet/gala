@@ -24,13 +24,13 @@ GALA_BEGIN_EXTERN_C
 /// \brief A user-controlled slice of memory used to queue up commands.
 typedef struct gala_command_buffer {
   /// The lowest address of the command-buffer.
-  uintptr_t start;
+  gala_uintptr_t start;
 
   /// The highest address of the command-buffer.
-  uintptr_t end;
+  gala_uintptr_t end;
 
   /// The lowest unoccupied address of the command-buffer.
-  uintptr_t current;
+  gala_uintptr_t current;
 
   /// \brief Called when there is not enough space left in the command buffer
   /// to accommodate a new command.

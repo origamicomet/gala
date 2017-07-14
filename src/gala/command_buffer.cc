@@ -29,9 +29,9 @@ void gala_command_buffer_init(
 {
   gala_assert_debug(command_buffer != NULL);
 
-  command_buffer->start = (uintptr_t)NULL;
-  command_buffer->end = (uintptr_t)NULL;
-  command_buffer->current = (uintptr_t)NULL;
+  command_buffer->start = (gala_uintptr_t)NULL;
+  command_buffer->end = (gala_uintptr_t)NULL;
+  command_buffer->current = (gala_uintptr_t)NULL;
 
   command_buffer->exhausted = &_assert_on_exhaustion;
 }
@@ -68,7 +68,7 @@ CommandBuffer::CommandBuffer() {
     static bool exhausted(::gala_command_buffer_t *faux_command_buffer) {
       // Reconstruct pointer to `this` with black magicks.
       const size_t offset = offsetof(CommandBuffer, __command_buffer__);
-      CommandBuffer *command_buffer = (CommandBuffer *)((uintptr_t)faux_command_buffer - offset);
+      CommandBuffer *command_buffer = (CommandBuffer *)((gala_uintptr_t)faux_command_buffer - offset);
       return command_buffer->exhausted();
     }
   };

@@ -58,8 +58,8 @@ typedef struct gala_swap_chain_desc {
   ///
   gala_uint32_t flags;
 
-  ///
-  uintptr_t surface;
+  /// ...
+  gala_uintptr_t surface;
 } gala_swap_chain_desc_t;
 
 /// \def GALA_INVALID_SWAP_CHAIN_HANDLE
