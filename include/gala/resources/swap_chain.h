@@ -27,9 +27,13 @@ typedef gala_resource_handle_t gala_swap_chain_handle_t;
 
 typedef enum gala_swap_chain_flags {
   /// Fullscreen.
-  GALA_SWAP_CHAIN_FULLSCREEN = (1 << 0),
+  GALA_SWAP_CHAIN_FULLSCREEN   = (1 << 0),
   /// Borderless if fullscreen.
-  GALA_SWAP_CHAIN_BORDERLESS = (1 << 1)
+  GALA_SWAP_CHAIN_BORDERLESS   = (1 << 1),
+  /// Synchronize to vertical blanks.
+  GALA_SWAP_CHAIN_SYNCHRONIZE  = (1 << 2),
+  /// Tear if below refresh rate.
+  GALA_SWAP_CHAIN_TEAR_ON_MISS = (1 << 3)
 } gala_swap_chain_flags_t;
 
 typedef struct gala_swap_chain_desc {

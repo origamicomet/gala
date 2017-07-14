@@ -739,6 +739,8 @@ typedef struct gala_ogl_swap_chain {
   // Ostensibly a window.
   gala_wgl_surface_t *surface;
 #endif
+
+  gala_uint32_t flags;
 } gala_ogl_swap_chain_t;
 
 typedef struct gala_ogl_texture {
@@ -1011,6 +1013,8 @@ static void gala_ogl_swap_chain_create(
 
   swap_chain->surface = gala_wgl_create_surface(engine->context, cmd->desc.surface, flags);
 #endif
+
+  swap_chain->flags = cmd->desc.flags;
 
   gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->swap_chain_handle);
   resource->internal = (gala_uintptr_t)swap_chain;
@@ -1304,8 +1308,14 @@ static void gala_ogl_present(
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glBlitFramebuffer(0, 0, swap_chain->width, swap_chain->height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
+  gala_uint32_t flags = 0x00000000;
+  if (swap_chain->flags & GALA_SWAP_CHAIN_SYNCHRONIZE)
+    flags |= GALA_WGL_PRESENT_SYNCHRONIZE;
+  if (swap_chain->flags & GALA_SWAP_CHAIN_TEAR_ON_MISS)
+    flags |= GALA_WGL_PRESENT_TEAR_ON_MISS;
+
   // Swap.
-  gala_wgl_present(1, &swap_chain->surface, 0x00000000);
+  gala_wgl_present(1, &swap_chain->surface, flags);
 
   // Reset state.
   gala_wgl_bind(engine->context, NULL);
