@@ -886,8 +886,10 @@ gala_engine_t *gala_ogl_create_and_init_engine(
   // See `gala_ogl_present` for details.
   glDrawBuffer(GL_BACK);
 
-  // HACK(mtwilliams): OpenGL 3.2 onwards no longer provides an implict vertex
-  // array object, but requires a vertex array object for vertex specification.
+  // HACK(mtwilliams): OpenGL 3.2 onwards no longer provides an implicit vertex
+  // array object, but requires a vertex array object for vertex specification,
+  // so we mimic that behavior by generating our own implict vertex array
+  // object.
   gala_uint32_t vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
@@ -1279,21 +1281,14 @@ static void gala_ogl_write_to_texture(
 {
 }
 
+// TODO(mtwilliams): Allow users to swap as a group by refactoring to accept more than one swap chain?
 static void gala_ogl_present(
   gala_ogl_engine_t *engine,
   const gala_present_command_t *cmd)
 {
-  // TODO(mtwilliams): Allow users to swap as a group by refactoring to accept
-  // more than one swap chain?
-   // If we don't have swap groups, we can:
-   //  * Swap the first with an interval of 1.
-   //  * Then swap the rest with an interval of -1, i.e. tear if we miss.
-   // Can `wglSwapMultipleBuffers` be leveraged as a fallback?
   // TODO(mtwilliams): Resolve swap chain if multisampling.
    // GL_EXT_framebuffer_multisample_blit_scaled
-  // TODO(mtwilliams): Force a flush?
-  // TODO(mtwilliams): Determine if masking applies to `glBlitFramebuffer`.
-
+  
   gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->swap_chain_handle);
   gala_ogl_swap_chain_t *swap_chain = (gala_ogl_swap_chain_t *)resource->internal;
 

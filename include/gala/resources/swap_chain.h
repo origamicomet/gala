@@ -33,7 +33,7 @@ typedef enum gala_swap_chain_flags {
 } gala_swap_chain_flags_t;
 
 typedef struct gala_swap_chain_desc {
-  /// Back buffer format.
+  /// Back-buffer format.
   gala_pixel_format_t format;
 
   /// \defgroup Dimensions */
@@ -43,19 +43,14 @@ typedef struct gala_swap_chain_desc {
   /// @}
 
   // TODO(mtwilliams): Refactor into `gala_rational_t`?
-  // TODO(mtwilliams): Replace with `GALA_SWAP_CHAIN_VERTICAL_SYNC`.
-   // Also expose `GALA_SWAP_CHAIN_TEAR_ON_MISS`.
 
   /// Refresh rate.
-  ///
-  /// \note To refresh as fast as possible set both the numerator and the
-  /// denominator to zero.
   struct {
     gala_uint32_t numerator;
     gala_uint32_t denominator;
   } refresh_rate;
 
-  ///
+  /// \copydoc gala_swap_chain_flags_t
   gala_uint32_t flags;
 
   /// ...

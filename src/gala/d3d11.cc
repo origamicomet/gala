@@ -597,17 +597,40 @@ static void gala_d3d11_clear_depth_stencil_target(
   engine->immediate_context->ClearDepthStencilView(engine->state.depth_stencil_target, clear_flags, cmd->depth, cmd->stencil);
 }
 
+static void gala_d3d11_read_from_texture(
+  gala_d3d11_engine_t *engine,
+  const gala_read_from_texture_command_t *cmd)
+{
+#if 0
+  gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->texture_handle);
+  gala_d3d11_texture_t *texture = (gala_d3d11_texture_t *)&resource->internal;
+#endif
+
+  GALA_TRAP();
+}
+
+static void gala_d3d11_write_to_texture(
+  gala_d3d11_engine_t *engine,
+  const gala_write_to_texture_command_t *cmd)
+{
+#if 0
+  gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->texture_handle);
+  gala_d3d11_texture_t *texture = (gala_d3d11_texture_t *)&resource->internal;
+#endif
+
+  GALA_TRAP();
+}
+
 static void gala_d3d11_present(
   gala_d3d11_engine_t *engine,
   const gala_present_command_t *cmd)
 {
   gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->swap_chain_handle);
-
   gala_d3d11_swap_chain_t *swap_chain = (gala_d3d11_swap_chain_t *)&resource->internal;
   IDXGISwapChain *swap_chain_interface = swap_chain->interface;
 
-  // TODO(mtwilliams): Expose vertical synchronization flag.
-  // TODO(mtwilliams): Expose DXGI_PRESENT_DO_NOT_WAIT?
+  // TODO(mtwilliams): Use vertical synchronization flag.
+  // TODO(mtwilliams): Use DXGI_PRESENT_DO_NOT_WAIT?
   swap_chain_interface->Present(0, 0);
 }
 

@@ -134,6 +134,8 @@ void set_assertion_handler(
     } \
   } while (0,0)
 
+// TODO(mtwilliams): Paranoid assertions.
+
 #if defined(DOXYGEN)
   #define gala_assert_debug gala_assert
   #define gala_assertf_debug gala_assertf

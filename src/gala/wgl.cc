@@ -526,6 +526,12 @@ void gala_wgl_bind(
 // TODO(mtwilliams): Should also investigate presentation using
 // NV_copy_image and/or ARB_copy_image.
 
+// TODO(mtwilliams): If we don't have swap groups:
+//  * Swap the first with an interval of 1.
+//  * Then swap the rest with an interval of -1, i.e. tear if we miss.
+
+// TODO(mtwilliams): Use `wglSwapMultipleBuffers` to prevent blocking?
+
 void gala_wgl_present(
   gala_uint32_t n,
   gala_wgl_surface_t * const *surfaces,
