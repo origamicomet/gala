@@ -11,6 +11,9 @@
 
 #include "gala/opengl.h"
 
+// TODO(mtwilliams): Move `gala_statistics_t` into separate header?
+#include "gala/lifecycle.h"
+
 // TODO(mtwilliams): Add paranoid asserts to verify that resources are valid,
 // the right type, and have actually been created.
 
@@ -851,6 +854,12 @@ typedef struct gala_ogl_engine {
     gala_ogl_render_target_view_t *render_targets[8];
     gala_ogl_depth_stencil_target_view_t *depth_stencil_target;
   } state;
+
+  struct {
+    gala_uint64_t frame;
+    gala_uint64_t start_of_build;
+    gala_uint64_t start_of_submission;
+  } statistics;
 } gala_ogl_engine_t;
 
 gala_ogl_context_t *gala_ogl_create_context(
@@ -907,6 +916,10 @@ gala_engine_t *gala_ogl_create_and_init_engine(
 
   engine->context = gala_ogl_create_context(engine, GALA_PIXEL_FORMAT_R8G8B8, NULL);
   // engine->async = gala_ogl_create_context(engine, GALA_PIXEL_FORMAT_R8G8B8, engine->context);
+
+  engine->statistics.frame = 0;
+  engine->statistics.start_of_build = 0;
+  engine->statistics.start_of_submission = 0;
 
 #if GALA_PLATFORM == GALA_PLATFORM_WINDOWS
   // REFACTOR(mtwilliams): Bind in `gala_ogl_engine_execute` if not bound.
@@ -1007,6 +1020,40 @@ static void gala_ogl_label(
       // ...
     } break;
   }
+}
+
+static void gala_ogl_start_of_frame(
+  gala_ogl_engine_t *engine,
+  const gala_frame_command_t *cmd)
+{
+  gala_assert_debug(engine->statistics.frame == 0);
+
+  engine->statistics.frame = cmd->id;
+
+  engine->statistics.start_of_build = cmd->timestamp;
+  engine->statistics.start_of_submission = 0 /* NOW() */;
+
+  for (gala_uint32_t pool = 0; pool < GALA_OGL_NUM_BUFFER_POOLS; ++pool) {
+    engine->pools.buffers[pool].writes_this_frame = 0;
+    engine->pools.buffers[pool].flushes_this_frame = 0;
+  }
+}
+
+static void gala_ogl_end_of_frame(
+  gala_ogl_engine_t *engine,
+  const gala_frame_command_t *cmd)
+{
+  gala_assert_debug(engine->statistics.frame != 0);
+  gala_assert_debug(engine->statistics.frame == cmd->id);
+
+  if (cmd->statistics) {
+    cmd->statistics->id = engine->statistics.frame; 
+
+    cmd->statistics->build = cmd->timestamp - engine->statistics.start_of_build; 
+    cmd->statistics->submission = 0 /* NOW() */ - engine->statistics.start_of_submission; 
+  }
+
+  engine->statistics.frame = 0;
 }
 
 static void gala_ogl_fence_on_submission(
@@ -1386,6 +1433,12 @@ static void gala_ogl_engine_dispatch(
     case GALA_COMMAND_TYPE_NOP:
       // Do absolutely nothing.
       return;
+
+    case GALA_COMMAND_TYPE_START_OF_FRAME:
+      return gala_ogl_start_of_frame(engine, (gala_frame_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_END_OF_FRAME:
+      return gala_ogl_end_of_frame(engine, (gala_frame_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_LABEL:
       return gala_ogl_label(engine, (gala_label_command_t *)cmd);

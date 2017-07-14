@@ -33,6 +33,13 @@ typedef struct gala_label_command {
   char name[256];
 } gala_label_command_t;
 
+typedef struct gala_frame_command {
+  gala_command_t command;
+  gala_uint64_t id;
+  gala_uint64_t timestamp;
+  struct gala_statistics *statistics;
+} gala_frame_command_t;
+
 typedef struct gala_fence_command {
   gala_command_t command;
   gala_fence_t *fence;
