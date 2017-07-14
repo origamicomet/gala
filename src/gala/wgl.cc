@@ -45,6 +45,8 @@ static HMODULE gdi;
 #define WGL_DEPTH_BITS_ARB                        0x2022
 #define WGL_STENCIL_BITS_ARB                      0x2023
 
+#define WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB          0x20A9
+
 #define WGL_COLORSPACE_EXT                        0x309D
 #define WGL_COLORSPACE_SRGB_EXT                   0x3089
 #define WGL_COLORSPACE_LINEAR_EXT                 0x308A
@@ -177,7 +179,6 @@ static void gala_wgl_check_for_required_extensions(HWND hwnd, HDC hdc, HGLRC hgl
   // QUESTION(mtwilliams): Should we require WGL_ARB_context_flush_control?
   static const char *required[] = {
     "WGL_ARB_pixel_format",
-    "WGL_EXT_colorspace",
     "WGL_ARB_create_context",
     "WGL_ARB_create_context_profile",
     "WGL_EXT_swap_control",
@@ -273,6 +274,12 @@ void gala_wgl_init(void)
   gala_wgl_check_for_required_extensions(bootstrap_context_window,
                                          bootstrap_context_hdc,
                                          bootstrap_context_hglrc);
+
+  // TODO(mtwilliams): Refresh previously fetched function pointers?
+  // wglGetProcAddress = (WGLGETPROCADDRESSPROC)wglGetProcAddress("wglGetProcAddress");
+  // wglCreateContext  = (WGLCREATECONTEXTPROC)wglGetProcAddress("wglCreateContext");
+  // wglDeleteContext  = (WGLDELETECONTEXTPROC)wglGetProcAddress("wglDeleteContext");
+  // wglMakeCurrent    = (WGLMAKECURRENTPROC)wglGetProcAddress("wglMakeCurrent");
 
   wglChoosePixelFormat = (WGLCHOOSEPIXELFORMATPROC)wglGetProcAddress("wglChoosePixelFormatARB");
   wglCreateContextAttribs = (WGLCREATECONTEXTATTRIBSPROC)wglGetProcAddress("wglCreateContextAttribsARB");
@@ -374,12 +381,14 @@ gala_wgl_context_t *gala_wgl_create_context(
 
     // See note above.
     WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
-    WGL_COLOR_BITS_ARB, (format == GALA_PIXEL_FORMAT_R8G8B8A8) ? 32 : 24,
+    WGL_COLOR_BITS_ARB, 24,
     WGL_RED_BITS_ARB, 8,
     WGL_GREEN_BITS_ARB, 8,
     WGL_BLUE_BITS_ARB, 8,
     WGL_ALPHA_BITS_ARB, (format == GALA_PIXEL_FORMAT_R8G8B8A8) ? 8 : 0,
-    WGL_COLORSPACE_EXT, WGL_COLORSPACE_LINEAR_EXT,
+
+    // TODO(mtwilliams): Explictly request linear?
+    // WGL_COLORSPACE_EXT, WGL_COLORSPACE_LINEAR_EXT,
 
     // PERF(mtwilliams): Determine if `WGL_SWAP_EXCHANGE_ARB` is fast path, as
     // some say it is. It should be as it's just exchanging pointers rather

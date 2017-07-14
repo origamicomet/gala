@@ -302,7 +302,12 @@ static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
 //
 
 #define GL_ARRAY_BUFFER                   0x8892
+#define GL_ELEMENT_ARRAY_BUFFER           0x8893
 #define GL_UNIFORM_BUFFER                 0x8A11
+
+#define GL_STATIC_DRAW                    0x88E4
+#define GL_STREAM_DRAW                    0x88E0
+#define GL_DYNAMIC_DRAW                   0x88E8
 
 #define GL_MAP_READ_BIT                   0x0001
 #define GL_MAP_WRITE_BIT                  0x0002
@@ -312,6 +317,9 @@ static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
 #define GL_MAP_UNSYNCHRONIZED_BIT         0x0020
 #define GL_MAP_PERSISTENT_BIT             0x0040
 #define GL_MAP_COHERENT_BIT               0x0080
+
+#define GL_DYNAMIC_STORAGE_BIT            0x0100
+#define GL_CLIENT_STORAGE_BIT             0x0200
 
 //
 // Textures & Samplers
@@ -471,6 +479,28 @@ typedef void (GL_ENTRY_POINT *GLBINDBUFFERPROC)(gala_uint32_t target, gala_uint3
 
 GLBINDBUFFERPROC glBindBuffer;
 
+typedef void (GL_ENTRY_POINT *GLBUFFERDATAPROC)(gala_uint32_t target, gala_size_t size, const void *data, gala_uint32_t usage);
+typedef void (GL_ENTRY_POINT *GLBUFFERSUBDATAPROC)(gala_uint32_t target, gala_uintptr_t offset, gala_size_t length, const void *data);
+
+GLBUFFERDATAPROC glBufferData;
+GLBUFFERSUBDATAPROC glBufferSubData;
+
+typedef void (GL_ENTRY_POINT *GLBUFFERSTORAGEPROC)(gala_uint32_t target, gala_size_t size, const void *data, gala_uint32_t flags);
+
+GLBUFFERSTORAGEPROC glBufferStorage;
+
+typedef void *(GL_ENTRY_POINT *GLMAPBUFFERRANGEPROC)(gala_uint32_t target, gala_uintptr_t offset, gala_size_t length, gala_uint32_t access);
+
+GLMAPBUFFERRANGEPROC glMapBufferRange;
+
+typedef void (GL_ENTRY_POINT *GLUNMAPBUFFERPROC)(gala_uint32_t target);
+
+GLUNMAPBUFFERPROC glUnmapBuffer;
+
+typedef void (GL_ENTRY_POINT *GLFLUSHMAPPEDBUFFERRANGEPROC)(gala_uint32_t target, gala_uintptr_t offset, gala_size_t length);
+
+GLFLUSHMAPPEDBUFFERRANGEPROC glFlushMappedBufferRange;
+
 typedef void (GL_ENTRY_POINT *GLBINDTEXTUREPROC)(gala_uint32_t target, gala_uint32_t texture);
 typedef void (GL_ENTRY_POINT *GLBINDSAMPLERPROC)(gala_uint32_t unit, gala_uint32_t sampler);
 
@@ -582,6 +612,14 @@ typedef void (GL_ENTRY_POINT *GLBLITFRAMEBUFFERPROC)(gala_int32_t src_x0,
 
 GLBLITFRAMEBUFFERPROC glBlitFramebuffer;
 
+typedef void *(GL_ENTRY_POINT *GLFENCESYNCPROC)(gala_uint32_t condition, gala_uint32_t flags);
+typedef gala_uint32_t (GL_ENTRY_POINT *GLCLIENTWAITSYNCPROC)(void *sync, gala_uint32_t flags, gala_uint64_t timeout);
+typedef void (GL_ENTRY_POINT *GLWAITSYNCPROC)(void *sync, gala_uint32_t flags, gala_uint64_t timeout);
+
+GLFENCESYNCPROC glFenceSync;
+GLCLIENTWAITSYNCPROC glClientWaitSync;
+GLWAITSYNCPROC glWaitSync;
+
 typedef void (GL_ENTRY_POINT *GLFLUSHPROC)(void);
 typedef void (GL_ENTRY_POINT *GLFINISHPROC)(void);
 
@@ -657,6 +695,14 @@ static void gala_ogl_wrangle(void)
 
   glBindBuffer = (GLBINDBUFFERPROC)gala_ogl_get_proc_address("glBindBuffer");
 
+  glBufferData = (GLBUFFERDATAPROC)gala_ogl_get_proc_address("glBufferData");
+  glBufferSubData = (GLBUFFERSUBDATAPROC)gala_ogl_get_proc_address("glBufferSubData");
+
+  glMapBufferRange = (GLMAPBUFFERRANGEPROC)gala_ogl_get_proc_address("glMapBufferRange");
+  glUnmapBuffer = (GLUNMAPBUFFERPROC)gala_ogl_get_proc_address("glUnmapBuffer");
+
+  glFlushMappedBufferRange = (GLFLUSHMAPPEDBUFFERRANGEPROC)gala_ogl_get_proc_address("glFlushMappedBufferRange");
+
   glBindTexture = (GLBINDTEXTUREPROC)gala_ogl_get_proc_address("glBindTexture");
 
   glTexImage1D = (GLTEXIMAGE1DPROC)gala_ogl_get_proc_address("glTexImage1D");
@@ -688,10 +734,19 @@ static void gala_ogl_wrangle(void)
 
   glBlitFramebuffer = (GLBLITFRAMEBUFFERPROC)gala_ogl_get_proc_address("glBlitFramebuffer");
 
+  glFenceSync = (GLFENCESYNCPROC)gala_ogl_get_proc_address("glFenceSync");
+  glClientWaitSync = (GLCLIENTWAITSYNCPROC)gala_ogl_get_proc_address("glClientWaitSync");
+  glWaitSync = (GLWAITSYNCPROC)gala_ogl_get_proc_address("glWaitSync");
+
   glFlush = (GLFLUSHPROC)gala_ogl_get_proc_address("glFlush");
   glFinish = (GLFINISHPROC)gala_ogl_get_proc_address("glFinish");
 
   gala_ogl_check_for_extensions();
+
+  if (GL_ARB_buffer_storage)
+    glBufferStorage = (GLBUFFERSTORAGEPROC)gala_ogl_get_proc_address("glBufferStorage");
+  else
+    glBufferStorage = NULL;
 
   if (GL_KHR_debug) {
     glPushDebugGroup = (GLPUSHDEBUGGROUPPROC)gala_ogl_get_proc_address("glPushDebugGroup");
