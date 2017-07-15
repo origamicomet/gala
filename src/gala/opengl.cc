@@ -1064,8 +1064,10 @@ found:
 
   // Mark children as occupied.
   const gala_uint32_t blocks = pool->blocks;
-  for (gala_uint32_t child = block * 2 + 1; child < blocks; child = child * 2 + 1) {
-    pool->unoccupied[child / 32] &= ~(1 << (child % 32));
+  for (gala_uint32_t children = block * 2 + 1, count = 2; children < blocks; children = children * 2 + 1, count = count * 2) {
+    // PERF(mtwilliams): Unroll.
+    for (gala_uint32_t child = children; child < children + count; ++child)
+      pool->unoccupied[child / 32] &= ~(1 << (child % 32));
   }
 
   return block + 1;
@@ -1093,8 +1095,10 @@ static void gala_ogl_buffer_pool_free(
 
   // Mark children as unoccupied.
   const gala_uint32_t blocks = pool->blocks;
-  for (gala_uint32_t child = block * 2 + 1; child < blocks; child = child * 2 + 1) {
-    pool->unoccupied[child / 32] |= (1 << (child % 32));
+  for (gala_uint32_t children = block * 2 + 1, count = 2; children < blocks; children = children * 2 + 1, count = count * 2) {
+    // PERF(mtwilliams): Unroll.
+    for (gala_uint32_t child = children; child < children + count; ++child)
+      pool->unoccupied[child / 32] |= (1 << (child % 32));
   }
 
   // Mark parent as unoccupied and unsplit if buddy is unoccupied.
@@ -1183,8 +1187,7 @@ static void gala_ogl_buffer_write(
     memcpy((void *)((gala_uintptr_t)pool->memory + offset_in_pool), data, length);
 
     if (pool->owner_of_memory) {
-      // We flush writes for our constant buffer as late as possible. Ideally
-      // once a frame.
+      // We flush our constants as late as possible. Ideally once a frame.
       pool->dirty = true;
     } else {
       glBindBuffer(pool->target, pool->id);
