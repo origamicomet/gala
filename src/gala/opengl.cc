@@ -1222,6 +1222,44 @@ typedef struct gala_ogl_render_target_view {
 typedef struct gala_ogl_depth_stencil_target_view {
 } gala_ogl_depth_stencil_target_view_t;
 
+typedef struct gala_ogl_framebuffer_cache_entry {
+  gala_uint32_t id;
+  gala_uint32_t render_targets[8];
+  gala_uint32_t depth_stencil_target;
+} gala_ogl_framebuffer_cache_entry_t;
+
+// Cache of most recently used frame buffer objects.
+typedef struct gala_ogl_framebuffer_cache {
+  gala_uint32_t mru;
+  gala_uint32_t hashes[32];
+  gala_ogl_framebuffer_cache_entry_t entries[32];
+} gala_ogl_framebuffer_cache_t;
+
+static void gala_ogl_framebuffer_cache_initialize(
+  gala_ogl_framebuffer_cache_t *cache)
+{
+  cache->mru = 0x00000000;
+
+  memset((void *)&cache->hashes[0], 0, 32 * sizeof(gala_uint32_t));
+  memset((void *)&cache->entries[0], 0, 32 * sizeof(gala_ogl_framebuffer_cache_entry_t));
+}
+
+// TODO(mtwilliams): Mix better.
+static gala_uint32_t gala_ogl_framebuffer_cache_hash(
+  gala_uint32_t render_targets[8],
+  gala_uint32_t depth_stencil_target)
+{
+  const gala_uint32_t K = UINT32_C(2654435761);
+
+  return (
+    (render_targets[0] * K) ^ (render_targets[1] * K) ^
+    (render_targets[2] * K) ^ (render_targets[3] * K) ^
+    (render_targets[4] * K) ^ (render_targets[5] * K) ^
+    (render_targets[6] * K) ^ (render_targets[7] * K) ^
+    (render_targets[8] * K) ^ (depth_stencil_target * K)
+  );
+}
+
 typedef struct gala_ogl_sampler {
 } gala_ogl_sampler_t;
 
@@ -1258,6 +1296,10 @@ typedef struct gala_ogl_engine {
     gala_ogl_render_target_view_t *render_targets[8];
     gala_ogl_depth_stencil_target_view_t *depth_stencil_target;
   } state;
+
+  struct {
+    gala_ogl_framebuffer_cache_t framebuffers;
+  } caches;
 
   struct {
     gala_ogl_buffer_pool_t buffers[GALA_OGL_NUM_BUFFER_POOLS];
@@ -1372,6 +1414,8 @@ gala_engine_t *gala_ogl_create_and_init_engine(
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
+  gala_ogl_framebuffer_cache_initialize(&engine->caches.framebuffers);
+
   // TODO(mtwilliams): Grow pools dynamically.
   // TODO(mtwilliams): Accept hints about pool size.
   // TODO(mtwilliams): Data drive pool initialization.
@@ -1416,6 +1460,16 @@ void gala_ogl_destroy_engine(
 
   gala_resource_table_destroy(engine->generic.resource_table);
 
+  for (gala_uint32_t index = 0; index < 32; ++index)
+    if (engine->caches.framebuffers.entries[index].id)
+      glDeleteFramebuffers(1, &engine->caches.framebuffers.entries[index].id);
+
+  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_STATIC_INDICES]);
+  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_STATIC_VERTICES]);
+  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_DYNAMIC_INDICES]);
+  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_DYNAMIC_VERTICES]);
+  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_CONSTANTS]);
+
 #if GALA_PLATFORM == GALA_PLATFORM_WINDOWS
   // NOTE(mtwilliams): We risk leaking memory if we don't
   // `wglMakeCurrent(NULL, NULL)` prior to exit. This also prevents horrible
@@ -1423,12 +1477,6 @@ void gala_ogl_destroy_engine(
   // deletion.
   gala_wgl_bind(NULL, NULL);
 #endif
-
-  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_STATIC_INDICES]);
-  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_STATIC_VERTICES]);
-  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_DYNAMIC_INDICES]);
-  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_DYNAMIC_VERTICES]);
-  gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_CONSTANTS]);
 
   gala_ogl_destroy_context(engine, engine->context);
   // gala_ogl_destroy_context(engine, engine->async);
@@ -1764,12 +1812,16 @@ static void gala_ogl_set_render_and_depth_stencil_targets(
   gala_ogl_engine_t *engine,
   const gala_set_render_and_depth_stencil_targets_command_t *cmd)
 {
+  gala_uint32_t render_target_buffers[8] = { 0, };
+  gala_uint32_t depth_stencil_target_buffer = 0;
+
   gala_ogl_render_target_view_t *render_targets[8] = { NULL, };
 
   for (gala_uint32_t render_target = 0; render_target < cmd->num_render_target_views; ++render_target) {
     gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table,
                                                            cmd->render_target_view_handles[render_target]);
     render_targets[render_target] = (gala_ogl_render_target_view_t *)resource->internal;
+    render_target_buffers[render_target] = render_targets[render_target]->buffer;
   }
 
   gala_ogl_depth_stencil_target_view_t *depth_stencil_target = NULL;
@@ -1777,50 +1829,104 @@ static void gala_ogl_set_render_and_depth_stencil_targets(
   if (cmd->depth_stencil_target_view_handle != GALA_INVALID_DEPTH_STENCIL_TARGET_VIEW_HANDLE) {
     gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->depth_stencil_target_view_handle);
     depth_stencil_target = (gala_ogl_depth_stencil_target_view_t *)resource->internal;
+    // depth_stencil_target_buffer = depth_stencil_target->buffer;
   }
 
-  const gala_bool_t bind_render_targets       = (cmd->num_render_target_views > 0);
-  const gala_bool_t bind_depth_stencil_target = (cmd->depth_stencil_target_view_handle != GALA_INVALID_DEPTH_STENCIL_TARGET_VIEW_HANDLE);
+  const gala_uint32_t hash =
+    gala_ogl_framebuffer_cache_hash(&render_target_buffers[0],
+                                    depth_stencil_target_buffer);
 
-  // PERF(mtwilliams): Cache instead of replace.
-  glDeleteFramebuffers(1, &engine->state.fbo);
-  glGenFramebuffers(1, &engine->state.fbo);
-  glBindFramebuffer(GL_FRAMEBUFFER, engine->state.fbo);
+  gala_uint32_t index;
+  gala_ogl_framebuffer_cache_entry_t *cached = NULL;
 
-  for (gala_uint32_t render_target = 0; render_target < cmd->num_render_target_views; ++render_target) {
-    const gala_dimensionality_t dimensionality = render_targets[render_target]->dimensionality;
-    const gala_uint32_t buffer = render_targets[render_target]->buffer;
-
-    if (dimensionality == GALA_ONE_DIMENSIONAL)
-      glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT + render_target, GL_TEXTURE_1D, buffer, 0);
-    else if (dimensionality == GALA_TWO_DIMENSIONAL)
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT + render_target, GL_TEXTURE_2D, buffer, 0);
+  for (index = 0; index < 32; ++index) {
+    if (engine->caches.framebuffers.hashes[index] == hash) {
+      cached = &engine->caches.framebuffers.entries[index];
+      break;
+    }
   }
 
-  // TODO(mtwilliams): Depth-stencil targets.
-  // if (depth_stencil_target) {
-  //   if (depth_stencil_target->depth)
-  //     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_stencil_target->buffer, 0);
-  //   if (depth_stencil_target->stencil)
-  //     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth_stencil_target->buffer, 0);
-  // }
+  if (cached) {
+    engine->state.fbo = cached->id;
 
-  static const gala_uint32_t attachments[] = {
-    GL_COLOR_ATTACHMENT + 0,
-    GL_COLOR_ATTACHMENT + 1,
-    GL_COLOR_ATTACHMENT + 2,
-    GL_COLOR_ATTACHMENT + 3,
-    GL_COLOR_ATTACHMENT + 4,
-    GL_COLOR_ATTACHMENT + 5,
-    GL_COLOR_ATTACHMENT + 6,
-    GL_COLOR_ATTACHMENT + 7
-  };
+    engine->caches.framebuffers.mru |= (1 << index);
 
-  // This state is scoped to bound framebuffer, so we just have to set it once.
-  glDrawBuffers(cmd->num_render_target_views, &attachments[0]);
+    if (engine->caches.framebuffers.mru == ~0)
+      engine->caches.framebuffers.mru = (1 << index);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, cached->id);
+  } else {
+    const gala_uint32_t victim =
+      engine->caches.framebuffers.mru ? gala_ctzul(~engine->caches.framebuffers.mru) : 0;
+
+    engine->caches.framebuffers.mru |= (1 << victim);
+
+    if (engine->caches.framebuffers.mru == ~0)
+      engine->caches.framebuffers.mru = (1 << victim);
+
+    engine->caches.framebuffers.hashes[victim] = hash;
+
+    gala_ogl_framebuffer_cache_entry_t *entry = 
+      &engine->caches.framebuffers.entries[victim];
+
+    if (entry->id)
+      glDeleteFramebuffers(1, &entry->id);
+    
+    glGenFramebuffers(1, &entry->id);
+    glBindFramebuffer(GL_FRAMEBUFFER, entry->id);
+
+    engine->state.fbo = entry->id;
+
+    entry->render_targets[0] = render_target_buffers[0];
+    entry->render_targets[1] = render_target_buffers[1];
+    entry->render_targets[2] = render_target_buffers[2];
+    entry->render_targets[3] = render_target_buffers[3];
+    entry->render_targets[4] = render_target_buffers[4];
+    entry->render_targets[5] = render_target_buffers[5];
+    entry->render_targets[6] = render_target_buffers[6];
+    entry->render_targets[7] = render_target_buffers[7];
+    
+    entry->depth_stencil_target = depth_stencil_target_buffer;
+    
+    for (gala_uint32_t render_target = 0; render_target < cmd->num_render_target_views; ++render_target) {
+      const gala_dimensionality_t dimensionality = render_targets[render_target]->dimensionality;
+      const gala_uint32_t buffer = render_targets[render_target]->buffer;
+
+      if (dimensionality == GALA_ONE_DIMENSIONAL)
+        glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT + render_target, GL_TEXTURE_1D, buffer, 0);
+      else if (dimensionality == GALA_TWO_DIMENSIONAL)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT + render_target, GL_TEXTURE_2D, buffer, 0);
+    }
+
+    // TODO(mtwilliams): Depth-stencil targets.
+    // if (depth_stencil_target) {
+    //   if (depth_stencil_target->depth)
+    //     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_stencil_target->buffer, 0);
+    //   if (depth_stencil_target->stencil)
+    //     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth_stencil_target->buffer, 0);
+    // }
+
+    static const gala_uint32_t attachments[] = {
+      GL_COLOR_ATTACHMENT + 0,
+      GL_COLOR_ATTACHMENT + 1,
+      GL_COLOR_ATTACHMENT + 2,
+      GL_COLOR_ATTACHMENT + 3,
+      GL_COLOR_ATTACHMENT + 4,
+      GL_COLOR_ATTACHMENT + 5,
+      GL_COLOR_ATTACHMENT + 6,
+      GL_COLOR_ATTACHMENT + 7
+    };
+
+    // This state is scoped to bound framebuffer, so we just have to set it once.
+    glDrawBuffers(cmd->num_render_target_views, &attachments[0]);
+  }
 
   engine->state.num_render_targets = cmd->num_render_target_views;
-  memcpy((void *)&engine->state.render_targets[0], (void *)&render_targets[0], sizeof(render_targets));
+
+  memcpy((void *)&engine->state.render_targets[0],
+         (void *)&render_targets[0],
+         sizeof(render_targets));
+  
   engine->state.depth_stencil_target = depth_stencil_target;
 }
 
