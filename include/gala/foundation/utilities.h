@@ -48,7 +48,7 @@
 static GALA_INLINE gala_uint32_t gala_clzul(gala_uint32_t n) {
 #if defined(_MSC_VER)
   gala_uint32_t bit;
-  return _BitScanReverse((unsigned long *)&bit, n) ? 32 : (31 - bit);
+  return _BitScanReverse((unsigned long *)&bit, n) ? (31 - bit) : 32;
 #elif defined(__clang__) || defined(__GNUC__)
   return n ? __builtin_clzl(n) : 32;
 #endif
@@ -58,7 +58,7 @@ static GALA_INLINE gala_uint32_t gala_clzul(gala_uint32_t n) {
 static GALA_INLINE gala_uint32_t gala_ctzul(gala_uint32_t n) {
 #if defined(_MSC_VER)
   gala_uint32_t bit;
-  return _BitScanForward((unsigned long *)&bit, n) ? 32 : bit;
+  return _BitScanForward((unsigned long *)&bit, n) ? bit : 32;
 #elif defined(__clang__) || defined(__GNUC__)
   return n ? __builtin_ctzl(n) : 32;
 #endif
