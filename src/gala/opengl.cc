@@ -921,10 +921,10 @@ static void gala_ogl_buffer_pool_create(
                                                       GL_MAP_PERSISTENT_BIT);
 
       pool->memory =
-        glMapBufferRange(pool->target,0, pool->size, GL_MAP_WRITE_BIT |
-                                                     GL_MAP_PERSISTENT_BIT |
-                                                     GL_MAP_INVALIDATE_BUFFER_BIT |
-                                                     GL_MAP_FLUSH_EXPLICIT_BIT);
+        glMapBufferRange(pool->target, 0, pool->size, GL_MAP_WRITE_BIT |
+                                                      GL_MAP_PERSISTENT_BIT |
+                                                      GL_MAP_INVALIDATE_BUFFER_BIT |
+                                                      GL_MAP_FLUSH_EXPLICIT_BIT);
 
       gala_assert(pool->memory != NULL);
     } else {
@@ -934,10 +934,10 @@ static void gala_ogl_buffer_pool_create(
         // HACK(mtwilliams): Treat `GL_MAP_UNSYNCHRONIZED_BIT` the same as a
         // persistently mapped buffer.
         pool->memory =
-          glMapBufferRange(pool->target,0, pool->size, GL_MAP_WRITE_BIT |
-                                                       GL_MAP_UNSYNCHRONIZED_BIT |
-                                                       GL_MAP_INVALIDATE_BUFFER_BIT |
-                                                       GL_MAP_FLUSH_EXPLICIT_BIT);
+          glMapBufferRange(pool->target, 0, pool->size, GL_MAP_WRITE_BIT |
+                                                        GL_MAP_UNSYNCHRONIZED_BIT |
+                                                        GL_MAP_INVALIDATE_BUFFER_BIT |
+                                                        GL_MAP_FLUSH_EXPLICIT_BIT);
         
         gala_assert(pool->memory != NULL);
       } else {
@@ -951,8 +951,6 @@ static void gala_ogl_buffer_pool_create(
     pool->owner_of_memory = true;
     memset(pool->memory, 0, pool->size);
   }
-
-  pool->dirty = false;
 
   // We only have 1.5 bits of overhead per block! We could reduce this to 1 bit
   // of overhead per block by storing `a_is_allocated ^ b_is_allocated`.
@@ -977,6 +975,8 @@ static void gala_ogl_buffer_pool_create(
   // We set bits for unoccupied blocks. This drastically simplifies search
   // for a suitable unoccupied block.
   memset((void *)pool->unoccupied, 1, bytes_for_occupancy);
+
+  pool->dirty = false;
 
   pool->writes = 0;
   pool->writes_this_frame = 0;
