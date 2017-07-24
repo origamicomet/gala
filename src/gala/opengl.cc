@@ -173,6 +173,13 @@ static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
 #define GL_FRONT_AND_BACK                 0x0408
 
 //
+// Capabilities
+//
+
+#define GL_FRAMEBUFFER_SRGB               0x8DB9
+#define GL_TEXTURE_CUBE_MAP_SEAMLESS      0x884F
+
+//
 // Types
 //
 
@@ -1381,8 +1388,8 @@ gala_engine_t *gala_ogl_create_and_init_engine(
   gala_ogl_wrangle();
 
   // Goes without saying...
-  glEnable(0x8DB9 /* GL_FRAMEBUFFER_SRGB */);
-  glEnable(0x884F /* GL_TEXTURE_CUBE_MAP_SEAMLESS */);
+  glEnable(GL_FRAMEBUFFER_SRGB);
+  glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
   // TODO(mtwilliams): Fallback if `ARB_clip_control` is not available.
   //
@@ -2023,6 +2030,12 @@ static void gala_ogl_present(
   // Bind to appropriate surface.
   gala_wgl_bind(engine->context, swap_chain->surface);
 
+  // HACK(mtwilliams): Prevent erroneous gamma correction on nVidia.
+  glDisable(GL_FRAMEBUFFER_SRGB);
+
+  glViewport(0, 0, width, height);
+  glScissor(0, 0, width, height);
+ 
   // Resolve and scale into backbuffer.
   glBindFramebuffer(GL_READ_FRAMEBUFFER, swap_chain->fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -2039,6 +2052,8 @@ static void gala_ogl_present(
 
   // Reset state.
   gala_wgl_bind(engine->context, NULL);
+  glEnable(GL_FRAMEBUFFER_SRGB);
+  gala_ogl_reset_viewport_and_scissor(engine);
   glBindFramebuffer(GL_FRAMEBUFFER, engine->state.fbo);
 #endif
 }
