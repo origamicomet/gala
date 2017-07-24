@@ -34,6 +34,7 @@
 #include "gala/commands.h"
 #include "gala/command_buffer.h"
 
+#include "gala/lifecycle.h"
 #include "gala/render.h"
 
 #include "gala/backend.h"
