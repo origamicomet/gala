@@ -176,6 +176,14 @@ static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
 // Capabilities
 //
 
+#define GL_CULL_FACE                      0x0B44
+
+#define GL_BLEND                          0x0BE2
+
+#define GL_DEPTH_TEST                     0x0B71
+#define GL_STENCIL_TEST                   0x0B90
+#define GL_SCISSOR_TEST                   0x0C11
+
 #define GL_FRAMEBUFFER_SRGB               0x8DB9
 #define GL_TEXTURE_CUBE_MAP_SEAMLESS      0x884F
 
@@ -200,6 +208,24 @@ static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
 #define GL_CCW                            0x0901
 
 //
+// Polygon Modes
+//
+
+#define GL_POINT                          0x1B00
+#define GL_LINE                           0x1B01
+#define GL_FILL                           0x1B02
+
+//
+// Functions
+//
+
+#define GL_FUNC_ADD                       0x8006
+#define GL_FUNC_SUBTRACT                  0x800A
+#define GL_FUNC_REVERSE_SUBTRACT          0x800B
+#define GL_MIN                            0x8007
+#define GL_MAX                            0x8008
+
+//
 // Operations
 //
 
@@ -219,11 +245,12 @@ static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
 #define GL_OR_INVERTED                    0x150D
 #define GL_NAND                           0x150E
 #define GL_SET                            0x150F
-
 #define GL_KEEP                           0x1E00
 #define GL_REPLACE                        0x1E01
 #define GL_INCR                           0x1E02
 #define GL_DECR                           0x1E03
+#define GL_INCR_WRAP                      0x8507
+#define GL_DECR_WRAP                      0x8508
 
 //
 // Comparisons
@@ -234,12 +261,12 @@ static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
 #define GL_EQUAL                          0x0202
 #define GL_LEQUAL                         0x0203
 #define GL_GREATER                        0x0204
-#define GL_NOTEQUAL                       0x0205
+#define GL_NOT_EQUAL                      0x0205
 #define GL_GEQUAL                         0x0206
 #define GL_ALWAYS                         0x0207
 
 //
-// Factors
+// Equations
 //
 
 #define GL_ZERO                           0x0000
@@ -248,10 +275,13 @@ static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
 #define GL_ONE_MINUS_SRC_COLOR            0x0301
 #define GL_SRC_ALPHA                      0x0302
 #define GL_ONE_MINUS_SRC_ALPHA            0x0303
-#define GL_DST_COLOR                      0x0306
-#define GL_ONE_MINUS_DST_COLOR            0x0307
 #define GL_DST_ALPHA                      0x0304
 #define GL_ONE_MINUS_DST_ALPHA            0x0305
+#define GL_DST_COLOR                      0x0306
+#define GL_ONE_MINUS_DST_COLOR            0x0307
+#define GL_SRC_ALPHA_SATURATE             0x0308
+#define GL_CONSTANT_COLOR                 0x8001
+#define GL_ONE_MINUS_CONSTANT_COLOR       0x8002
 
 //
 // Formats
@@ -445,9 +475,45 @@ typedef void (GL_ENTRY_POINT *GLDISABLEPROC)(gala_uint32_t capability);
 GLENABLEPROC  glEnable;
 GLDISABLEPROC glDisable;
 
+typedef void (GL_ENTRY_POINT *GLPOLYGONMODEPROC)(gala_uint32_t face, gala_uint32_t mode);
+
+GLPOLYGONMODEPROC glPolygonMode;
+
+typedef void (GL_ENTRY_POINT *GLFRONTFACEPROC)(gala_uint32_t mode);
+typedef void (GL_ENTRY_POINT *GLCULLFACEPROC)(gala_uint32_t mode);
+
+GLFRONTFACEPROC glFrontFace;
+GLCULLFACEPROC glCullFace;
+
 typedef void (GL_ENTRY_POINT *GLCLIPCONTROLPROC)(gala_uint32_t origin, gala_uint32_t depth);
 
 GLCLIPCONTROLPROC glClipControl;
+
+typedef void (GL_ENTRY_POINT *GLBLENDFUNCSEPARATEPROC)(gala_uint32_t src_factor_rgb, gala_uint32_t dst_factor_rgb, gala_uint32_t src_factor_alpha, gala_uint32_t dst_factor_alpha);
+typedef void (GL_ENTRY_POINT *GLBLENDEQUATIONSEPARATEPROC)(gala_uint32_t rgb, gala_uint32_t alpha);
+typedef void (GL_ENTRY_POINT *GLBLENDCOLORPROC)(gala_float32_t red, gala_float32_t green, gala_float32_t blue, gala_float32_t alpha);
+
+GLBLENDFUNCSEPARATEPROC glBlendFuncSeparate;
+GLBLENDEQUATIONSEPARATEPROC glBlendEquationSeparate;
+GLBLENDCOLORPROC glBlendColor;
+
+typedef void (GL_ENTRY_POINT *GLCOLORMASKIPROC)(gala_uint32_t index, gala_bool_t r, gala_bool_t g, gala_bool_t b, gala_bool_t a);
+
+GLCOLORMASKIPROC glColorMaski;
+
+typedef void (GL_ENTRY_POINT *GLDEPTHFUNCPROC)(gala_uint32_t func);
+typedef void (GL_ENTRY_POINT *GLDEPTHMASKPROC)(gala_bool_t flag);
+
+GLDEPTHFUNCPROC glDepthFunc;
+GLDEPTHMASKPROC glDepthMask;
+
+typedef void (GL_ENTRY_POINT *GLSTENCILOPSEPARATEPROC)(gala_uint32_t face, gala_uint32_t sfail, gala_uint32_t dpfail, gala_uint32_t dppass);
+typedef void (GL_ENTRY_POINT *GLSTENCILFUNCSEPARATEPROC)(gala_uint32_t face, gala_uint32_t func, gala_int32_t ref, gala_uint32_t mask);
+typedef void (GL_ENTRY_POINT *GLSTENCILMASKSEPARATEPROC)(gala_uint32_t face, gala_uint32_t mask);
+
+GLSTENCILOPSEPARATEPROC glStencilOpSeparate;
+GLSTENCILFUNCSEPARATEPROC glStencilFuncSeparate;
+GLSTENCILMASKSEPARATEPROC glStencilMaskSeparate;
 
 typedef void (GL_ENTRY_POINT *GLGENBUFFERSPROC)(gala_uint32_t n, gala_uint32_t *buffers);
 typedef void (GL_ENTRY_POINT *GLGENTEXTURESPROC)(gala_uint32_t n, gala_uint32_t *textures);
@@ -686,6 +752,24 @@ static void gala_ogl_wrangle(void)
   glEnable = (GLENABLEPROC)gala_ogl_get_proc_address("glEnable");
   glDisable = (GLDISABLEPROC)gala_ogl_get_proc_address("glDisable");
 
+  glPolygonMode = (GLPOLYGONMODEPROC)gala_ogl_get_proc_address("glPolygonMode");
+
+  glFrontFace = (GLFRONTFACEPROC)gala_ogl_get_proc_address("glFrontFace");
+  glCullFace = (GLCULLFACEPROC)gala_ogl_get_proc_address("glCullFace");
+
+  glBlendFuncSeparate = (GLBLENDFUNCSEPARATEPROC)gala_ogl_get_proc_address("glBlendFuncSeparate");
+  glBlendEquationSeparate = (GLBLENDEQUATIONSEPARATEPROC)gala_ogl_get_proc_address("glBlendEquationSeparate");
+  glBlendColor = (GLBLENDCOLORPROC)gala_ogl_get_proc_address("glBlendColor");
+
+  glColorMaski = (GLCOLORMASKIPROC)gala_ogl_get_proc_address("glColorMaski");
+
+  glDepthFunc = (GLDEPTHFUNCPROC)gala_ogl_get_proc_address("glDepthFunc");
+  glDepthMask = (GLDEPTHMASKPROC)gala_ogl_get_proc_address("glDepthMask");
+
+  glStencilOpSeparate = (GLSTENCILOPSEPARATEPROC)gala_ogl_get_proc_address("glStencilOpSeparate");
+  glStencilFuncSeparate = (GLSTENCILFUNCSEPARATEPROC)gala_ogl_get_proc_address("glStencilFuncSeparate");
+  glStencilMaskSeparate = (GLSTENCILMASKSEPARATEPROC)gala_ogl_get_proc_address("glStencilMaskSeparate");
+
   glGenBuffers = (GLGENBUFFERSPROC)gala_ogl_get_proc_address("glGenBuffers");
   glGenTextures = (GLGENTEXTURESPROC)gala_ogl_get_proc_address("glGenTextures");
   glGenSamplers = (GLGENSAMPLERSPROC)gala_ogl_get_proc_address("glGenSamplers");
@@ -807,6 +891,49 @@ typedef struct gala_ogl_swap_chain {
 
   gala_uint32_t flags;
 } gala_ogl_swap_chain_t;
+
+typedef struct gala_ogl_pipeline {
+  gala_uint32_t winding;
+  gala_uint32_t fill;
+  gala_uint32_t cull;
+
+  struct {
+    gala_bool_t blend;
+    gala_uint32_t src;
+    gala_uint32_t dst;
+    gala_uint32_t equation;
+    gala_float32_t constant[4];
+    gala_uint32_t mask;
+  } color;
+
+  struct {
+    gala_bool_t test;
+    gala_uint32_t func;
+    gala_bool_t mask;
+  } depth;
+
+  struct {
+    gala_bool_t test;
+
+    struct {
+      gala_uint32_t func;
+      gala_uint32_t pass;
+      gala_uint32_t fail_to_depth;
+      gala_uint32_t fail_to_stencil;
+    } front;
+
+    struct {
+      gala_uint32_t func;
+      gala_uint32_t pass;
+      gala_uint32_t fail_to_depth;
+      gala_uint32_t fail_to_stencil;
+    } back;
+
+    gala_uint8_t ref;
+
+    gala_uint8_t mask;
+  } stencil;
+} gala_ogl_pipeline_t;
 
 // We maintain five pools for buffers regardless of extension availability.
 //
@@ -1408,6 +1535,9 @@ gala_engine_t *gala_ogl_create_and_init_engine(
   // Setup a sane coordinate system.
   glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
 
+  // We always run with scissors ;)
+  glEnable(GL_SCISSOR_TEST);
+
   // We draw to the backbuffer for the currently bound surface unless otherwise
   // specified. Don't change this without understanding how presentation works.
   // See `gala_ogl_present` for details.
@@ -1633,6 +1763,142 @@ static void gala_ogl_resize_swap_chain(
   GALA_TRAP();
 }
 
+static gala_uint32_t gala_comparison_to_gl(const gala_comparison_t comparison) {
+  switch (comparison) {
+    case GALA_NEVER: return GL_NEVER;
+    case GALA_LESS: return GL_LESS;
+    case GALA_EQUAL: return GL_EQUAL;
+    case GALA_LESS_EQUAL: return GL_LEQUAL;
+    case GALA_GREATER: return GL_GREATER;
+    case GALA_GREATER_EQUAL: return GL_GEQUAL;
+    case GALA_NOT_EQUAL: return GL_NOT_EQUAL;
+    case GALA_ALWAYS: return GL_ALWAYS;
+  }
+}
+
+static gala_uint32_t gala_blend_to_gl(const gala_blend_t blend) {
+  switch (blend) {
+    case GALA_BLEND_ZERO: return GL_ZERO;
+    case GALA_BLEND_ONE: return GL_ONE;
+    case GALA_BLEND_SRC_COLOR: return GL_SRC_COLOR;
+    case GALA_BLEND_INV_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+    case GALA_BLEND_SRC_ALPHA: return GL_SRC_ALPHA;
+    case GALA_BLEND_INV_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+    case GALA_BLEND_DEST_ALPHA: return GL_DST_ALPHA;
+    case GALA_BLEND_INV_DEST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+    case GALA_BLEND_DEST_COLOR: return GL_DST_COLOR;
+    case GALA_BLEND_INV_DEST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+    case GALA_BLEND_SRC_ALPHA_SATURATE: return GL_SRC_ALPHA_SATURATE;
+    case GALA_BLEND_BLEND_FACTOR: return GL_CONSTANT_COLOR;
+    case GALA_BLEND_INV_BLEND_FACTOR: return GL_ONE_MINUS_CONSTANT_COLOR;
+  }
+}
+
+static gala_uint32_t gala_blend_operation_to_gl(const gala_blend_operation_t op) {
+  switch (op) {
+    case GALA_BLEND_OP_ADD: return GL_FUNC_ADD;
+    case GALA_BLEND_OP_SUBTRACT: return GL_FUNC_SUBTRACT;
+    case GALA_BLEND_OP_REV_SUBTRACT: return GL_FUNC_REVERSE_SUBTRACT;
+    case GALA_BLEND_OP_MIN: return GL_MIN;
+    case GALA_BLEND_OP_MAX: return GL_MAX;
+  }
+}
+
+static gala_uint32_t gala_stencil_operation_to_gl(const gala_stencil_operation_t op) {
+  switch (op) {
+    case GALA_STENCIL_OP_ZERO: return GL_ZERO;
+    case GALA_STENCIL_OP_KEEP: return GL_KEEP;
+    case GALA_STENCIL_OP_REPLACE: return GL_REPLACE;
+    case GALA_STENCIL_OP_INVERT: return GL_INVERT;
+    case GALA_STENCIL_OP_INCREMENT: return GL_INCR;
+    case GALA_STENCIL_OP_DECREMENT: return GL_DECR;
+    case GALA_STENCIL_OP_INCREMENT_SATURATE: return GL_INCR_WRAP;
+    case GALA_STENCIL_OP_DECREMENT_SATURATE: return GL_DECR_WRAP;
+  }
+}
+
+static void gala_ogl_pipeline_create(
+  gala_ogl_engine_t *engine,
+  const gala_create_pipeline_command_t *cmd)
+{
+  gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table,
+                               cmd->pipeline_handle);
+
+  // PERF(mtwilliams): Allocate from a pool.
+  gala_ogl_pipeline_t *pipeline =
+    (gala_ogl_pipeline_t *)calloc(sizeof(gala_ogl_pipeline_t), 1);
+
+  resource->internal = (gala_uintptr_t)pipeline;
+
+  if (cmd->desc.winding == GALA_CW)
+    pipeline->winding = GL_CW;
+  else if (cmd->desc.winding == GALA_CCW)
+    pipeline->winding = GL_CCW;
+
+  if (cmd->desc.fill == GALA_SOLID)
+    pipeline->fill = GL_FILL;
+  else if (cmd->desc.fill == GALA_WIREFRAME)
+    pipeline->fill = GL_LINE;
+
+  if (cmd->desc.cull == GALA_CULL_NONE)
+    pipeline->cull = 0;
+  else if (cmd->desc.cull == GALA_CULL_FRONT)
+    pipeline->cull = GL_FRONT;
+  else if (cmd->desc.cull == GALA_CULL_BACK)
+    pipeline->cull = GL_BACK;
+
+  pipeline->color.blend = cmd->desc.color.blend;
+
+  pipeline->color.src = gala_blend_to_gl(cmd->desc.color.src);
+  pipeline->color.dst = gala_blend_to_gl(cmd->desc.color.dst);
+
+  pipeline->color.equation = gala_blend_operation_to_gl(cmd->desc.color.op);
+
+  pipeline->color.constant[0] = cmd->desc.color.factor[0];
+  pipeline->color.constant[1] = cmd->desc.color.factor[1];
+  pipeline->color.constant[2] = cmd->desc.color.factor[2];
+  pipeline->color.constant[3] = cmd->desc.color.factor[3];
+
+  pipeline->color.mask = cmd->desc.color.mask;
+
+  pipeline->depth.test = cmd->desc.depth.test;
+  pipeline->depth.func = gala_comparison_to_gl(cmd->desc.depth.comparison);
+  pipeline->depth.mask = !!(cmd->desc.depth.mask);
+
+  gala_assert_debug((cmd->desc.depth.mask == 0x00000000) ||
+                    (cmd->desc.depth.mask == 0xffffffff));
+
+  pipeline->stencil.test = cmd->desc.stencil.test;
+
+  pipeline->stencil.front.func = gala_comparison_to_gl(cmd->desc.stencil.front.comparison);
+  pipeline->stencil.front.pass = gala_stencil_operation_to_gl(cmd->desc.stencil.front.pass);
+  pipeline->stencil.front.fail_to_depth = gala_stencil_operation_to_gl(cmd->desc.stencil.front.fail_to_depth);
+  pipeline->stencil.front.fail_to_stencil = gala_stencil_operation_to_gl(cmd->desc.stencil.front.fail_to_stencil);
+  
+  pipeline->stencil.back.func = gala_comparison_to_gl(cmd->desc.stencil.back.comparison);
+  pipeline->stencil.back.pass = gala_stencil_operation_to_gl(cmd->desc.stencil.back.pass);
+  pipeline->stencil.back.fail_to_depth = gala_stencil_operation_to_gl(cmd->desc.stencil.back.fail_to_depth);
+  pipeline->stencil.back.fail_to_stencil = gala_stencil_operation_to_gl(cmd->desc.stencil.back.fail_to_stencil);
+
+  pipeline->stencil.ref = cmd->desc.stencil.ref;
+
+  pipeline->stencil.mask = cmd->desc.stencil.mask;
+}
+
+static void gala_ogl_pipeline_destroy(
+  gala_ogl_engine_t *engine,
+  const gala_destroy_pipeline_command_t *cmd)
+{
+  gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table,
+                               cmd->pipeline_handle);
+
+  gala_ogl_pipeline_t *pipeline = (gala_ogl_pipeline_t *)resource->internal;
+
+  free((void *)pipeline);
+}
+
 static void gala_ogl_create_buffer(
   gala_ogl_engine_t *engine,
   const gala_create_buffer_command_t *cmd)
@@ -1775,32 +2041,26 @@ static void gala_ogl_sampler_destroy(
 
 static void gala_ogl_set_viewport(
   gala_ogl_engine_t *engine,
-  const gala_uint32_t x,
-  const gala_uint32_t y,
-  const gala_uint32_t w,
-  const gala_uint32_t h)
+  const gala_set_viewport_command_t *cmd)
 {
-  engine->state.viewport.x = x;
-  engine->state.viewport.y = y;
-  engine->state.viewport.w = w;
-  engine->state.viewport.h = h;
+  engine->state.viewport.x = cmd->x;
+  engine->state.viewport.y = cmd->y;
+  engine->state.viewport.w = cmd->w;
+  engine->state.viewport.h = cmd->h;
 
-  glViewport(x, h - y, w, h);
+  glViewport(cmd->x, cmd->h - cmd->y, cmd->w, cmd->h);
 }
 
 static void gala_ogl_set_scissor(
   gala_ogl_engine_t *engine,
-  const gala_uint32_t x,
-  const gala_uint32_t y,
-  const gala_uint32_t w,
-  const gala_uint32_t h)
+  const gala_set_scissor_command_t *cmd)
 {
-  engine->state.scissor.x = x;
-  engine->state.scissor.y = y;
-  engine->state.scissor.w = w;
-  engine->state.scissor.h = h;
+  engine->state.scissor.x = cmd->x;
+  engine->state.scissor.y = cmd->y;
+  engine->state.scissor.w = cmd->w;
+  engine->state.scissor.h = cmd->h;
 
-  glScissor(x, h - y, w, h);
+  glScissor(cmd->x, cmd->h - cmd->y, cmd->w, cmd->h);
 }
 
 static void gala_ogl_reset_viewport_and_scissor(const gala_ogl_engine_t *engine) {
@@ -1813,6 +2073,95 @@ static void gala_ogl_reset_viewport_and_scissor(const gala_ogl_engine_t *engine)
             engine->state.scissor.h - engine->state.scissor.y,
             engine->state.scissor.w,
             engine->state.scissor.h);
+}
+
+// PERF(mtwilliams): Shadow state.
+static void gala_ogl_set_pipeline(
+  gala_ogl_engine_t *engine,
+  const gala_set_pipeline_command_t *cmd)
+{
+  gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table,
+                                                         cmd->pipeline_handle);
+
+  const gala_ogl_pipeline_t *pipeline = (const gala_ogl_pipeline_t *)resource->internal;
+  
+  glFrontFace(pipeline->winding);
+  
+  glPolygonMode(GL_FRONT_AND_BACK, pipeline->fill);
+
+  if (pipeline->cull) {
+    glEnable(GL_CULL_FACE);
+    glCullFace(pipeline->cull);
+  } else {
+    glDisable(GL_CULL_FACE);
+  }
+
+  if (pipeline->color.blend) {
+    glEnable(GL_BLEND);
+
+    glBlendFuncSeparate(pipeline->color.src,
+                        pipeline->color.dst,
+                        pipeline->color.src,
+                        pipeline->color.dst);
+
+    glBlendEquationSeparate(pipeline->color.equation,
+                            pipeline->color.equation);
+
+    glBlendColor(pipeline->color.constant[0],
+                 pipeline->color.constant[1],
+                 pipeline->color.constant[2],
+                 pipeline->color.constant[3]);
+  } else {
+    glDisable(GL_BLEND);
+  }
+
+  for (gala_uint32_t render_target = 0; render_target < engine->state.num_render_targets; ++render_target) {
+    glColorMaski(
+      render_target,
+      !!(pipeline->color.mask & (0x1 << (render_target * 4))),
+      !!(pipeline->color.mask & (0x2 << (render_target * 4))),
+      !!(pipeline->color.mask & (0x4 << (render_target * 4))),
+      !!(pipeline->color.mask & (0x8 << (render_target * 4)))
+    );
+  }
+
+  if (pipeline->depth.test) {
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(pipeline->depth.func);
+  } else {
+    glDisable(GL_DEPTH_TEST);
+  }
+
+  glDepthMask(pipeline->depth.mask);
+
+  if (pipeline->stencil.test) {
+    glEnable(GL_STENCIL_TEST);
+
+    glStencilFuncSeparate(GL_FRONT,
+                          pipeline->stencil.front.func,
+                          pipeline->stencil.ref,
+                          0xffffffff);
+
+    glStencilOpSeparate(GL_FRONT,
+                        pipeline->stencil.front.fail_to_stencil,
+                        pipeline->stencil.front.fail_to_depth,
+                        pipeline->stencil.front.pass);
+
+    glStencilFuncSeparate(GL_BACK,
+                          pipeline->stencil.back.func,
+                          pipeline->stencil.ref,
+                          0xffffffff);
+
+    glStencilOpSeparate(GL_BACK,
+                        pipeline->stencil.back.fail_to_stencil,
+                        pipeline->stencil.back.fail_to_depth,
+                        pipeline->stencil.back.pass);
+
+  } else {
+    glDisable(GL_STENCIL_TEST);
+  }
+
+  glStencilMaskSeparate(GL_FRONT_AND_BACK, pipeline->stencil.mask);
 }
 
 static void gala_ogl_set_render_and_depth_stencil_targets(
@@ -2091,6 +2440,12 @@ static void gala_ogl_engine_dispatch(
     case GALA_COMMAND_TYPE_RESIZE_SWAP_CHAIN:
       return gala_ogl_resize_swap_chain(engine, (gala_resize_swap_chain_command_t *)cmd);
 
+    case GALA_COMMAND_TYPE_CREATE_PIPELINE:
+      return gala_ogl_pipeline_create(engine, (gala_create_pipeline_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_DESTROY_PIPELINE:
+      return gala_ogl_pipeline_destroy(engine, (gala_destroy_pipeline_command_t *)cmd);
+
     case GALA_COMMAND_TYPE_CREATE_BUFFER:
       return gala_ogl_create_buffer(engine, (gala_create_buffer_command_t *)cmd);
 
@@ -2103,6 +2458,12 @@ static void gala_ogl_engine_dispatch(
     case GALA_COMMAND_TYPE_DESTROY_TEXTURE:
       return gala_ogl_destroy_texture(engine, (gala_destroy_texture_command_t *)cmd);
 
+    case GALA_COMMAND_TYPE_CREATE_SAMPLER:
+      return gala_ogl_sampler_create(engine, (gala_create_sampler_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_DESTROY_SAMPLER:
+      return gala_ogl_sampler_destroy(engine, (gala_destroy_sampler_command_t *)cmd);
+
     case GALA_COMMAND_TYPE_CREATE_RENDER_TARGET_VIEW:
       return gala_ogl_render_target_view_create(engine, (gala_create_render_target_view_command_t *)cmd);
 
@@ -2114,11 +2475,14 @@ static void gala_ogl_engine_dispatch(
       // Implement.
       return;
 
-    case GALA_COMMAND_TYPE_CREATE_SAMPLER:
-      return gala_ogl_sampler_create(engine, (gala_create_sampler_command_t *)cmd);
+    case GALA_COMMAND_TYPE_SET_VIEWPORT:
+      return gala_ogl_set_viewport(engine, (gala_set_viewport_command_t *)cmd);
 
-    case GALA_COMMAND_TYPE_DESTROY_SAMPLER:
-      return gala_ogl_sampler_destroy(engine, (gala_destroy_sampler_command_t *)cmd);
+    case GALA_COMMAND_TYPE_SET_SCISSOR:
+      return gala_ogl_set_scissor(engine, (gala_set_scissor_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_SET_PIPELINE:
+      return gala_ogl_set_pipeline(engine, (gala_set_pipeline_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_SET_RENDER_AND_DEPTH_STENCIL_TARGETS:
       return gala_ogl_set_render_and_depth_stencil_targets(engine, (gala_set_render_and_depth_stencil_targets_command_t *)cmd);

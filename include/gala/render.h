@@ -32,6 +32,27 @@ GALA_BEGIN_EXTERN_C
 typedef struct gala_engine gala_engine_t;
 
 extern GALA_PUBLIC
+void gala_set_viewport(
+  gala_command_buffer_t *command_buffer,
+  gala_uint32_t x,
+  gala_uint32_t y,
+  gala_uint32_t w,
+  gala_uint32_t h);
+
+extern GALA_PUBLIC
+void gala_set_scissor(
+  gala_command_buffer_t *command_buffer,
+  gala_uint32_t x,
+  gala_uint32_t y,
+  gala_uint32_t w,
+  gala_uint32_t h);
+
+extern GALA_PUBLIC
+void gala_set_pipeline(
+  gala_command_buffer_t *command_buffer,
+  gala_pipeline_handle_t pipeline_handle);
+
+extern GALA_PUBLIC
 void gala_set_render_and_depth_stencil_targets(
   gala_command_buffer_t *command_buffer,
   gala_uint32_t num_render_targets,

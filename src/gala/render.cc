@@ -13,6 +13,70 @@
 
 GALA_BEGIN_EXTERN_C
 
+void gala_set_viewport(
+  gala_command_buffer_t *command_buffer,
+  gala_uint32_t x,
+  gala_uint32_t y,
+  gala_uint32_t w,
+  gala_uint32_t h)
+{
+  gala_assert_debug(command_buffer != NULL);
+
+  gala_set_viewport_command_t *cmd =
+    (gala_set_viewport_command_t *)
+      gala_command_buffer_allocate(command_buffer,
+                                   sizeof(gala_set_viewport_command_t));
+
+  cmd->command.header.type = GALA_COMMAND_TYPE_SET_VIEWPORT;
+  cmd->command.header.size = sizeof(gala_set_viewport_command);
+
+  cmd->x = x;
+  cmd->y = y;
+  cmd->w = w;
+  cmd->h = h;
+}
+
+void gala_set_scissor(
+  gala_command_buffer_t *command_buffer,
+  gala_uint32_t x,
+  gala_uint32_t y,
+  gala_uint32_t w,
+  gala_uint32_t h)
+{
+  gala_assert_debug(command_buffer != NULL);
+
+  gala_set_scissor_command_t *cmd =
+    (gala_set_scissor_command_t *)
+      gala_command_buffer_allocate(command_buffer,
+                                   sizeof(gala_set_scissor_command_t));
+
+  cmd->command.header.type = GALA_COMMAND_TYPE_SET_SCISSOR;
+  cmd->command.header.size = sizeof(gala_set_scissor_command);
+
+  cmd->x = x;
+  cmd->y = y;
+  cmd->w = w;
+  cmd->h = h;
+}
+
+void gala_set_pipeline(
+  gala_command_buffer_t *command_buffer,
+  gala_pipeline_handle_t pipeline_handle)
+{
+  gala_assert_debug(command_buffer != NULL);
+  gala_assert_debug(pipeline_handle != GALA_INVALID_PIPELINE_HANDLE);
+
+  gala_set_pipeline_command_t *cmd =
+    (gala_set_pipeline_command_t *)
+      gala_command_buffer_allocate(command_buffer,
+                                   sizeof(gala_set_pipeline_command_t));
+
+  cmd->command.header.type = GALA_COMMAND_TYPE_SET_PIPELINE;
+  cmd->command.header.size = sizeof(gala_set_pipeline_command_t);
+
+  cmd->pipeline_handle = pipeline_handle;
+}
+
 void gala_set_render_and_depth_stencil_targets(
   gala_command_buffer_t *command_buffer,
   gala_uint32_t num_render_targets,
@@ -22,7 +86,10 @@ void gala_set_render_and_depth_stencil_targets(
   gala_assert_debug(command_buffer != NULL);
   gala_assert_debug(num_render_targets <= 8);
 
-  gala_set_render_and_depth_stencil_targets_command_t *cmd = (gala_set_render_and_depth_stencil_targets_command_t *)gala_command_buffer_allocate(command_buffer, sizeof(gala_set_render_and_depth_stencil_targets_command_t));
+  gala_set_render_and_depth_stencil_targets_command_t *cmd =
+    (gala_set_render_and_depth_stencil_targets_command_t *)
+      gala_command_buffer_allocate(command_buffer,
+                                   sizeof(gala_set_render_and_depth_stencil_targets_command_t));
 
   cmd->command.header.type = GALA_COMMAND_TYPE_SET_RENDER_AND_DEPTH_STENCIL_TARGETS;
   cmd->command.header.size = sizeof(gala_set_render_and_depth_stencil_targets_command_t);
@@ -45,7 +112,10 @@ void gala_clear_render_targets(
 {
   gala_assert_debug(command_buffer != NULL);
 
-  gala_clear_render_targets_command_t *cmd = (gala_clear_render_targets_command_t *)gala_command_buffer_allocate(command_buffer, sizeof(gala_clear_render_targets_command_t));
+  gala_clear_render_targets_command_t *cmd =
+    (gala_clear_render_targets_command_t *)
+      gala_command_buffer_allocate(command_buffer,
+                                   sizeof(gala_clear_render_targets_command_t));
 
   cmd->command.header.type = GALA_COMMAND_TYPE_CLEAR_RENDER_TARGETS;
   cmd->command.header.size = sizeof(gala_clear_render_targets_command_t);
@@ -63,7 +133,10 @@ void gala_present(
   gala_assert_debug(command_buffer != NULL);
   gala_assert_debug(swap_chain_handle != GALA_INVALID_SWAP_CHAIN_HANDLE);
 
-  gala_present_command_t *cmd = (gala_present_command_t *)gala_command_buffer_allocate(command_buffer, sizeof(gala_present_command_t));
+  gala_present_command_t *cmd =
+    (gala_present_command_t *)
+      gala_command_buffer_allocate(command_buffer,
+                                   sizeof(gala_present_command_t));
 
   cmd->command.header.type = GALA_COMMAND_TYPE_PRESENT;
   cmd->command.header.size = sizeof(gala_present_command_t);

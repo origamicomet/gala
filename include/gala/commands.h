@@ -77,6 +77,39 @@ typedef struct gala_destroy_buffer_command {
   gala_buffer_handle_t buffer_handle;
 } gala_destroy_buffer_command_t;
 
+typedef struct gala_create_texture_command {
+  gala_command_t command;
+  gala_texture_handle_t texture_handle;
+  gala_texture_desc_t desc;
+} gala_create_texture_command_t;
+
+typedef struct gala_destroy_texture_command {
+  gala_command_t command;
+  gala_texture_handle_t texture_handle;
+} gala_destroy_texture_command_t;
+
+typedef struct gala_create_sampler_command {
+  gala_command_t command;
+  gala_sampler_handle_t sampler_handle;
+  gala_sampler_desc_t desc;
+} gala_create_sampler_command_t;
+
+typedef struct gala_destroy_sampler_command {
+  gala_command_t command;
+  gala_sampler_handle_t sampler_handle;
+} gala_destroy_sampler_command_t;
+
+typedef struct gala_create_pipeline_command {
+  gala_command_t command;
+  gala_pipeline_handle_t pipeline_handle;
+  gala_pipeline_desc_t desc;
+} gala_create_pipeline_command_t;
+
+typedef struct gala_destroy_pipeline_command {
+  gala_command_t command;
+  gala_pipeline_handle_t pipeline_handle;
+} gala_destroy_pipeline_command_t;
+
 typedef struct gala_create_render_target_view_command {
   gala_command_t command;
   gala_render_target_view_handle_t render_target_view_handle;
@@ -98,6 +131,21 @@ typedef struct gala_destroy_depth_stencil_target_view_command {
   gala_command_t command;
   gala_depth_stencil_target_view_handle_t depth_stencil_target_view_handle;
 } gala_destroy_depth_stencil_target_view_command_t;
+
+typedef struct gala_set_viewport_command {
+  gala_command_t command;
+  gala_uint32_t x, y, w, h;
+} gala_set_viewport_command_t;
+
+typedef struct gala_set_scissor_command {
+  gala_command_t command;
+  gala_uint32_t x, y, w, h;
+} gala_set_scissor_command_t;
+
+typedef struct gala_set_pipeline_command {
+  gala_command_t command;
+  gala_pipeline_handle_t pipeline_handle;
+} gala_set_pipeline_command_t;
 
 typedef struct gala_set_render_and_depth_stencil_targets_command {
   gala_command_t command;
