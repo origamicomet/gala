@@ -2298,7 +2298,7 @@ static void gala_ogl_set_viewport(
   engine->state.viewport.w = cmd->w;
   engine->state.viewport.h = cmd->h;
 
-  glViewport(cmd->x, cmd->h - cmd->y, cmd->w, cmd->h);
+  glViewport(cmd->x, cmd->y, cmd->w, cmd->h);
 }
 
 static void gala_ogl_set_scissor(
@@ -2310,17 +2310,17 @@ static void gala_ogl_set_scissor(
   engine->state.scissor.w = cmd->w;
   engine->state.scissor.h = cmd->h;
 
-  glScissor(cmd->x, cmd->h - cmd->y, cmd->w, cmd->h);
+  glScissor(cmd->x, cmd->y, cmd->w, cmd->h);
 }
 
 static void gala_ogl_reset_viewport_and_scissor(const gala_ogl_engine_t *engine) {
   glViewport(engine->state.viewport.x,
-             engine->state.viewport.h - engine->state.viewport.y,
+             engine->state.viewport.y,
              engine->state.viewport.w,
              engine->state.viewport.h);
 
   glScissor(engine->state.scissor.x,
-            engine->state.scissor.h - engine->state.scissor.y,
+            engine->state.scissor.y,
             engine->state.scissor.w,
             engine->state.scissor.h);
 }
