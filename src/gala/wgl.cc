@@ -494,6 +494,7 @@ void gala_wgl_destroy_surface(
 {
   gala_assert_debug(surface != NULL);
 
+  // TODO(mtwilliams): Make sure `surface->hdc` is not current.
   ReleaseDC(surface->window, surface->hdc);
 
   free((void *)surface);
