@@ -59,6 +59,11 @@ void gala_set_shaders(
   gala_shader_handle_t pixel_shader_handle);
 
 extern GALA_PUBLIC
+void gala_set_input_layout(
+  gala_command_buffer_t *command_buffer,
+  gala_input_layout_handle_t input_layout_handle);
+
+extern GALA_PUBLIC
 void gala_set_render_and_depth_stencil_targets(
   gala_command_buffer_t *command_buffer,
   gala_uint32_t num_render_targets,

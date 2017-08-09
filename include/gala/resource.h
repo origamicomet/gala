@@ -31,6 +31,9 @@ typedef enum gala_resource_type {
   /// A pipeline.
   GALA_RESOURCE_TYPE_PIPELINE = 2,
 
+  /// An input layout.
+  GALA_RESOURCE_TYPE_INPUT_LAYOUT = 3,
+
   /// A texture.
   GALA_RESOURCE_TYPE_TEXTURE = 0x100,
 

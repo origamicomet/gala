@@ -96,6 +96,23 @@ void gala_set_shaders(
   cmd->pixel_shader_handle = pixel_shader_handle;
 }
 
+void gala_set_input_layout(
+  gala_command_buffer_t *command_buffer,
+  gala_input_layout_handle_t input_layout_handle)
+{
+  gala_assert_debug(command_buffer != NULL);
+
+  gala_set_input_layout_command_t *cmd =
+    (gala_set_input_layout_command_t *)
+      gala_command_buffer_allocate(command_buffer,
+                                   sizeof(gala_set_input_layout_command_t));
+
+  cmd->command.header.type = GALA_COMMAND_TYPE_SET_INPUT_LAYOUT;
+  cmd->command.header.size = sizeof(gala_set_input_layout_command_t);
+
+  cmd->input_layout_handle = input_layout_handle;
+}
+
 void gala_set_render_and_depth_stencil_targets(
   gala_command_buffer_t *command_buffer,
   gala_uint32_t num_render_targets,

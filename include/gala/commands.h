@@ -121,6 +121,17 @@ typedef struct gala_destroy_shader_command {
   gala_shader_handle_t shader_handle;
 } gala_destroy_shader_command_t;
 
+typedef struct gala_create_input_layout_command {
+  gala_command_t command;
+  gala_input_layout_handle_t input_layout_handle;
+  gala_input_layout_desc_t desc;
+} gala_create_input_layout_command_t;
+
+typedef struct gala_destroy_input_layout_command {
+  gala_command_t command;
+  gala_input_layout_handle_t input_layout_handle;
+} gala_destroy_input_layout_command_t;
+
 typedef struct gala_create_render_target_view_command {
   gala_command_t command;
   gala_render_target_view_handle_t render_target_view_handle;
@@ -163,6 +174,11 @@ typedef struct gala_set_shaders_command {
   gala_shader_handle_t vertex_shader_handle;
   gala_shader_handle_t pixel_shader_handle;
 } gala_set_shaders_command_t;
+
+typedef struct gala_set_input_layout_command {
+  gala_command_t command;
+  gala_input_layout_handle_t input_layout_handle;
+} gala_set_input_layout_command_t;
 
 typedef struct gala_set_render_and_depth_stencil_targets_command {
   gala_command_t command;

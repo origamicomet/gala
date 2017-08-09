@@ -1606,6 +1606,22 @@ static gala_uint32_t gala_ogl_program_cache_hash(
   );
 }
 
+typedef struct gala_ogl_attribute {
+  gala_uint32_t type;
+  gala_uint32_t size;
+  gala_bool_t normalized;
+  gala_bool_t cast;
+  gala_uint32_t stride;
+  gala_uint32_t offset;
+  gala_uint32_t divisor;
+} gala_ogl_attribute_t;
+
+typedef struct gala_ogl_input_layout {
+  gala_uint32_t stride;
+  gala_uint32_t count;
+  gala_ogl_attribute attributes[16];
+} gala_ogl_input_layout_t;
+
 typedef struct gala_ogl_render_target_view {
   gala_pixel_format_t format;
 
@@ -1730,6 +1746,8 @@ typedef struct gala_ogl_engine {
     gala_ogl_viewport_t viewport;
     gala_ogl_scissor_t scissor;
 
+    const gala_ogl_input_layout_t *input_layout;
+
     // Composed of bound shaders.
     gala_ogl_program_t *program;
 
@@ -1755,6 +1773,9 @@ typedef struct gala_ogl_engine {
     gala_uint64_t start_of_build;
     gala_uint64_t start_of_submission;
   } statistics;
+
+  // Indicates that vertex attributes need to be respecified.
+  gala_bool_t vertex_attributes_need_respecification;
 
   // Rolling buffer that tracks late flushes of constant buffers for each frame.
   gala_uint64_t late_flushes_in_recent_history;
@@ -2433,6 +2454,169 @@ static void gala_ogl_shader_destroy(
   free((void *)shader);
 }
 
+static gala_uint32_t gala_format_to_width(const gala_format_t format) {
+  switch (format & ~GALA_FORMAT_NORMALIZED) {
+    case GALA_FORMAT_X_S8: return 1;
+    case GALA_FORMAT_XY_S8: return 2;
+    case GALA_FORMAT_XYZ_S8: return 3;
+    case GALA_FORMAT_XYZW_S8: return 4;
+    case GALA_FORMAT_X_U8: return 1;
+    case GALA_FORMAT_XY_U8: return 2;
+    case GALA_FORMAT_XYZ_U8: return 3;
+    case GALA_FORMAT_XYZW_U8: return 4;
+    case GALA_FORMAT_X_S16: return 2;
+    case GALA_FORMAT_XY_S16: return 4;
+    case GALA_FORMAT_XYZ_S16: return 6;
+    case GALA_FORMAT_XYZW_S16: return 8;
+    case GALA_FORMAT_X_U16: return 2;
+    case GALA_FORMAT_XY_U16: return 4;
+    case GALA_FORMAT_XYZ_U16: return 6;
+    case GALA_FORMAT_XYZW_U16: return 8;
+    case GALA_FORMAT_X_S32: return 4;
+    case GALA_FORMAT_XY_S32: return 8;
+    case GALA_FORMAT_XYZ_S32: return 12;
+    case GALA_FORMAT_XYZW_S32: return 32;
+    case GALA_FORMAT_X_U32: return 4;
+    case GALA_FORMAT_XY_U32: return 8;
+    case GALA_FORMAT_XYZ_U32: return 12;
+    case GALA_FORMAT_XYZW_U32: return 32;
+    case GALA_FORMAT_X_F16: return 2;
+    case GALA_FORMAT_XY_F16: return 4;
+    case GALA_FORMAT_XYZ_F16: return 6;
+    case GALA_FORMAT_XYZW_F16: return 8;
+    case GALA_FORMAT_X_F32: return 4;
+    case GALA_FORMAT_XY_F32: return 8;
+    case GALA_FORMAT_XYZ_F32: return 12;
+    case GALA_FORMAT_XYZW_F32: return 16;
+  }
+}
+
+static void gala_format_to_gl(
+  const gala_format_t format,
+  gala_uint32_t *type,
+  gala_uint32_t *size,
+  gala_bool_t *normalized,
+  gala_bool_t *cast)
+{
+  switch (format & ~GALA_FORMAT_NORMALIZED) {
+    case GALA_FORMAT_X_S8: *type = GL_BYTE; *size = 1; break;
+    case GALA_FORMAT_XY_S8: *type = GL_BYTE; *size = 2; break;
+    case GALA_FORMAT_XYZ_S8: *type = GL_BYTE; *size = 3; break;
+    case GALA_FORMAT_XYZW_S8: *type = GL_BYTE; *size = 4; break;
+    case GALA_FORMAT_X_U8: *type = GL_UNSIGNED_BYTE; *size = 1; break;
+    case GALA_FORMAT_XY_U8: *type = GL_UNSIGNED_BYTE; *size = 2; break;
+    case GALA_FORMAT_XYZ_U8: *type = GL_UNSIGNED_BYTE; *size = 3; break;
+    case GALA_FORMAT_XYZW_U8: *type = GL_UNSIGNED_BYTE; *size = 4; break;
+    case GALA_FORMAT_X_S16: *type = GL_SHORT; *size = 1; break;
+    case GALA_FORMAT_XY_S16: *type = GL_SHORT; *size = 2; break;
+    case GALA_FORMAT_XYZ_S16: *type = GL_SHORT; *size = 3; break;
+    case GALA_FORMAT_XYZW_S16: *type = GL_SHORT; *size = 4; break;
+    case GALA_FORMAT_X_U16: *type = GL_UNSIGNED_SHORT; *size = 1; break;
+    case GALA_FORMAT_XY_U16: *type = GL_UNSIGNED_SHORT; *size = 2; break;
+    case GALA_FORMAT_XYZ_U16: *type = GL_UNSIGNED_SHORT; *size = 3; break;
+    case GALA_FORMAT_XYZW_U16: *type = GL_UNSIGNED_SHORT; *size = 4; break;
+    case GALA_FORMAT_X_S32: *type = GL_INT; *size = 1; break;
+    case GALA_FORMAT_XY_S32: *type = GL_INT; *size = 2; break;
+    case GALA_FORMAT_XYZ_S32: *type = GL_INT; *size = 3; break;
+    case GALA_FORMAT_XYZW_S32: *type = GL_INT; *size = 4; break;
+    case GALA_FORMAT_X_U32: *type = GL_UNSIGNED_INT; *size = 1; break;
+    case GALA_FORMAT_XY_U32: *type = GL_UNSIGNED_INT; *size = 2; break;
+    case GALA_FORMAT_XYZ_U32: *type = GL_UNSIGNED_INT; *size = 3; break;
+    case GALA_FORMAT_XYZW_U32: *type = GL_UNSIGNED_INT; *size = 4; break;
+    case GALA_FORMAT_X_F16: *type = GL_HALF_FLOAT; *size = 1; *cast = true; break;
+    case GALA_FORMAT_XY_F16: *type = GL_HALF_FLOAT; *size = 2; *cast = true; break;
+    case GALA_FORMAT_XYZ_F16: *type = GL_HALF_FLOAT; *size = 3; *cast = true; break;
+    case GALA_FORMAT_XYZW_F16: *type = GL_HALF_FLOAT; *size = 4; *cast = true; break;
+    case GALA_FORMAT_X_F32: *type = GL_FLOAT; *size = 1; *cast = true; break;
+    case GALA_FORMAT_XY_F32: *type = GL_FLOAT; *size = 2; *cast = true; break;
+    case GALA_FORMAT_XYZ_F32: *type = GL_FLOAT; *size = 3; *cast = true; break;
+    case GALA_FORMAT_XYZW_F32: *type = GL_FLOAT; *size = 4; *cast = true; break;
+  }
+  
+  if (format & GALA_FORMAT_NORMALIZED) {
+    // TODO(mtwilliams): Orthogonalize normalization and casting.
+    *normalized = true;
+    *cast = true;
+  }
+}
+
+static void gala_ogl_input_layout_create(
+  gala_ogl_engine_t *engine,
+  const gala_create_input_layout_command_t *cmd)
+{
+  // TODO(mtwilliams): Allow non-interleaved layouts.
+   // * Offsets, including alignment, will vary by slot.
+   // * We can bind the static and dynamic buffers upfront and map slots to
+   //   offsets.
+  for (gala_uint32_t index = 0; index < cmd->desc.count; ++index) {
+    gala_assert_debug(cmd->desc.attributes[index].slot == 0);
+    gala_assert_debug(cmd->desc.attributes[0].stride == cmd->desc.attributes[index].stride);
+  }
+
+  // PERF(mtwilliams): Allocate from pool.
+  gala_ogl_input_layout_t *input_layout =
+    (gala_ogl_input_layout_t *)calloc(sizeof(gala_ogl_input_layout_t), 1);
+
+  gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table,
+                               cmd->input_layout_handle);
+
+  resource->internal = (gala_uintptr_t)input_layout;
+
+  gala_uint32_t offsets[17] = { 0, };
+  for (gala_uint32_t index = 0; index < cmd->desc.count; ++index)
+    offsets[index + 1] = offsets[index] + gala_format_to_width(cmd->desc.attributes[index].format);
+
+  input_layout->count = cmd->desc.count;
+
+  input_layout->stride = cmd->desc.attributes[0].stride;
+
+  if (input_layout->stride == 0)
+    // Tightly packed.
+    input_layout->stride = offsets[input_layout->count];
+
+
+  if (!GALA_IS_POWER_OF_TWO(input_layout->stride)) {
+    // TODO(mtwilliams): Warn about performance woes.
+  }
+
+  // TODO(mtwilliams): Validate index aligns with name?
+  for (gala_uint32_t index = 0; index < cmd->desc.count; ++index) {
+    gala_ogl_attribute_t *attribute = &input_layout->attributes[index];
+
+    gala_format_to_gl(cmd->desc.attributes[index].format,
+                      &attribute->type,
+                      &attribute->size,
+                      &attribute->normalized,
+                      &attribute->cast);
+
+    attribute->stride = cmd->desc.attributes[index].stride;
+    attribute->offset = offsets[index];
+
+    attribute->divisor = cmd->desc.attributes[index].rate;
+  }
+}
+
+static void gala_ogl_input_layout_destroy(
+  gala_ogl_engine_t *engine,
+  const gala_destroy_input_layout_command_t *cmd)
+{
+  gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table,
+                               cmd->input_layout_handle);
+
+  gala_ogl_input_layout_t *input_layout =
+    (gala_ogl_input_layout_t *)resource->internal;
+
+  if (engine->state.input_layout == input_layout) {
+    // TODO(mtwilliams): Defer destroy?
+    engine->state.input_layout = NULL;
+    engine->vertex_attributes_need_respecification = true;
+  }
+
+  free((void *)input_layout);
+}
+
 static void gala_ogl_render_target_view_create(
   gala_ogl_engine_t *engine,
   const gala_create_render_target_view_command_t *cmd)
@@ -2611,6 +2795,23 @@ static void gala_ogl_set_pipeline(
   }
 
   glStencilMaskSeparate(GL_FRONT_AND_BACK, pipeline->stencil.mask);
+}
+
+static void gala_ogl_set_input_layout(
+  gala_ogl_engine_t *engine,
+  const gala_set_input_layout_command_t *cmd)
+{
+  const gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table,
+                               cmd->input_layout_handle);
+
+  const gala_ogl_input_layout_t *input_layout =
+    (const gala_ogl_input_layout_t *)resource->internal;
+
+  engine->state.input_layout = input_layout;
+
+  // Defer specification until `gala_ogl_draw`.
+  engine->vertex_attributes_need_respecification = true;
 }
 
 static void gala_ogl_set_shaders(
@@ -3012,6 +3213,12 @@ static void gala_ogl_engine_dispatch(
     case GALA_COMMAND_TYPE_DESTROY_SHADER:
       return gala_ogl_shader_destroy(engine, (gala_destroy_shader_command_t *)cmd);
 
+    case GALA_COMMAND_TYPE_CREATE_INPUT_LAYOUT:
+      return gala_ogl_input_layout_create(engine, (gala_create_input_layout_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_DESTROY_INPUT_LAYOUT:
+      return gala_ogl_input_layout_destroy(engine, (gala_destroy_input_layout_command_t *)cmd);
+
     case GALA_COMMAND_TYPE_CREATE_RENDER_TARGET_VIEW:
       return gala_ogl_render_target_view_create(engine, (gala_create_render_target_view_command_t *)cmd);
 
@@ -3031,6 +3238,9 @@ static void gala_ogl_engine_dispatch(
 
     case GALA_COMMAND_TYPE_SET_PIPELINE:
       return gala_ogl_set_pipeline(engine, (gala_set_pipeline_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_SET_INPUT_LAYOUT:
+      return gala_ogl_set_input_layout(engine, (gala_set_input_layout_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_SET_SHADERS:
       return gala_ogl_set_shaders(engine, (gala_set_shaders_command_t *)cmd);

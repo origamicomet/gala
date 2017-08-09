@@ -25,6 +25,8 @@
 
 #include "gala/resources/shader.h"
 
+#include "gala/resources/input_layout.h"
+
 #include "gala/resources/render_target_view.h"
 #include "gala/resources/depth_stencil_target_view.h"
 
