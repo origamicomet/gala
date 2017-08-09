@@ -120,9 +120,7 @@ Surface *Surface::create(const Surface::Description &desc) {
 
 void Surface::destroy() {
 #if GALA_PLATFORM == GALA_PLATFORM_WINDOWS
-  // We destroy the window in WM_CLOSE (and free it in WM_NCDESTROY) so that we
-  // don't have to handle programmatic window closes differently.
-  ::CloseWindow((HWND)native_hndl_);
+  ::DestroyWindow((HWND)native_hndl_);
 #elif GALA_PLATFORM == GALA_PLATFORM_MAC_OS_X
 #elif GALA_PLATFORM == GALA_PLATFORM_LINUX
 #elif GALA_PLATFORM == GALA_PLATFORM_IOS
@@ -130,10 +128,13 @@ void Surface::destroy() {
 #endif
 }
 
-void Surface::update(void (*event_handler)(const Surface::Event *event, void *ctx),
+void Surface::update(EventHandler event_handler,
                      void *event_handler_ctx) {
   gala_assert_debug(event_handler != NULL);
 #if GALA_PLATFORM == GALA_PLATFORM_WINDOWS
+  ::SetPropA((HWND)native_hndl_, "event_handler", (HANDLE)event_handler);
+  ::SetPropA((HWND)native_hndl_, "event_handler_ctx", (HANDLE)event_handler_ctx);
+
   MSG msg;
   while (::PeekMessage(&msg, (HWND)native_hndl_, 0, 0, PM_REMOVE)) {
     // TODO(mtwilliams): Translate and pass messages to |event_handler|.
@@ -193,9 +194,14 @@ uintptr_t Surface::to_native_hndl() const {
 static LRESULT WINAPI _WindowProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   Surface *surface = (Surface *)::GetPropA(hWnd, "surface");
 
+  Surface::EventHandler event_handler = (Surface::EventHandler)::GetPropA(hWnd, "event_handler");
+  void *event_handler_ctx = (void *)::GetPropA(hWnd, "event_handler_ctx");
+
   switch (uMsg) {
     case WM_CLOSE: {
-      ::DestroyWindow(hWnd);
+      Surface::Event event;
+      event.type = Surface::Event::CLOSED;
+      event_handler(surface, &event, event_handler_ctx);
     } return TRUE;
 
     case WM_NCDESTROY: {

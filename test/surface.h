@@ -44,9 +44,16 @@ class Surface {
 
  public:
   struct Event {
+    enum Type {
+      CLOSED = 1,
+    };
+
+    Type type;
   };
 
-  void update(void (*event_handler)(const Event *event, void *ctx),
+  typedef void (*EventHandler)(Surface *surface, const Event *event, void *ctx);
+
+  void update(EventHandler event_handler,
               void *event_handler_ctx = NULL);
 
  public:
