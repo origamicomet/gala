@@ -37,6 +37,7 @@ namespace test {
 
   // TODO(mtwilliams): Refactor test suites into a common structure.
   namespace swap_chain_tests { extern void run(gala_engine_t *engine); }
+  namespace end_to_end_tests { extern void run(gala_engine_t *engine); }
 
   static struct {
     const char *slug;
@@ -44,7 +45,8 @@ namespace test {
 
     void (*run)(gala_engine_t *engine);
   } suites[] = {
-    { "swap_chain", "Swap Chain", &swap_chain_tests::run }
+    { "swap_chain", "Swap Chain", &swap_chain_tests::run },
+    { "end_to_end", "End-to-End", &end_to_end_tests::run }
   };
 } // test
 } // gala
@@ -71,17 +73,27 @@ int main(int argc, const char *argv[]) {
 
   // Run all test suites against all available backends.
   for (gala_uint32_t backend = 0; backend < num_backends; ++backend) {
+    ::fprintf(stdout, "Creating engine against '%s' backend...\n", gala::test::backends[backend].name);
+
     gala_engine_creation_params_t engine_creation_params;
     engine_creation_params.type = GALA_ENGINE_TYPE_HARDWARE;
     engine_creation_params.flags = GALA_ENGINE_DEBUG;
 
     gala_engine_t *engine = gala::test::backends[backend].create_and_init_engine(&engine_creation_params);
 
-    for (gala_uint32_t test_suite = 0; test_suite < num_test_suites; ++test_suite)
+    for (gala_uint32_t test_suite = 0; test_suite < num_test_suites; ++test_suite) {
+      ::fprintf(stdout, "Running '%s' test suite against '%s' engine (%u/%u)...\n",
+                        gala::test::suites[test_suite].name,
+                        gala::test::backends[backend].name,
+                        test_suite + 1, num_test_suites);
       gala::test::suites[test_suite].run(engine);
+    }
 
+    ::fprintf(stdout, "Destroying engine...\n");
     gala::test::backends[backend].destroy_engine(engine);
   }
+
+  ::fprintf(stdout, "Done!\n");
 
   return EXIT_FAILURE;
 }
