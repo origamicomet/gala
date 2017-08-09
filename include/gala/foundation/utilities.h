@@ -115,30 +115,21 @@ static GALA_INLINE gala_uint32_t gala_popcntull(gala_uint64_t n) {
 
 /// Quickly computes the base-2 logarithm of `n`.
 static GALA_INLINE gala_uint32_t gala_log2ul(gala_uint32_t n) {
-#if defined(_MSC_VER)
-  gala_uint32_t bit;
-  _BitScanReverse((unsigned long *)&bit, n - 1);
-  return n ? bit : 0;
-#elif defined(__clang__) || defined(__GNUC__)
-  return n ? (32 - __builtin_clzl(n - 1)) : 0;
-#endif
+  return n ? (31 - gala_clzul(n)) : 0;
 }
 
 /// Quickly computes the base-2 logarithm with `n` rounded up to the nearest
 /// power of two.
 static GALA_INLINE gala_uint32_t gala_log2ul_ceil(gala_uint32_t n) {
   const gala_uint32_t logarithm = gala_log2ul(n);
-  return (n & (n - 1)) ? logarithm : logarithm + 1;
+  const gala_uint32_t non_power_of_two = (n & (n - 1));
+  return logarithm + (non_power_of_two ? 1 : 0);
 }
 
 // TODO(mtwilliams): Fallback for _BitScanReverse64 on x86.
 #if 0
   /// Quickly computes the base-2 logarithim of `n`.
   static GALA_INLINE gala_uint64_t gala_log2ull(gala_uint64_t n) {
-  #if defined(_MSC_VER)
-  #elif defined(__clang__) || defined(__GNUC__)
-    return n ? (64 - __builtin_clzll(n - 1)) : 0;
-  #endif
   }
 #endif
 
