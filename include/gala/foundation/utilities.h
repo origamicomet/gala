@@ -74,6 +74,40 @@ static GALA_INLINE gala_uint32_t gala_ctzul(gala_uint32_t n) {
 #endif
 }
 
+#if defined(_MSC_VER)
+  extern GALA_LOCAL const gala_uint8_t GALA_POPCNTUB_TABLE[256];
+#endif
+
+/// Counts the number of set bits.
+static GALA_INLINE gala_uint32_t gala_popcntul(gala_uint32_t n) {
+#if defined(_MSC_VER)
+  const gala_uint8_t *bytes = (const gala_uint8_t *)&n;
+  return GALA_POPCNTUB_TABLE[bytes[0]] + 
+         GALA_POPCNTUB_TABLE[bytes[1]] + 
+         GALA_POPCNTUB_TABLE[bytes[2]] + 
+         GALA_POPCNTUB_TABLE[bytes[3]];
+#elif defined(__clang__) || defined(__GNUC__)
+  return __builtin_popcountl(n);
+#endif
+}
+
+/// Counts the number of set bits.
+static GALA_INLINE gala_uint32_t gala_popcntull(gala_uint64_t n) {
+#if defined(_MSC_VER)
+  const gala_uint8_t *bytes = (const gala_uint8_t *)&n;
+  return GALA_POPCNTUB_TABLE[bytes[0]] + 
+         GALA_POPCNTUB_TABLE[bytes[1]] + 
+         GALA_POPCNTUB_TABLE[bytes[2]] + 
+         GALA_POPCNTUB_TABLE[bytes[3]] +
+         GALA_POPCNTUB_TABLE[bytes[4]] + 
+         GALA_POPCNTUB_TABLE[bytes[5]] + 
+         GALA_POPCNTUB_TABLE[bytes[6]] + 
+         GALA_POPCNTUB_TABLE[bytes[7]];
+#elif defined(__clang__) || defined(__GNUC__)
+  return __builtin_popcountll(n);
+#endif
+}
+
 /// \def GALA_IS_POWER_OF_TWO
 /// \brief Quickly determines if `n` is a power of two.
 #define GALA_IS_POWER_OF_TWO(n) \
