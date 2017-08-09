@@ -25,21 +25,24 @@ typedef enum gala_command_type {
   /// No operation; do nothing.
   GALA_COMMAND_TYPE_NOP = 0,
 
+  //
   // Debug
-
-  GALA_COMMAND_TYPE_ANNOTATE,
+  //
+  GALA_COMMAND_TYPE_PUSH_ANNOTATION,
+  GALA_COMMAND_TYPE_POP_ANNOTATION,
   GALA_COMMAND_TYPE_LABEL,
 
-  // ...
-
+  //
   // Profiling
+  //
 
   // ...
 
+  //
   // Synchronization
+  //
 
   /// TODO(mtwilliams): Require frame markers.
-  ///
   GALA_COMMAND_TYPE_START_OF_FRAME,
   GALA_COMMAND_TYPE_END_OF_FRAME,
 
@@ -50,6 +53,10 @@ typedef enum gala_command_type {
   /// \warning This can take a substantial amount of time and may even stall
   /// with some backends. Use sparingly.
   GALA_COMMAND_TYPE_FENCE_ON_COMPLETION,
+
+  //
+  // Resources
+  //
 
   // Swap Chain
   GALA_COMMAND_TYPE_CREATE_SWAP_CHAIN,
@@ -88,7 +95,10 @@ typedef enum gala_command_type {
   GALA_COMMAND_TYPE_CREATE_DEPTH_STENCIL_TARGET_VIEW,
   GALA_COMMAND_TYPE_DESTROY_DEPTH_STENCIL_TARGET_VIEW,
 
+  //
   // State
+  //
+
   GALA_COMMAND_TYPE_SET_VIEWPORT,
   GALA_COMMAND_TYPE_SET_SCISSOR,
   GALA_COMMAND_TYPE_SET_PIPELINE,
@@ -97,18 +107,27 @@ typedef enum gala_command_type {
   GALA_COMMAND_TYPE_SET_TOPOLOGY,
   GALA_COMMAND_TYPE_SET_RENDER_AND_DEPTH_STENCIL_TARGETS,
 
+  //
   // Rendering
+  //
+
   GALA_COMMAND_TYPE_CLEAR_RENDER_TARGETS,
   GALA_COMMAND_TYPE_CLEAR_DEPTH_STENCIL_TARGET,
   GALA_COMMAND_TYPE_DRAW,
 
+  //
   // Transfer
+  //
+
   GALA_COMMAND_TYPE_READ_FROM_BUFFER,
   GALA_COMMAND_TYPE_WRITE_TO_BUFFER,
   GALA_COMMAND_TYPE_READ_FROM_TEXTURE,
   GALA_COMMAND_TYPE_WRITE_TO_TEXTURE,
 
+  //
   // Presentation
+  //
+  
   GALA_COMMAND_TYPE_PRESENT = 255,
 
   /// \internal Force gala_uint32_t storage and alignment.

@@ -48,6 +48,16 @@ typedef struct gala_draw {
   gala_uint32_t count;
 } gala_draw_t;
 
+typedef struct gala_push_annotation_command {
+  gala_command_t command;
+  char label[256];
+  gala_uint32_t color;
+} gala_push_annotation_command_t;
+
+typedef struct gala_pop_annotation_command {
+  gala_command_t command;
+} gala_pop_annotation_command_t;
+
 typedef struct gala_label_command {
   gala_command_t command;
   gala_resource_handle_t handle;

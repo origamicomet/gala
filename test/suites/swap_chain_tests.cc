@@ -51,6 +51,12 @@ void run(gala_engine_t *engine) {
     render_target_view_desc.storage = swap_chains[1];
     render_target_views[1] = gala_render_target_view_create(engine, &cmds, &render_target_view_desc);
 
+    gala_label(&cmds, swap_chains[0], "Swap Chain A");
+    gala_label(&cmds, swap_chains[1], "Swap Chain B");
+
+    gala_label(&cmds, render_target_views[0], "Render-target View A");
+    gala_label(&cmds, render_target_views[1], "Render-target View B");
+
     engine->execute(engine, &cmds);
   }
 

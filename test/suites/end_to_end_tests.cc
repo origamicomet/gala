@@ -96,6 +96,7 @@ void run(gala_engine_t *engine) {
     swap_chain_desc.surface = surface->to_native_hndl();
 
     swap_chain = gala_swap_chain_create(engine, &cmds, &swap_chain_desc);
+    gala_label(&cmds, swap_chain, "Swap Chain");
 
     gala_render_target_view_desc_t render_target_view_desc;
     render_target_view_desc.format = swap_chain_desc.format;
@@ -105,6 +106,7 @@ void run(gala_engine_t *engine) {
     render_target_view_desc.storage = swap_chain;
 
     render_target_view = gala_render_target_view_create(engine, &cmds, &render_target_view_desc);
+    gala_label(&cmds, render_target_view, "Render-target View");
 
     gala_pipeline_desc_t pipeline_desc;
     pipeline_desc.winding = GALA_CW;
@@ -132,6 +134,7 @@ void run(gala_engine_t *engine) {
       shader_desc.length = 0;
 
       vertex_shader = gala_shader_create(engine, &cmds, &shader_desc);
+      gala_label(&cmds, vertex_shader, "Vertex Shader");
     }
 
     {
@@ -143,6 +146,7 @@ void run(gala_engine_t *engine) {
       shader_desc.length = 0;
 
       pixel_shader = gala_shader_create(engine, &cmds, &shader_desc);
+      gala_label(&cmds, pixel_shader, "Pixel Shader");
     }
 
     gala_input_layout_desc_t input_layout_desc;
@@ -177,6 +181,9 @@ void run(gala_engine_t *engine) {
                                            sizeof(VERTICES[1]),
                                            (const void *)&VERTICES[1][0]);
 
+    gala_label(&cmds, vertex_buffers[0], "Opaque Geometry");
+    gala_label(&cmds, vertex_buffers[1], "Translucent Geometry");
+
     engine->execute(engine, &cmds);
   }
 
@@ -196,9 +203,13 @@ void run(gala_engine_t *engine) {
 
     gala_set_topology(&cmds, GALA_TRIANGLES);
 
+    gala_push_annotation(&cmds, "Clear", 0x000000ff);
     gala_set_render_and_depth_stencil_targets(&cmds, 1, &render_target_view, GALA_INVALID_DEPTH_STENCIL_TARGET_VIEW_HANDLE);
     gala_clear_render_targets(&cmds, 0.5f, 0.5f, 0.5f, 1.0f);
+    gala_pop_annotation(&cmds);
 
+    gala_push_annotation(&cmds, "Geometry", 0xffffffff);
+    gala_push_annotation(&cmds, "Opaques", 0xffff00ff);
     {
       gala_draw_t draw;
       draw.indicies = GALA_INVALID_BUFFER_HANDLE;
@@ -216,7 +227,9 @@ void run(gala_engine_t *engine) {
 
       gala_draw(&cmds, &draw);
     }
+    gala_pop_annotation(&cmds);
 
+    gala_push_annotation(&cmds, "Translucents", 0xffff00ff);
     {
       gala_draw_t draw;
       draw.indicies = GALA_INVALID_BUFFER_HANDLE;
@@ -234,8 +247,12 @@ void run(gala_engine_t *engine) {
 
       gala_draw(&cmds, &draw);
     }
+    gala_pop_annotation(&cmds);
+    gala_pop_annotation(&cmds);
 
+    gala_push_annotation(&cmds, "Present", 0x0000ffff);
     gala_present(&cmds, swap_chain);
+    gala_pop_annotation(&cmds);
 
     gala_end_of_frame(&cmds, NULL);
 

@@ -25,15 +25,18 @@ GALA_BEGIN_EXTERN_C
 // Defined in `gala/command_buffer.h`
 typedef struct gala_command_buffer gala_command_buffer_t;
 
-#if 0
 extern GALA_PUBLIC
-void gala_debug_annotate(
+void gala_push_annotation(
   gala_command_buffer_t *command_buffer,
-  ...);
-#endif
+  const char *label,
+  gala_uint32_t color);
 
 extern GALA_PUBLIC
-void gala_debug_label(
+void gala_pop_annotation(
+  gala_command_buffer_t *command_buffer);
+
+extern GALA_PUBLIC
+void gala_label(
   gala_command_buffer_t *command_buffer,
   gala_resource_handle_t handle,
   const char *name);

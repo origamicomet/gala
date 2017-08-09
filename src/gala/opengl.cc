@@ -74,6 +74,39 @@ GALA_BEGIN_EXTERN_C
 #define GL_TEXTURE_CUBE_MAP_SEAMLESS      0x884F
 
 //
+// Debug
+//
+
+#define GL_DEBUG_OUTPUT                   0x92E0
+#define GL_DEBUG_OUTPUT_SYNCHRONOUS       0x8242
+
+#define GL_DEBUG_CALLBACK_FUNCTION        0x8244
+#define GL_DEBUG_CALLBACK_USER_PARAM      0x8245
+
+#define GL_DEBUG_SOURCE_API               0x8246
+#define GL_DEBUG_SOURCE_WINDOW_SYSTEM     0x8247
+#define GL_DEBUG_SOURCE_SHADER_COMPILER   0x8248
+#define GL_DEBUG_SOURCE_THIRD_PARTY       0x8249
+#define GL_DEBUG_SOURCE_APPLICATION       0x824A
+#define GL_DEBUG_SOURCE_OTHER             0x824B
+
+#define GL_DEBUG_TYPE_ERROR               0x824C
+#define GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR 0x824D
+#define GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR  0x824E
+#define GL_DEBUG_TYPE_PORTABILITY         0x824F
+#define GL_DEBUG_TYPE_PERFORMANCE         0x8250
+#define GL_DEBUG_TYPE_OTHER               0x8251
+#define GL_DEBUG_TYPE_MARKER              0x8268 
+
+#define GL_DEBUG_TYPE_PUSH_GROUP          0x8269  
+#define GL_DEBUG_TYPE_POP_GROUP           0x826A  
+    
+#define GL_DEBUG_SEVERITY_HIGH            0x9146
+#define GL_DEBUG_SEVERITY_MEDIUM          0x9147
+#define GL_DEBUG_SEVERITY_LOW             0x9148
+#define GL_DEBUG_SEVERITY_NOTIFICATION    0x826B 
+
+//
 // Types
 //
 
@@ -228,6 +261,8 @@ GALA_BEGIN_EXTERN_C
 // Buffers
 //
 
+#define GL_BUFFER                         0x82E0
+
 #define GL_ARRAY_BUFFER                   0x8892
 #define GL_ELEMENT_ARRAY_BUFFER           0x8893
 #define GL_UNIFORM_BUFFER                 0x8A11
@@ -252,9 +287,13 @@ GALA_BEGIN_EXTERN_C
 // Textures & Samplers
 //
 
+#define GL_TEXTURE                        0x1702
+
 #define GL_TEXTURE_1D                     0x0DE0
 #define GL_TEXTURE_2D                     0x0DE1
 #define GL_TEXTURE_3D                     0x806F
+
+#define GL_SAMPLER                        0x82E6
 
 #define GL_SAMPLER_1D                     0x8B5D
 #define GL_SAMPLER_2D                     0x8B5E
@@ -289,6 +328,7 @@ GALA_BEGIN_EXTERN_C
 //
 // Wrapping
 //
+
 #define GL_REPEAT                         0x2901
 #define GL_MIRRORED_REPEAT                0x8370
 #define GL_CLAMP_TO_EDGE                  0x812F
@@ -297,6 +337,9 @@ GALA_BEGIN_EXTERN_C
 //
 // Shaders
 //
+
+#define GL_SHADER                         0x82E1
+#define GL_PROGRAM                        0x82E2
 
 #define GL_VERTEX_SHADER                  0x8B31
 #define GL_FRAGMENT_SHADER                0x8B30
@@ -329,7 +372,10 @@ GALA_BEGIN_EXTERN_C
 
 #define GL_DRAW_BUFFER                    0x8825
 
+//
 // Topology
+//
+
 #define GL_POINTS                         0x0000
 #define GL_LINES                          0x0001
 #define GL_LINE_LOOP                      0x0002
@@ -1439,7 +1485,8 @@ typedef struct gala_ogl_buffer {
     void *write;
   } fences;
 
-  // TODO(mtwilliams): Track name internally.
+  // PERF(mtwilliams): Use a buddy allocator for strings.
+  const char *name;
 } gala_ogl_buffer_t;
 
 static void gala_ogl_buffer_write(
@@ -1975,25 +2022,98 @@ void gala_ogl_destroy_engine(
   free((void *)engine);
 }
 
+static void gala_ogl_push_annotation(
+  gala_ogl_engine_t *engine,
+  const gala_push_annotation_command_t *cmd)
+{
+  if (!(engine->generic.meta.flags & GALA_ENGINE_DEBUG))
+    return;
+
+  if (GL_KHR_debug)
+    // TODO(mtwilliams): Specify `id` by hashing `cmd->label`?
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, &cmd->label[0]);
+}
+
+static void gala_ogl_pop_annotation(
+  gala_ogl_engine_t *engine,
+  const gala_pop_annotation_command_t *cmd)
+{
+  if (!(engine->generic.meta.flags & GALA_ENGINE_DEBUG))
+    return;
+
+  if (GL_KHR_debug)
+    glPopDebugGroup();
+}
+
 static void gala_ogl_label(
   gala_ogl_engine_t *engine,
   const gala_label_command_t *cmd)
 {
+  if (!(engine->generic.meta.flags & GALA_ENGINE_DEBUG))
+    return;
+
   gala_resource_t *resource =
     gala_resource_table_lookup(engine->generic.resource_table, cmd->handle);
 
   switch (resource->type) {
+    case GALA_RESOURCE_TYPE_SWAP_CHAIN: {
+      gala_ogl_swap_chain_t *swap_chain =
+        (gala_ogl_swap_chain_t *)resource->internal;
+
+      if (GL_KHR_debug) {
+        glObjectLabel(GL_FRAMEBUFFER, swap_chain->fbo, -1, &cmd->name[0]);
+        glObjectLabel(GL_TEXTURE, swap_chain->offscreen, -1, &cmd->name[0]);
+      }
+    } break;
+
     case GALA_RESOURCE_TYPE_TEXTURE_1D:
     case GALA_RESOURCE_TYPE_TEXTURE_2D:
-    case GALA_RESOURCE_TYPE_TEXTURE_3D:
-    case GALA_RESOURCE_TYPE_VERTEX_BUFFER:
+    case GALA_RESOURCE_TYPE_TEXTURE_3D: {
+    #if 0
+      gala_ogl_texture_t *texture =
+        (gala_ogl_texture_t *)resource->internal;
+
+      if (GL_KHR_debug)
+        glObjectLabel(GL_TEXTURE, texture->id, -1, &cmd->name[0]);
+    #endif
+    } break;
+
+    case GALA_RESOURCE_TYPE_SAMPLER: {
+    #if 0
+      gala_ogl_sampler_t *sampler =
+        (gala_ogl_sampler_t *)resource->internal;
+
+      if (GL_KHR_debug)
+        glObjectLabel(GL_SAMPLER, sampler->id, -1, &cmd->name[0]);
+    #endif
+    } break;
+    
     case GALA_RESOURCE_TYPE_INDEX_BUFFER:
-    case GALA_RESOURCE_TYPE_CONSTANT_BUFFER:
+    case GALA_RESOURCE_TYPE_VERTEX_BUFFER:
+    case GALA_RESOURCE_TYPE_CONSTANT_BUFFER: {
+      gala_ogl_buffer_t *buffer =
+        (gala_ogl_buffer_t *)resource->internal;
+      
+      if (!buffer->name)
+        // Buffers are pooled, so we track labels internally.
+        buffer->name = (const char *)calloc(256, 1);
+
+      strcpy((char *)buffer->name, &cmd->name[0]);
+    } break;
+    
     case GALA_RESOURCE_TYPE_RENDER_TARGET_VIEW:
-    case GALA_RESOURCE_TYPE_DEPTH_STENCIL_TARGET_VIEW:
+    case GALA_RESOURCE_TYPE_DEPTH_STENCIL_TARGET_VIEW: {
+      // Can't label render target views or depth-stencil target views because
+      // they don't map to anything except framebuffers when bound.
+    } break;
+
     case GALA_RESOURCE_TYPE_VERTEX_SHADER:
     case GALA_RESOURCE_TYPE_PIXEL_SHADER: {
-      // ...
+      gala_ogl_shader_t *shader =
+        (gala_ogl_shader_t *)resource->internal;
+
+      if (GL_KHR_debug)
+        glObjectLabel(GL_SHADER, shader->id, -1, &cmd->name[0]);
     } break;
   }
 }
@@ -2340,10 +2460,14 @@ static void gala_ogl_buffer_destroy(
   const gala_destroy_buffer_command_t *cmd)
 {
   gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->buffer_handle);
+  
   gala_ogl_buffer_t *buffer = (gala_ogl_buffer_t *)resource->internal;
 
   gala_ogl_buffer_pool_t *pool = &engine->pools.buffers[buffer->pool];
   gala_ogl_buffer_pool_free(pool, buffer->id);
+
+  if (buffer->name)
+    free((void *)buffer->name);
 
   free((void *)buffer);
 }
@@ -3313,6 +3437,12 @@ static void gala_ogl_engine_dispatch(
 
     case GALA_COMMAND_TYPE_END_OF_FRAME:
       return gala_ogl_end_of_frame(engine, (gala_frame_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_PUSH_ANNOTATION:
+      return gala_ogl_push_annotation(engine, (gala_push_annotation_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_POP_ANNOTATION:
+      return gala_ogl_pop_annotation(engine, (gala_pop_annotation_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_LABEL:
       return gala_ogl_label(engine, (gala_label_command_t *)cmd);
