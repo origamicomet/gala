@@ -1515,17 +1515,19 @@ typedef struct gala_ogl_render_target_view {
 typedef struct gala_ogl_depth_stencil_target_view {
 } gala_ogl_depth_stencil_target_view_t;
 
-typedef struct gala_ogl_framebuffer_cache_entry {
+typedef struct gala_ogl_framebuffer {
   gala_uint32_t id;
   gala_uint32_t render_targets[8];
   gala_uint32_t depth_stencil_target;
-} gala_ogl_framebuffer_cache_entry_t;
+} gala_ogl_framebuffer_t;
 
-// Cache of most recently used frame buffer objects.
+// REFACTOR(mtwilliams): Factor like `gala_ogl_program_cache_t` and some.
+
+// Cache of most recently used framebuffer objects.
 typedef struct gala_ogl_framebuffer_cache {
   gala_uint32_t mru;
   gala_uint32_t hashes[32];
-  gala_ogl_framebuffer_cache_entry_t entries[32];
+  gala_ogl_framebuffer_t entries[32];
 } gala_ogl_framebuffer_cache_t;
 
 static void gala_ogl_framebuffer_cache_initialize(
@@ -1534,7 +1536,7 @@ static void gala_ogl_framebuffer_cache_initialize(
   cache->mru = 0x00000000;
 
   memset((void *)&cache->hashes[0], 0, 32 * sizeof(gala_uint32_t));
-  memset((void *)&cache->entries[0], 0, 32 * sizeof(gala_ogl_framebuffer_cache_entry_t));
+  memset((void *)&cache->entries[0], 0, 32 * sizeof(gala_ogl_framebuffer_t));
 }
 
 // TODO(mtwilliams): Mix better.
@@ -1553,8 +1555,49 @@ static gala_uint32_t gala_ogl_framebuffer_cache_hash(
   );
 }
 
-typedef struct gala_ogl_sampler {
-} gala_ogl_sampler_t;
+static void gala_ogl_framebuffer_cache_evict(
+  gala_ogl_framebuffer_cache_t *cache,
+  gala_uint32_t slot)
+{
+  glDeleteFramebuffers(1, &cache->entries[slot].id);
+
+  cache->mru &= ~(1 << slot);
+
+  cache->hashes[slot] = 0;
+
+  cache->entries[slot].id = 0;
+  cache->entries[slot].render_targets[0] = 0;
+  cache->entries[slot].render_targets[1] = 0;
+  cache->entries[slot].render_targets[2] = 0;
+  cache->entries[slot].render_targets[3] = 0;
+  cache->entries[slot].render_targets[4] = 0;
+  cache->entries[slot].render_targets[5] = 0;
+  cache->entries[slot].render_targets[6] = 0;
+  cache->entries[slot].render_targets[7] = 0;
+  cache->entries[slot].depth_stencil_target = 0;
+}
+
+static void gala_ogl_framebuffer_cache_evict_if_references(
+  gala_ogl_framebuffer_cache_t *cache,
+  gala_uint32_t render_or_depth_stencil_target)
+{
+  for (gala_uint32_t slot = 0; slot < 32; ++slot) {
+    if (cache->entries[slot].id == 0)
+      continue;
+
+    if (cache->entries[slot].depth_stencil_target == render_or_depth_stencil_target) {
+      gala_ogl_framebuffer_cache_evict(cache, slot);
+      continue;
+    }
+    
+    for (gala_uint32_t ref = 0; ref < 8; ++ref) {
+      if (cache->entries[slot].render_targets[ref] == render_or_depth_stencil_target) {
+        gala_ogl_framebuffer_cache_evict(cache, slot);
+        break;
+      }
+    }
+  }
+}
 
 // NOTE(mtwilliams): Distinct types for supporting multiple viewports and
 // scissors in the future.
@@ -1761,9 +1804,9 @@ void gala_ogl_destroy_engine(
 
   gala_resource_table_destroy(engine->generic.resource_table);
 
-  for (gala_uint32_t index = 0; index < 32; ++index)
-    if (engine->caches.framebuffers.entries[index].id)
-      glDeleteFramebuffers(1, &engine->caches.framebuffers.entries[index].id);
+  for (gala_uint32_t slot = 0; slot < 32; ++slot)
+    if (engine->caches.framebuffers.entries[slot].id)
+      glDeleteFramebuffers(1, &engine->caches.framebuffers.entries[slot].id);
 
   gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_STATIC_INDICES]);
   gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_STATIC_VERTICES]);
@@ -1932,7 +1975,30 @@ static void gala_ogl_swap_chain_destroy(
   gala_ogl_engine_t *engine,
   const gala_destroy_swap_chain_command_t *cmd)
 {
-  GALA_TRAP();
+  gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table,
+                               cmd->swap_chain_handle);
+
+  gala_ogl_swap_chain_t *swap_chain =
+    (gala_ogl_swap_chain_t *)resource->internal;
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  // Evict any cached framebuffer objects that reference this swap-chain.
+  gala_ogl_framebuffer_cache_evict_if_references(&engine->caches.framebuffers,
+                                                 swap_chain->offscreen);
+
+  glDeleteFramebuffers(1, &swap_chain->fbo);
+  glDeleteTextures(1, &swap_chain->offscreen);
+
+#if GALA_PLATFORM == GALA_PLATFORM_WINDOWS
+  gala_wgl_destroy_surface(swap_chain->surface);
+#endif
+
+  free((void *)swap_chain);
+
+  gala_resource_table_free(engine->generic.resource_table,
+                           cmd->swap_chain_handle);
 }
 
 static void gala_ogl_resize_swap_chain(
@@ -2377,7 +2443,7 @@ static void gala_ogl_set_render_and_depth_stencil_targets(
                                     depth_stencil_target_buffer);
 
   gala_uint32_t index;
-  gala_ogl_framebuffer_cache_entry_t *cached = NULL;
+  gala_ogl_framebuffer_t *cached = NULL;
 
   for (index = 0; index < 32; ++index) {
     if (engine->caches.framebuffers.hashes[index] == hash) {
@@ -2406,27 +2472,27 @@ static void gala_ogl_set_render_and_depth_stencil_targets(
 
     engine->caches.framebuffers.hashes[victim] = hash;
 
-    gala_ogl_framebuffer_cache_entry_t *entry = 
+    gala_ogl_framebuffer_t *fb = 
       &engine->caches.framebuffers.entries[victim];
 
-    if (entry->id)
-      glDeleteFramebuffers(1, &entry->id);
+    if (fb->id)
+      glDeleteFramebuffers(1, &fb->id);
     
-    glGenFramebuffers(1, &entry->id);
-    glBindFramebuffer(GL_FRAMEBUFFER, entry->id);
+    glGenFramebuffers(1, &fb->id);
+    glBindFramebuffer(GL_FRAMEBUFFER, fb->id);
 
-    engine->state.fbo = entry->id;
+    engine->state.fbo = fb->id;
 
-    entry->render_targets[0] = render_target_buffers[0];
-    entry->render_targets[1] = render_target_buffers[1];
-    entry->render_targets[2] = render_target_buffers[2];
-    entry->render_targets[3] = render_target_buffers[3];
-    entry->render_targets[4] = render_target_buffers[4];
-    entry->render_targets[5] = render_target_buffers[5];
-    entry->render_targets[6] = render_target_buffers[6];
-    entry->render_targets[7] = render_target_buffers[7];
+    fb->render_targets[0] = render_target_buffers[0];
+    fb->render_targets[1] = render_target_buffers[1];
+    fb->render_targets[2] = render_target_buffers[2];
+    fb->render_targets[3] = render_target_buffers[3];
+    fb->render_targets[4] = render_target_buffers[4];
+    fb->render_targets[5] = render_target_buffers[5];
+    fb->render_targets[6] = render_target_buffers[6];
+    fb->render_targets[7] = render_target_buffers[7];
     
-    entry->depth_stencil_target = depth_stencil_target_buffer;
+    fb->depth_stencil_target = depth_stencil_target_buffer;
     
     for (gala_uint32_t render_target = 0; render_target < cmd->num_render_target_views; ++render_target) {
       const gala_dimensionality_t dimensionality = render_targets[render_target]->dimensionality;
