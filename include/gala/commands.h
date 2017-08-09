@@ -27,6 +27,27 @@
 
 GALA_BEGIN_EXTERN_C
 
+// TODO(mtwilliams): Factor into seperate file?
+typedef enum gala_topology {
+  GALA_POINTS    = 1,
+  GALA_LINES     = 2,
+  GALA_TRIANGLES = 3,
+  /// \internal Force gala_uint32_t storage and alignment.
+  GALA_TOPOLOGY_FORCE_UINT32 = 0x7fffffff
+} gala_topology_t;
+
+// TODO(mtwilliams): Factor into seperate file?
+// TODO(mtwilliams): Indicate mergability and reorderability.
+typedef struct gala_draw {
+  gala_buffer_handle_t indicies;
+  gala_buffer_handle_t vertices;
+
+  gala_buffer_handle_t constants[8];
+
+  gala_uint32_t first;
+  gala_uint32_t count;
+} gala_draw_t;
+
 typedef struct gala_label_command {
   gala_command_t command;
   gala_resource_handle_t handle;
@@ -180,6 +201,11 @@ typedef struct gala_set_input_layout_command {
   gala_input_layout_handle_t input_layout_handle;
 } gala_set_input_layout_command_t;
 
+typedef struct gala_set_topology_command {
+  gala_command_t command;
+  gala_topology_t topology;
+} gala_set_topology_command_t;
+
 typedef struct gala_set_render_and_depth_stencil_targets_command {
   gala_command_t command;
   gala_uint32_t num_render_target_views;
@@ -202,6 +228,18 @@ typedef struct gala_clear_depth_stencil_target_command {
   gala_float32_t depth;
   gala_uint32_t stencil;
 } gala_clear_depth_stencil_target_command_t;
+
+typedef struct gala_draw_command {
+  gala_command_t command;
+  
+  gala_buffer_handle_t indicies;
+  gala_buffer_handle_t vertices;
+  
+  gala_buffer_handle_t constants[8];
+
+  gala_uint32_t first;
+  gala_uint32_t count;
+} gala_draw_command_t;
 
 typedef struct gala_read_from_buffer_command {
   gala_command_t command;

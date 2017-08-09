@@ -113,6 +113,23 @@ void gala_set_input_layout(
   cmd->input_layout_handle = input_layout_handle;
 }
 
+void gala_set_topology(
+  gala_command_buffer_t *command_buffer,
+  gala_topology_t topology)
+{
+  gala_assert_debug(command_buffer != NULL);
+
+  gala_set_topology_command_t *cmd =
+    (gala_set_topology_command_t *)
+      gala_command_buffer_allocate(command_buffer,
+                                   sizeof(gala_set_topology_command_t));
+
+  cmd->command.header.type = GALA_COMMAND_TYPE_SET_TOPOLOGY;
+  cmd->command.header.size = sizeof(gala_set_topology_command_t);
+
+  cmd->topology = topology;
+}
+
 void gala_set_render_and_depth_stencil_targets(
   gala_command_buffer_t *command_buffer,
   gala_uint32_t num_render_targets,
@@ -160,6 +177,36 @@ void gala_clear_render_targets(
   cmd->rgba[1] = g;
   cmd->rgba[2] = b;
   cmd->rgba[3] = a;
+}
+
+void gala_draw(
+  gala_command_buffer_t *command_buffer,
+  const gala_draw_t *draw)
+{
+  gala_assert_debug(command_buffer != NULL);
+
+  gala_draw_command_t *cmd =
+    (gala_draw_command_t *)
+      gala_command_buffer_allocate(command_buffer,
+                                   sizeof(gala_draw_command_t));
+
+  cmd->command.header.type = GALA_COMMAND_TYPE_DRAW;
+  cmd->command.header.size = sizeof(gala_draw_command_t);
+
+  cmd->indicies = draw->indicies;
+  cmd->vertices = draw->vertices;
+  
+  cmd->constants[0] = draw->constants[0];
+  cmd->constants[1] = draw->constants[1];
+  cmd->constants[2] = draw->constants[2];
+  cmd->constants[3] = draw->constants[3];
+  cmd->constants[4] = draw->constants[4];
+  cmd->constants[5] = draw->constants[5];
+  cmd->constants[6] = draw->constants[6];
+  cmd->constants[7] = draw->constants[7];
+
+  cmd->first = draw->first;
+  cmd->count = draw->count;
 }
 
 void gala_present(

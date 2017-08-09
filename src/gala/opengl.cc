@@ -1746,7 +1746,12 @@ typedef struct gala_ogl_engine {
     gala_ogl_viewport_t viewport;
     gala_ogl_scissor_t scissor;
 
+    gala_uint32_t topology;
+
     const gala_ogl_input_layout_t *input_layout;
+
+    const gala_ogl_buffer_t *index_buffer;
+    const gala_ogl_buffer_t *vertex_buffer;
 
     // Composed of bound shaders.
     gala_ogl_program_t *program;
@@ -2814,6 +2819,17 @@ static void gala_ogl_set_input_layout(
   engine->vertex_attributes_need_respecification = true;
 }
 
+static void gala_ogl_set_topology(
+  gala_ogl_engine_t *engine,
+  const gala_set_topology_command_t *cmd)
+{
+  switch (cmd->topology) {
+    case GALA_POINTS: engine->state.topology = GL_POINTS; break;
+    case GALA_LINES: engine->state.topology = GL_LINES; break;
+    case GALA_TRIANGLES: engine->state.topology = GL_TRIANGLES; break;
+  }
+}
+
 static void gala_ogl_set_shaders(
   gala_ogl_engine_t *engine,
   const gala_set_shaders_command_t *cmd)
@@ -3071,6 +3087,126 @@ static void gala_ogl_clear_depth_stencil_target(
   gala_ogl_reset_viewport_and_scissor(engine);
 }
 
+static void gala_ogl_flush_constants_if_dirty(
+  gala_ogl_engine_t *engine)
+{
+  gala_ogl_buffer_pool_t *pool = &engine->pools.buffers[GALA_OGL_CONSTANTS];
+
+  if (!pool->dirty)
+    return;
+
+  glBindBuffer(pool->target, pool->id);
+  glBufferData(pool->target, pool->size + pool->padding, pool->memory, pool->usage);
+
+  pool->flushes += 1;
+  pool->flushes_this_frame += 1;
+}
+
+static void gala_ogl_draw(
+  gala_ogl_engine_t *engine,
+  const gala_draw_command_t *cmd)
+{
+  gala_ogl_flush_constants_if_dirty(engine);
+
+  // TODO(mtwilliams): Constants.
+   // TODO(mtwilliams): Validate that `constants` lines up with shader.
+  // TODO(mtwilliams): Just in time batching.
+   // PERF(mtwilliams): Track bindings per slot until a barrier, then order
+   // draws by longest run to shortest run.
+   // PERF(mtwilliams): If shader specifies a buffer, then specifying those
+   // constants with a shader storage buffer?
+
+  const gala_ogl_buffer_t *index_buffer = NULL;
+  const gala_ogl_buffer_pool_t *index_buffer_pool = NULL;
+
+  const gala_ogl_buffer_t *vertex_buffer = NULL;
+  const gala_ogl_buffer_pool_t *vertex_buffer_pool = NULL;
+
+  if (cmd->indicies != GALA_INVALID_BUFFER_HANDLE) {
+    gala_resource_t *resource =
+      gala_resource_table_lookup(engine->generic.resource_table, cmd->indicies);
+    index_buffer = (const gala_ogl_buffer_t *)resource->internal;
+    index_buffer_pool = &engine->pools.buffers[index_buffer->pool];
+  }
+
+  /* if (cmd->vertices != GALA_INVALID_BUFFER_HANDLE) */ {
+    gala_resource_t *resource =
+      gala_resource_table_lookup(engine->generic.resource_table, cmd->vertices);
+    vertex_buffer = (const gala_ogl_buffer_t *)resource->internal;
+    vertex_buffer_pool = &engine->pools.buffers[vertex_buffer->pool];
+  }
+
+  if (index_buffer) {
+    if (!engine->state.index_buffer || (engine->state.index_buffer->pool != index_buffer->pool)) {
+      glBindBuffer(index_buffer_pool->target, index_buffer_pool->id);
+    }
+  }
+
+  if (!engine->state.vertex_buffer || (engine->state.vertex_buffer->pool != vertex_buffer->pool)) {
+    glBindBuffer(vertex_buffer_pool->target, vertex_buffer_pool->id);
+    engine->vertex_attributes_need_respecification = true;
+  }
+
+  engine->state.index_buffer = index_buffer;
+  engine->state.vertex_buffer = vertex_buffer;
+
+  const gala_ogl_input_layout_t *input_layout = engine->state.input_layout;
+
+  if (!GALA_IS_POWER_OF_TWO(input_layout->stride)) {
+    // TODO(mtwilliams): Batch into buckets based on offset required to align.
+    // TODO(mtwilliams): Make use of NV_bindless_multi_draw_indirect so we can
+    // make batching great again!
+
+    // As we can only offset by multiples of `input_layout->stride` with draw
+    // commands, we have to offset vertex attributes to align them to block
+    // boundaries. As a consequence, we can't address the first block. We work
+    // around this by padding our pools by the size of a leaf, effectively
+    // creating a sacrificial first block. We also can't address blocks where
+    // unless `address % (stride / (padding % stride)) == 1`. Intuitively we
+    // can't address blocks at fractional offsets from our first block. For
+    // now that means respecifying vertex attributes each time as we have no
+    // guarantees about alignment. In the future we can batch by fractional
+    // offsets which will reduce the performance impact.
+    engine->vertex_attributes_need_respecification = true;
+  }
+
+  const gala_uint32_t offset = vertex_buffer->offset + vertex_buffer_pool->padding;
+  const gala_uint32_t offset_to_align = offset % input_layout->stride;
+  const gala_uint32_t base_to_align = (offset - offset_to_align) / input_layout->stride;
+  
+  if (engine->vertex_attributes_need_respecification) {
+    for (gala_uint32_t index = 0; index < input_layout->count; ++index) {
+      const gala_ogl_attribute_t *attribute = &input_layout->attributes[index];
+     
+      glEnableVertexAttribArray(index);
+      
+      if (attribute->cast) {
+        glVertexAttribPointer(index, attribute->size, attribute->type, attribute->normalized, attribute->stride, (const void *)(attribute->offset + offset_to_align));
+      } else {
+        glVertexAttribIPointer(index, attribute->size, attribute->type, attribute->stride, (const void *)(attribute->offset + offset_to_align));
+      }
+      
+      glVertexAttribDivisor(index, attribute->divisor);
+    }
+
+    for (gala_uint32_t index = input_layout->count; index < 16; ++index) {
+      glDisableVertexAttribArray(index);
+    }
+
+    engine->vertex_attributes_need_respecification = false;
+  }
+
+  if (cmd->indicies != GALA_INVALID_BUFFER_HANDLE) {
+    glDrawElementsBaseVertex(engine->state.topology,
+                             cmd->count,
+                             GL_UNSIGNED_INT,
+                             (const void *)((cmd->first * 4) + (index_buffer->offset / 4)),
+                             base_to_align);
+  } else {
+    glDrawArrays(engine->state.topology, cmd->first + base_to_align, cmd->count);
+  }
+}
+
 static void gala_ogl_read_from_buffer(
   gala_ogl_engine_t *engine,
   const gala_read_from_buffer_command_t *cmd)
@@ -3242,6 +3378,9 @@ static void gala_ogl_engine_dispatch(
     case GALA_COMMAND_TYPE_SET_INPUT_LAYOUT:
       return gala_ogl_set_input_layout(engine, (gala_set_input_layout_command_t *)cmd);
 
+    case GALA_COMMAND_TYPE_SET_TOPOLOGY:
+      return gala_ogl_set_topology(engine, (gala_set_topology_command_t *)cmd);
+
     case GALA_COMMAND_TYPE_SET_SHADERS:
       return gala_ogl_set_shaders(engine, (gala_set_shaders_command_t *)cmd);
 
@@ -3253,6 +3392,9 @@ static void gala_ogl_engine_dispatch(
 
     case GALA_COMMAND_TYPE_CLEAR_DEPTH_STENCIL_TARGET:
       return gala_ogl_clear_depth_stencil_target(engine, (gala_clear_depth_stencil_target_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_DRAW:
+      return gala_ogl_draw(engine, (gala_draw_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_READ_FROM_BUFFER:
       return gala_ogl_read_from_buffer(engine, (gala_read_from_buffer_command_t *)cmd);

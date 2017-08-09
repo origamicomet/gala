@@ -64,6 +64,11 @@ void gala_set_input_layout(
   gala_input_layout_handle_t input_layout_handle);
 
 extern GALA_PUBLIC
+void gala_set_topology(
+  gala_command_buffer_t *command_buffer,
+  gala_topology_t topology);
+
+extern GALA_PUBLIC
 void gala_set_render_and_depth_stencil_targets(
   gala_command_buffer_t *command_buffer,
   gala_uint32_t num_render_targets,
@@ -79,6 +84,11 @@ void gala_clear_render_targets(
   gala_float32_t g,
   gala_float32_t b,
   gala_float32_t a);
+
+extern GALA_PUBLIC
+void gala_draw(
+  gala_command_buffer_t *command_buffer,
+  const gala_draw_t *draw);
 
 extern GALA_PUBLIC
 void gala_present(
