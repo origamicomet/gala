@@ -745,7 +745,7 @@ static const gala_ogl_extension_t EXTENSIONS_OF_INTEREST[] = {
   // Immutable storage provides many opportunities for optimization. Most
   // notably, persistent mapping.
   { "GL_ARB_texture_storage", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_texture_storage },
-  //{ "GL_ARB_buffer_storage", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_buffer_storage },
+  { "GL_ARB_buffer_storage", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_buffer_storage },
 
   // TODO(mtwilliams): Bindless.
   // { "GL_ARB_bindless_texture", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE },
