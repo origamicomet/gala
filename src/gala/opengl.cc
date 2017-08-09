@@ -1501,6 +1501,111 @@ static void gala_ogl_buffer_write(
 typedef struct gala_ogl_texture {
 } gala_ogl_texture_t;
 
+// PERF(mtwilliams): Allow preemptive linking of shaders through `gala_warm`.
+// PERF(mtwilliams): Perform shader compilation and linking in a seperate thread.
+
+typedef struct gala_ogl_shader {
+  gala_uint32_t type;
+
+  gala_uint32_t id;
+
+  // Indicates if `GL_COMPILE_STATUS` has been checked.
+  gala_bool_t validated;
+} gala_ogl_shader_t;
+
+static void gala_ogl_shader_validate(
+  gala_ogl_shader_t *shader)
+{
+  if (shader->validated)
+    return;
+
+  gala_int32_t status;
+  glGetShaderiv(shader->id, GL_COMPILE_STATUS, &status);
+
+  if (status != GL_TRUE) {
+    // TODO(mtwilliams): Present error(s) using `glGetShaderInfoLog`.
+    GALA_TRAP();
+  }
+
+  shader->validated = true;
+}
+
+typedef struct gala_ogl_program {
+  gala_uint32_t id;
+
+  gala_uint32_t vs;
+  gala_uint32_t ps;
+
+  // Indicates if `GL_LINK_STATUS` has been checked.
+  gala_bool_t validated;
+} gala_ogl_program_t;
+
+static const gala_uint32_t GALA_OGL_PROGRAM_CACHE_SIZE = 256;
+
+// Cache of most recently used shader program combinations.
+typedef struct gala_ogl_program_cache {
+  gala_uint32_t unused;
+  gala_uint32_t mru[GALA_OGL_PROGRAM_CACHE_SIZE / 32];
+  gala_uint32_t hashes[GALA_OGL_PROGRAM_CACHE_SIZE];
+  gala_ogl_program_t entries[GALA_OGL_PROGRAM_CACHE_SIZE];
+} gala_ogl_program_cache_t;
+
+static void gala_ogl_program_cache_initialize(
+  gala_ogl_program_cache_t *cache)
+{
+  cache->unused = GALA_OGL_PROGRAM_CACHE_SIZE;
+
+  memset((void *)&cache->mru[0], 0, sizeof(cache->mru));
+  memset((void *)&cache->hashes[0], 0, sizeof(cache->hashes));
+  memset((void *)&cache->entries[0], 0, sizeof(cache->entries));
+}
+
+static gala_uint32_t gala_ogl_program_cache_lru(
+  const gala_ogl_program_cache_t *cache)
+{
+  for (gala_uint32_t word = 0; word < (GALA_OGL_PROGRAM_CACHE_SIZE / 32); ++word) {
+    const gala_uint32_t mru = cache->mru[word];
+
+    if (mru == ~0)
+      continue;
+
+    return word * 32 + gala_ctzul(~mru);
+  }
+
+  GALA_UNREACHABLE();
+}
+
+static void gala_ogl_program_cache_used(
+  gala_ogl_program_cache_t *cache,
+  gala_uint32_t slot)
+{
+  const gala_uint32_t word = slot / 32;
+  const gala_uint32_t bit  = slot % 32;
+
+  if (cache->mru[word] & (1 << bit))
+    return;
+
+  if (--cache->unused == 0) {
+    cache->unused = GALA_OGL_PROGRAM_CACHE_SIZE;
+    memset((void *)&cache->mru[0], 0, sizeof(cache->mru));
+  }
+
+  cache->mru[word] |= (1 << bit);
+}
+
+// TODO(mtwilliams): Mix better.
+static gala_uint32_t gala_ogl_program_cache_hash(
+  gala_uint32_t vertex_shader,
+  gala_uint32_t pixel_shader)
+{
+  const gala_uint32_t K = UINT32_C(2654435761);
+
+  return (
+    (vertex_shader * K) ^
+    (pixel_shader * K)
+  );
+}
+
 typedef struct gala_ogl_render_target_view {
   gala_pixel_format_t format;
 
@@ -1625,6 +1730,9 @@ typedef struct gala_ogl_engine {
     gala_ogl_viewport_t viewport;
     gala_ogl_scissor_t scissor;
 
+    // Composed of bound shaders.
+    gala_ogl_program_t *program;
+
     // Composed of bound render-target views and depth-stencil target view.
     gala_uint32_t fbo;
 
@@ -1635,6 +1743,7 @@ typedef struct gala_ogl_engine {
 
   struct {
     gala_ogl_framebuffer_cache_t framebuffers;
+    gala_ogl_program_cache_t programs;
   } caches;
 
   struct {
@@ -1757,6 +1866,7 @@ gala_engine_t *gala_ogl_create_and_init_engine(
   glBindVertexArray(vao);
 
   gala_ogl_framebuffer_cache_initialize(&engine->caches.framebuffers);
+  gala_ogl_program_cache_initialize(&engine->caches.programs);
 
   // TODO(mtwilliams): Grow pools dynamically.
   // TODO(mtwilliams): Accept hints about pool size.
@@ -1811,6 +1921,10 @@ void gala_ogl_destroy_engine(
   for (gala_uint32_t slot = 0; slot < 32; ++slot)
     if (engine->caches.framebuffers.entries[slot].id)
       glDeleteFramebuffers(1, &engine->caches.framebuffers.entries[slot].id);
+
+  for (gala_uint32_t slot = 0; slot < GALA_OGL_PROGRAM_CACHE_SIZE; ++slot)
+    if (engine->caches.programs.entries[slot].id)
+      glDeleteProgram(engine->caches.programs.entries[slot].id);
 
   gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_STATIC_INDICES]);
   gala_ogl_buffer_pool_destroy(&engine->pools.buffers[GALA_OGL_STATIC_VERTICES]);
@@ -2241,6 +2355,84 @@ static void gala_ogl_destroy_texture(
 {
 }
 
+static const char *GALA_OGL_VERTEX_SHADER_PREAMBLE =
+  "#version 330 core\n" \
+  "#extension GL_ARB_shader_precision          : enable\n" \
+  "#extension GL_ARB_shading_language_420pack  : enable\n" \
+  "#extension GL_ARB_explicit_uniform_location : enable\n";
+
+static const char *GALA_OGL_FRAGMENT_SHADER_PREAMBLE =
+  "#version 330 core\n" \
+  "#extension GL_ARB_shader_precision          : enable\n" \
+  "#extension GL_ARB_shading_language_420pack  : enable\n" \
+  "#extension GL_ARB_explicit_uniform_location : enable\n";
+
+static void gala_ogl_shader_create(
+  gala_ogl_engine_t *engine,
+  const gala_create_shader_command_t *cmd)
+{
+  // PERF(mtwilliams): Allocate from pool.
+  gala_ogl_shader_t *shader =
+    (gala_ogl_shader_t *)calloc(sizeof(gala_ogl_shader_t), 1);
+
+  gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table,
+                               cmd->shader_handle);
+
+  resource->internal = (gala_uintptr_t)shader;
+
+  switch (resource->type) {
+    case GALA_RESOURCE_TYPE_VERTEX_SHADER: shader->type = GL_VERTEX_SHADER; break;
+    case GALA_RESOURCE_TYPE_PIXEL_SHADER: shader->type = GL_FRAGMENT_SHADER; break;
+  }
+
+  shader->id = glCreateShader(shader->type);
+
+  gala_assert_debug((cmd->desc.encoding == GALA_SHADER_SOURCE) ||
+                    (cmd->desc.encoding == GALA_SHADER_CACHED));
+
+  if (cmd->desc.encoding == GALA_SHADER_SOURCE) {
+    const char *sources[2] = { NULL, };
+
+    if (shader->type == GL_VERTEX_SHADER)
+      sources[0] = GALA_OGL_VERTEX_SHADER_PREAMBLE;
+    else if (shader->type == GL_FRAGMENT_SHADER)
+      sources[0] = GALA_OGL_FRAGMENT_SHADER_PREAMBLE;
+
+    sources[1] = (const char *)cmd->desc.source;
+
+    glShaderSource(shader->id, 2, &sources[0], NULL);
+  } else if (cmd->desc.encoding == GALA_SHADER_CACHED) {
+    GALA_TRAP();
+  }
+
+  glCompileShader(shader->id);
+
+  shader->validated = false;
+}
+
+static void gala_ogl_shader_destroy(
+  gala_ogl_engine_t *engine,
+  const gala_destroy_shader_command_t *cmd)
+{
+  gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table,
+                               cmd->shader_handle);
+
+  gala_ogl_shader_t *shader = (gala_ogl_shader_t *)resource->internal;
+
+  // TODO(mtwilliams): Evict any cached shader program objects that reference
+  // this shader.
+#if 0
+  gala_ogl_program_cache_evict_if_references(&engine->caches.programs,
+                                             shader->id);
+#endif
+
+  glDeleteShader(shader->id);
+
+  free((void *)shader);
+}
+
 static void gala_ogl_render_target_view_create(
   gala_ogl_engine_t *engine,
   const gala_create_render_target_view_command_t *cmd)
@@ -2419,6 +2611,99 @@ static void gala_ogl_set_pipeline(
   }
 
   glStencilMaskSeparate(GL_FRONT_AND_BACK, pipeline->stencil.mask);
+}
+
+static void gala_ogl_set_shaders(
+  gala_ogl_engine_t *engine,
+  const gala_set_shaders_command_t *cmd)
+{
+  gala_ogl_shader_t *vertex_shader = NULL;
+  gala_ogl_shader_t *pixel_shader = NULL;
+
+  if (cmd->vertex_shader_handle != GALA_INVALID_SHADER_HANDLE) {
+    gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->vertex_shader_handle);
+    vertex_shader = (gala_ogl_shader_t *)resource->internal;
+    gala_assert_debug(vertex_shader->type == GL_VERTEX_SHADER);
+    gala_ogl_shader_validate(vertex_shader);
+  }
+
+  if (cmd->pixel_shader_handle != GALA_INVALID_SHADER_HANDLE) {
+    gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->pixel_shader_handle);
+    pixel_shader = (gala_ogl_shader_t *)resource->internal;
+    gala_assert_debug(pixel_shader->type == GL_FRAGMENT_SHADER);
+    gala_ogl_shader_validate(pixel_shader);
+  }
+
+  const gala_uint32_t hash =
+    gala_ogl_program_cache_hash(vertex_shader ? vertex_shader->id : 0,
+                                pixel_shader ? pixel_shader->id : 0);
+
+  gala_uint32_t index;
+  gala_ogl_program_t *program = NULL;
+
+  // PERF(mtwilliams): Do better than a linear search.
+  for (index = 0; index < GALA_OGL_PROGRAM_CACHE_SIZE; ++index) {
+    if (engine->caches.programs.hashes[index] == hash) {
+      program = &engine->caches.programs.entries[index];
+      break;
+    }
+  }
+
+  if (program == NULL) {
+    index = gala_ogl_program_cache_lru(&engine->caches.programs);
+
+    engine->caches.programs.hashes[index] = hash;
+    program = &engine->caches.programs.entries[index];
+
+    if (program->id)
+      glDeleteProgram(program->id);
+
+    program->id = glCreateProgram();
+
+    if (vertex_shader) {
+      glAttachShader(program->id, vertex_shader->id);
+      program->vs = vertex_shader->id;
+    } else {
+      program->vs = 0;
+    }
+
+    if (pixel_shader) {
+      glAttachShader(program->id, pixel_shader->id);
+      program->ps = pixel_shader->id;
+    } else {
+      program->ps = 0;
+    }
+
+    glLinkProgram(program->id);
+
+    // TODO(mtwilliams): Detach after linking?
+    // if (vertex_shader)
+    //   glDetachShader(program->id, vertex_shader->id);    
+    // if (pixel_shader)
+    //   glDetachShader(program->id, pixel_shader->id);
+
+    program->validated = false;
+  }
+
+  if (!program->validated) {
+    // TODO(mtwilliams): Explicitly validate with `glValidateProgram`?
+
+    gala_int32_t status;
+    glGetProgramiv(program->id, GL_LINK_STATUS, &status);
+    
+    if (status != GL_TRUE) {
+      // TODO(mtwilliams): Present error(s) using `glGetProgramInfoLog`.
+      gala_assertf(!0, "Shader linking failed!");
+    }
+
+    program->validated = true;
+  }
+
+  gala_ogl_program_cache_used(&engine->caches.programs, index);
+
+  glUseProgram(program->id);
+
+  engine->state.program = program;
 }
 
 static void gala_ogl_set_render_and_depth_stencil_targets(
@@ -2721,6 +3006,12 @@ static void gala_ogl_engine_dispatch(
     case GALA_COMMAND_TYPE_DESTROY_SAMPLER:
       return gala_ogl_sampler_destroy(engine, (gala_destroy_sampler_command_t *)cmd);
 
+    case GALA_COMMAND_TYPE_CREATE_SHADER:
+      return gala_ogl_shader_create(engine, (gala_create_shader_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_DESTROY_SHADER:
+      return gala_ogl_shader_destroy(engine, (gala_destroy_shader_command_t *)cmd);
+
     case GALA_COMMAND_TYPE_CREATE_RENDER_TARGET_VIEW:
       return gala_ogl_render_target_view_create(engine, (gala_create_render_target_view_command_t *)cmd);
 
@@ -2740,6 +3031,9 @@ static void gala_ogl_engine_dispatch(
 
     case GALA_COMMAND_TYPE_SET_PIPELINE:
       return gala_ogl_set_pipeline(engine, (gala_set_pipeline_command_t *)cmd);
+
+    case GALA_COMMAND_TYPE_SET_SHADERS:
+      return gala_ogl_set_shaders(engine, (gala_set_shaders_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_SET_RENDER_AND_DEPTH_STENCIL_TARGETS:
       return gala_ogl_set_render_and_depth_stencil_targets(engine, (gala_set_render_and_depth_stencil_targets_command_t *)cmd);

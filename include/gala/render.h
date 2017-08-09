@@ -53,6 +53,12 @@ void gala_set_pipeline(
   gala_pipeline_handle_t pipeline_handle);
 
 extern GALA_PUBLIC
+void gala_set_shaders(
+  gala_command_buffer_t *command_buffer,
+  gala_shader_handle_t vertex_shader_handle,
+  gala_shader_handle_t pixel_shader_handle);
+
+extern GALA_PUBLIC
 void gala_set_render_and_depth_stencil_targets(
   gala_command_buffer_t *command_buffer,
   gala_uint32_t num_render_targets,

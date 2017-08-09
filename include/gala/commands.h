@@ -64,6 +64,17 @@ typedef struct gala_resize_swap_chain_command {
   gala_uint32_t height;
 } gala_resize_swap_chain_command_t;
 
+typedef struct gala_create_pipeline_command {
+  gala_command_t command;
+  gala_pipeline_handle_t pipeline_handle;
+  gala_pipeline_desc_t desc;
+} gala_create_pipeline_command_t;
+
+typedef struct gala_destroy_pipeline_command {
+  gala_command_t command;
+  gala_pipeline_handle_t pipeline_handle;
+} gala_destroy_pipeline_command_t;
+
 typedef struct gala_create_buffer_command {
   gala_command_t command;
   gala_buffer_handle_t buffer_handle;
@@ -99,16 +110,16 @@ typedef struct gala_destroy_sampler_command {
   gala_sampler_handle_t sampler_handle;
 } gala_destroy_sampler_command_t;
 
-typedef struct gala_create_pipeline_command {
+typedef struct gala_create_shader_command {
   gala_command_t command;
-  gala_pipeline_handle_t pipeline_handle;
-  gala_pipeline_desc_t desc;
-} gala_create_pipeline_command_t;
+  gala_shader_handle_t shader_handle;
+  gala_shader_desc_t desc;
+} gala_create_shader_command_t;
 
-typedef struct gala_destroy_pipeline_command {
+typedef struct gala_destroy_shader_command {
   gala_command_t command;
-  gala_pipeline_handle_t pipeline_handle;
-} gala_destroy_pipeline_command_t;
+  gala_shader_handle_t shader_handle;
+} gala_destroy_shader_command_t;
 
 typedef struct gala_create_render_target_view_command {
   gala_command_t command;
@@ -146,6 +157,12 @@ typedef struct gala_set_pipeline_command {
   gala_command_t command;
   gala_pipeline_handle_t pipeline_handle;
 } gala_set_pipeline_command_t;
+
+typedef struct gala_set_shaders_command {
+  gala_command_t command;
+  gala_shader_handle_t vertex_shader_handle;
+  gala_shader_handle_t pixel_shader_handle;
+} gala_set_shaders_command_t;
 
 typedef struct gala_set_render_and_depth_stencil_targets_command {
   gala_command_t command;
