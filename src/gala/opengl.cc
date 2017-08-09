@@ -34,120 +34,6 @@
 
 GALA_BEGIN_EXTERN_C
 
-// Not superseded by any extension.
-static const gala_bool_t *GALA_OGL_EXTENSION_NONE = NULL;
-
-typedef enum gala_ogl_extension_type {
-  // Extension is not required but is nice to have.
-  GALA_OGL_EXTENSION_OPTIONAL = (1 << 0),
-  // Extension is for debugging.
-  GALA_OGL_EXTENSION_DEBUG    = (1 << 1)
-} gala_ogl_extension_type_t;
-
-typedef struct gala_ogl_extension {
-  const char *name;
-  gala_uint32_t type;
-  const gala_bool_t *supersede;
-  gala_bool_t *flag;
-} gala_ogl_extension_t;
-
-static gala_bool_t GL_KHR_debug = false;
-
-// These extensions are only available for OpenGL ES?
-// static gala_bool_t GL_EXT_debug_label = false;
-// static gala_bool_t GL_EXT_debug_marker = false;
-
-static gala_bool_t GL_ARB_direct_state_access = false;
-static gala_bool_t GL_ARB_multi_bind = false;
-
-static gala_bool_t GL_ARB_texture_storage = false;
-static gala_bool_t GL_ARB_buffer_storage = false;
-
-static gala_bool_t GL_ARB_sparse_texture = false;
-
-static gala_bool_t GL_ARB_multi_draw_indirect = false;
-
-static gala_bool_t GL_ARB_get_program_binary = false;
-
-static gala_bool_t GL_EXT_framebuffer_multisample_blit_scaled = false;
-
-static const gala_ogl_extension_t EXTENSIONS_OF_INTEREST[] = {
-  //
-  // Debugging
-  //
-
-  { "GL_KHR_debug", GALA_OGL_EXTENSION_DEBUG | GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_KHR_debug },
-
-  // TODO(mtwilliams): Fallback to these if the `KHR_debug` is not available.
-  // { "GL_EXT_debug_label",  GALA_OGL_EXTENSION_DEBUG, &GL_EXT_debug_label },
-  // { "GL_EXT_debug_marker", GALA_OGL_EXTENSION_DEBUG, &GL_EXT_debug_marker },
-
-  // TODO(mtwilliams): Integrate with RenderDoc.
-  // { "GL_EXT_debug_tool", ... },
-
-  //
-  // Optimizations
-  //
-
-  // Direct State Access lets us modify objects without having to bind them!
-  // The result is a non-negligible performance impact. We fallback to the
-  // traditional bind-to-edit model if not available.
-  { "GL_ARB_direct_state_access", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_direct_state_access },
-
-  // Multibind lets us bind and unbind multiple contiguous objects with one
-  // command like Direct3D 11. We fallback to the traditional call-per-bind
-  // model if not available.
-  { "GL_ARB_multi_bind", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_multi_bind },
-
-  // PERF(mtwilliams): Separate data format and data source? In practice this
-  // won't provide much benefit as we'll be using a large buffers and
-  // submitting draw calls using `ARB_multi_draw_indirect`.
-  // { "GL_ARB_vertex_attrib_binding", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_vertex_attrib_binding },
-
-  // Immutable storage provides many opportunities for optimization. Most
-  // notably, persistent mapping.
-  { "GL_ARB_texture_storage", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_texture_storage },
-  { "GL_ARB_buffer_storage", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_buffer_storage },
-
-  // TODO(mtwilliams): Bindless.
-  // { "GL_ARB_bindless_texture", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE },
-  // { "GL_NV_vertex_buffer_unified_memory", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE },
-  // { "GL_NV_uniform_buffer_unified_memory", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE },
-
-  // Sparse textures provide many opportunities for high-level and low-level
-  // optimizations.
-  { "GL_ARB_sparse_texture", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_sparse_texture },
-
-  // This is the bread and butter of our fast path. When paired with a large
-  // persistently mapped buffer it drastically reduces the number of draw
-  // calls we have to make.
-   // https://www.khronos.org/opengl/wiki/Vertex_Rendering#Indirect_rendering
-  { "GL_ARB_multi_draw_indirect", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_multi_draw_indirect },
-
-  // Allows us to cache shaders to disk as a way to mitigate the impact of
-  // shader compile times.
-  { "GL_ARB_get_program_binary", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_get_program_binary },
-
-  // Allows us to resolve and scale multisampled buffers without an
-  // intermediate buffer. See `gala_ogl_present`.
-  { "GL_EXT_framebuffer_multisample_blit_scaled", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_EXT_framebuffer_multisample_blit_scaled },
-
-  //
-  // Compatability
-  //
-
-  // We require `ARB_clip_control` to setup a sane coordinate system. Luckily
-  // for us the extension was added to core, and more importantly Doom (2016)
-  // uses it. Driver support reflects that.
-  { "ARB_clip_control", 0, GALA_OGL_EXTENSION_NONE, NULL },
-
-  // TODO(mtwilliams): Compute shaders.
-  // { "GL_ARB_shader_storage_buffer_object", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE },
-};
-
-static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
-  sizeof(EXTENSIONS_OF_INTEREST) / sizeof(EXTENSIONS_OF_INTEREST[0]);
-
 //
 // General
 //
@@ -197,6 +83,7 @@ static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
 #define GL_UNSIGNED_SHORT                 0x1403
 #define GL_INT                            0x1404
 #define GL_UNSIGNED_INT                   0x1405
+#define GL_HALF_FLOAT                     0x140B
 #define GL_FLOAT                          0x1406
 #define GL_DOUBLE                         0x140A
 
@@ -408,6 +295,18 @@ static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
 #define GL_CLAMP_TO_BORDER                0x812D
 
 //
+// Shaders
+//
+
+#define GL_VERTEX_SHADER                  0x8B31
+#define GL_FRAGMENT_SHADER                0x8B30
+
+#define GL_COMPILE_STATUS                 0x8B81
+#define GL_LINK_STATUS                    0x8B82
+#define GL_VALIDATE_STATUS                0x8B83
+#define GL_DELETE_STATUS                  0x8B80
+
+//
 // Targets
 //
 
@@ -452,6 +351,10 @@ GLPOPDEBUGGROUPPROC glPopDebugGroup;
 typedef void (GL_ENTRY_POINT *GLOBJECTLABELPROC)(gala_uint32_t identifier, gala_uint32_t name, gala_uint32_t length, const char *label);
 
 GLOBJECTLABELPROC glObjectLabel;
+
+typedef void (GL_ENTRY_POINT *GLFRAMETERMINATORGREMEDYPROC)(void);
+
+GLFRAMETERMINATORGREMEDYPROC glFrameTerminatorGREMEDY;
 
 typedef void (GL_ENTRY_POINT *GLGETBOOLEANVPROC)(gala_uint32_t parameter, gala_bool_t *value);
 typedef void (GL_ENTRY_POINT *GLGETINTEGERVPROC)(gala_uint32_t parameter, gala_int32_t *value);
@@ -519,20 +422,28 @@ typedef void (GL_ENTRY_POINT *GLGENBUFFERSPROC)(gala_uint32_t n, gala_uint32_t *
 typedef void (GL_ENTRY_POINT *GLGENTEXTURESPROC)(gala_uint32_t n, gala_uint32_t *textures);
 typedef void (GL_ENTRY_POINT *GLGENSAMPLERSPROC)(gala_uint32_t n, gala_uint32_t *samplers);
 typedef void (GL_ENTRY_POINT *GLGENFRAMEBUFFERSPROC)(gala_uint32_t n, gala_uint32_t *framebuffers);
+typedef gala_uint32_t (GL_ENTRY_POINT *GLCREATESHADERPROC)(gala_uint32_t type);
+typedef gala_uint32_t (GL_ENTRY_POINT *GLCREATEPROGRAMPROC)(void);
 
 GLGENBUFFERSPROC glGenBuffers;
 GLGENTEXTURESPROC glGenTextures;
 GLGENSAMPLERSPROC glGenSamplers;
 GLGENFRAMEBUFFERSPROC glGenFramebuffers;
+GLCREATESHADERPROC glCreateShader;
+GLCREATEPROGRAMPROC glCreateProgram;
 
 typedef void (GL_ENTRY_POINT *GLDELETEBUFFERSPROC)(gala_uint32_t n, const gala_uint32_t *buffers);
 typedef void (GL_ENTRY_POINT *GLDELETETEXTURESPROC)(gala_uint32_t n, const gala_uint32_t *textures);
 typedef void (GL_ENTRY_POINT *GLDELETESAMPLERSPROC)(gala_uint32_t n, const gala_uint32_t *samplers);
+typedef void (GL_ENTRY_POINT *GLDELETESHADERPROC)(gala_uint32_t shader);
+typedef void (GL_ENTRY_POINT *GLDELETEPROGRAMPROC)(gala_uint32_t program);
 typedef void (GL_ENTRY_POINT *GLDELETEFRAMEBUFFERSPROC)(gala_uint32_t n, const gala_uint32_t *framebuffers);
 
 GLDELETEBUFFERSPROC glDeleteBuffers;
 GLDELETETEXTURESPROC glDeleteTextures;
 GLDELETESAMPLERSPROC glDeleteSamplers;
+GLDELETESHADERPROC glDeleteShader;
+GLDELETEPROGRAMPROC glDeleteProgram;
 GLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
 
 // TODO(mtwilliams): Generate vertex array objects for each input layout.
@@ -624,6 +535,7 @@ GLTEXPARAMETERIPROC glTexParameteri;
 
 typedef void (GL_ENTRY_POINT *GLGENERATEMIPMAPPROC)(gala_uint32_t target);
 
+// PERF(mtwilliams): Generate manually. Drivers can be really bad at generating mipmaps.
 GLGENERATEMIPMAPPROC glGenerateMipmap;
 
 GLBINDSAMPLERPROC glBindSampler;
@@ -633,6 +545,48 @@ typedef void (GL_ENTRY_POINT *GLSAMPLERPARAMETERIPROC)(gala_uint32_t sampler, ga
 
 GLSAMPLERPARAMETERFPROC glSamplerParameterf;
 GLSAMPLERPARAMETERIPROC glSamplerParameteri;
+
+typedef void (GL_ENTRY_POINT *GLSHADERSOURCEPROC)(gala_uint32_t shader, gala_uint32_t count, const char * const *sources, const gala_uint32_t *lengths);
+typedef void (GL_ENTRY_POINT *GLCOMPILESHADERPROC)(gala_uint32_t shader);
+
+GLSHADERSOURCEPROC glShaderSource;
+GLCOMPILESHADERPROC glCompileShader;
+
+typedef void (GL_ENTRY_POINT *GLGETSHADERIVPROC)(gala_uint32_t shader, gala_uint32_t pname, gala_int32_t *params);
+typedef void (GL_ENTRY_POINT *GLGETSHADERINFOLOGPROC)(gala_uint32_t shader, gala_int32_t size, gala_int32_t *length, char *buffer);
+
+GLGETSHADERIVPROC glGetShaderiv;
+GLGETSHADERINFOLOGPROC glGetShaderInfoLog;
+
+typedef void (GL_ENTRY_POINT *GLATTACHSHADERPROC)(gala_uint32_t program, gala_uint32_t shader);
+typedef void (GL_ENTRY_POINT *GLLINKPROGRAMPROC)(gala_uint32_t program);
+
+GLATTACHSHADERPROC glAttachShader;
+GLLINKPROGRAMPROC glLinkProgram;
+
+typedef void (GL_ENTRY_POINT *GLGETPROGRAMIVPROC)(gala_uint32_t program, gala_uint32_t pname, gala_int32_t *params);
+typedef void (GL_ENTRY_POINT *GLGETPROGRAMINFOLOGPROC)(gala_uint32_t program, gala_int32_t size, gala_int32_t *length, char *buffer);
+
+GLGETPROGRAMIVPROC glGetProgramiv;
+GLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
+
+typedef void (GL_ENTRY_POINT *GLUSEPROGRAMPROC)(gala_uint32_t program);
+
+GLUSEPROGRAMPROC glUseProgram;
+
+typedef void (GL_ENTRY_POINT *GLENABLEVERTEXATTRIBARRAYPROC)(gala_uint32_t index);
+typedef void (GL_ENTRY_POINT *GLDISABLEVERTEXATTRIBARRAYPROC)(gala_uint32_t index);
+
+GLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
+GLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
+
+typedef void (GL_ENTRY_POINT *GLVERTEXATTRIBPOINTERPROC)(gala_uint32_t index, gala_uint32_t size, gala_uint32_t type, gala_bool_t normalized, gala_uint32_t stride, const void *pointer);
+typedef void (GL_ENTRY_POINT *GLVERTEXATTRIBIPOINTERPROC)(gala_uint32_t index, gala_uint32_t size, gala_uint32_t type, gala_uint32_t stride, const void *pointer);
+typedef void (GL_ENTRY_POINT *GLVERTEXATTRIBDIVISORPROC)(gala_uint32_t index, gala_uint32_t divisor);
+
+GLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
+GLVERTEXATTRIBIPOINTERPROC glVertexAttribIPointer;
+GLVERTEXATTRIBDIVISORPROC glVertexAttribDivisor;
 
 typedef void (GL_ENTRY_POINT *GLBINDFRAMEBUFFERPROC)(gala_uint32_t target, gala_uint32_t framebuffer);
 
@@ -675,6 +629,12 @@ GLCLEARBUFFERIVPROC  glClearBufferiv;
 GLCLEARBUFFERUIVPROC glClearBufferuiv;
 GLCLEARBUFFERFVPROC  glClearBufferfv;
 
+typedef void (GL_ENTRY_POINT *GLDRAWARRAYSPROC)(gala_uint32_t mode, gala_uint32_t first, gala_uint32_t count);
+typedef void (GL_ENTRY_POINT *GLDRAWELEMENTSBASEVERTEXPROC)(gala_uint32_t mode, gala_uint32_t count, gala_uint32_t type, const void *indices, gala_uint32_t base);
+
+GLDRAWARRAYSPROC glDrawArrays;
+GLDRAWELEMENTSBASEVERTEXPROC glDrawElementsBaseVertex;
+
 typedef void (GL_ENTRY_POINT *GLBLITFRAMEBUFFERPROC)(gala_int32_t src_x0,
                                                      gala_int32_t src_y0,
                                                      gala_int32_t src_x1,
@@ -701,6 +661,129 @@ typedef void (GL_ENTRY_POINT *GLFINISHPROC)(void);
 
 GLFLUSHPROC  glFlush;
 GLFINISHPROC glFinish;
+
+// Not superseded by any extension.
+static const gala_bool_t *GALA_OGL_EXTENSION_NONE = NULL;
+
+typedef enum gala_ogl_extension_type {
+  // Extension is not required but is nice to have.
+  GALA_OGL_EXTENSION_OPTIONAL = (1 << 0),
+  // Extension is for debugging.
+  GALA_OGL_EXTENSION_DEBUG    = (1 << 1)
+} gala_ogl_extension_type_t;
+
+typedef struct gala_ogl_extension {
+  const char *name;
+  gala_uint32_t type;
+  const gala_bool_t *supersede;
+  gala_bool_t *flag;
+} gala_ogl_extension_t;
+
+static gala_bool_t GL_KHR_debug = false;
+
+// These extensions are only available for OpenGL ES?
+// static gala_bool_t GL_EXT_debug_label = false;
+// static gala_bool_t GL_EXT_debug_marker = false;
+
+static gala_bool_t GL_GREMEDY_frame_terminator = false;
+
+static gala_bool_t GL_ARB_direct_state_access = false;
+static gala_bool_t GL_ARB_multi_bind = false;
+static gala_bool_t GL_ARB_vertex_attrib_binding = false;
+
+static gala_bool_t GL_ARB_texture_storage = false;
+static gala_bool_t GL_ARB_buffer_storage = false;
+
+static gala_bool_t GL_ARB_sparse_texture = false;
+
+static gala_bool_t GL_ARB_multi_draw_indirect = false;
+
+static gala_bool_t GL_ARB_get_program_binary = false;
+
+static gala_bool_t GL_EXT_framebuffer_multisample_blit_scaled = false;
+
+static const gala_ogl_extension_t EXTENSIONS_OF_INTEREST[] = {
+  //
+  // Debugging
+  //
+
+  { "GL_KHR_debug", GALA_OGL_EXTENSION_DEBUG | GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_KHR_debug },
+
+  // TODO(mtwilliams): Fallback to these if the `KHR_debug` is not available.
+  // { "GL_EXT_debug_label",  GALA_OGL_EXTENSION_DEBUG, &GL_EXT_debug_label },
+  // { "GL_EXT_debug_marker", GALA_OGL_EXTENSION_DEBUG, &GL_EXT_debug_marker },
+
+  // TODO(mtwilliams): Integrate with RenderDoc.
+  // { "GL_EXT_debug_tool", ... },
+
+  // This older extension allows us to explictly provide a frame terminator,
+  // which is really helpful as the heuristics employed by most tools break due
+  // to our presentation logic.
+  { "GL_GREMEDY_frame_terminator", GALA_OGL_EXTENSION_DEBUG | GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_GREMEDY_frame_terminator },
+
+  //
+  // Optimizations
+  //
+
+  // Direct State Access lets us modify objects without having to bind them!
+  // The result is a non-negligible performance impact. We fallback to the
+  // traditional bind-to-edit model if not available.
+  { "GL_ARB_direct_state_access", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_direct_state_access },
+
+  // Multibind lets us bind and unbind multiple contiguous objects with one
+  // command like Direct3D 11. We fallback to the traditional call-per-bind
+  // model if not available.
+  { "GL_ARB_multi_bind", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_multi_bind },
+
+  // TODO(mtwilliams): Make use of ARB_vertex_attrib_binding.
+  // Vertex attribute binding lets us separate vertex format and vertex source,
+  // making it easier to switch vertex buffer pools as we don't have to
+  // respecify the entire input layout. In practice this isn't a bottleneck as
+  // we try to minimize binds.
+  { "GL_ARB_vertex_attrib_binding", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_vertex_attrib_binding },
+
+  // Immutable storage provides many opportunities for optimization. Most
+  // notably, persistent mapping.
+  { "GL_ARB_texture_storage", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_texture_storage },
+  //{ "GL_ARB_buffer_storage", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_buffer_storage },
+
+  // TODO(mtwilliams): Bindless.
+  // { "GL_ARB_bindless_texture", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE },
+  // { "GL_NV_vertex_buffer_unified_memory", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE },
+  // { "GL_NV_uniform_buffer_unified_memory", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE },
+
+  // Sparse textures provide many opportunities for high-level and low-level
+  // optimizations.
+  { "GL_ARB_sparse_texture", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_sparse_texture },
+
+  // This is the bread and butter of our fast path. When paired with a large
+  // persistently mapped buffer it drastically reduces the number of draw
+  // calls we have to make.
+  { "GL_ARB_multi_draw_indirect", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_multi_draw_indirect },
+
+  // Allows us to cache shaders to disk as a way to mitigate the impact of
+  // shader compile times.
+  { "GL_ARB_get_program_binary", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_ARB_get_program_binary },
+
+  // Allows us to resolve and scale multisampled buffers without an
+  // intermediate buffer. See `gala_ogl_present`.
+  { "GL_EXT_framebuffer_multisample_blit_scaled", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE, &GL_EXT_framebuffer_multisample_blit_scaled },
+
+  //
+  // Compatability
+  //
+
+  // We require `ARB_clip_control` to setup a sane coordinate system. Luckily
+  // for us the extension was added to core, and more importantly Doom (2016)
+  // uses it. Driver support reflects that.
+  { "ARB_clip_control", 0, GALA_OGL_EXTENSION_NONE, NULL },
+
+  // TODO(mtwilliams): Compute shaders.
+  // { "GL_ARB_shader_storage_buffer_object", GALA_OGL_EXTENSION_OPTIONAL, GALA_OGL_EXTENSION_NONE },
+};
+
+static const gala_uint32_t NUM_EXTENSIONS_OF_INTEREST =
+  sizeof(EXTENSIONS_OF_INTEREST) / sizeof(EXTENSIONS_OF_INTEREST[0]);
 
 static void gala_ogl_check_for_extensions(void)
 {
@@ -773,11 +856,15 @@ static void gala_ogl_wrangle(void)
   glGenBuffers = (GLGENBUFFERSPROC)gala_ogl_get_proc_address("glGenBuffers");
   glGenTextures = (GLGENTEXTURESPROC)gala_ogl_get_proc_address("glGenTextures");
   glGenSamplers = (GLGENSAMPLERSPROC)gala_ogl_get_proc_address("glGenSamplers");
+  glCreateShader = (GLCREATESHADERPROC)gala_ogl_get_proc_address("glCreateShader");
+  glCreateProgram = (GLCREATEPROGRAMPROC)gala_ogl_get_proc_address("glCreateProgram");
   glGenFramebuffers = (GLGENFRAMEBUFFERSPROC)gala_ogl_get_proc_address("glGenFramebuffers");
 
   glDeleteBuffers = (GLDELETEBUFFERSPROC)gala_ogl_get_proc_address("glDeleteBuffers");
   glDeleteTextures = (GLDELETETEXTURESPROC)gala_ogl_get_proc_address("glDeleteTextures");
   glDeleteSamplers = (GLDELETESAMPLERSPROC)gala_ogl_get_proc_address("glDeleteSamplers");
+  glDeleteShader = (GLDELETESHADERPROC)gala_ogl_get_proc_address("glDeleteShader");
+  glDeleteProgram = (GLDELETEPROGRAMPROC)gala_ogl_get_proc_address("glDeleteProgram");
   glDeleteFramebuffers = (GLDELETEFRAMEBUFFERSPROC)gala_ogl_get_proc_address("glDeleteFramebuffers");
 
   glGenVertexArrays = (GLGENVERTEXARRAYSPROC)gala_ogl_get_proc_address("glGenVertexArrays");
@@ -813,6 +900,27 @@ static void gala_ogl_wrangle(void)
   glSamplerParameterf = (GLSAMPLERPARAMETERFPROC)gala_ogl_get_proc_address("glSamplerParameterf");
   glSamplerParameteri = (GLSAMPLERPARAMETERIPROC)gala_ogl_get_proc_address("glSamplerParameteri");
 
+  glShaderSource = (GLSHADERSOURCEPROC)gala_ogl_get_proc_address("glShaderSource");
+  glCompileShader = (GLCOMPILESHADERPROC)gala_ogl_get_proc_address("glCompileShader");
+  
+  glGetShaderiv = (GLGETSHADERIVPROC)gala_ogl_get_proc_address("glGetShaderiv");
+  glGetShaderInfoLog = (GLGETSHADERINFOLOGPROC)gala_ogl_get_proc_address("glGetShaderInfoLog");
+  
+  glAttachShader = (GLATTACHSHADERPROC)gala_ogl_get_proc_address("glAttachShader");
+  glLinkProgram = (GLLINKPROGRAMPROC)gala_ogl_get_proc_address("glLinkProgram");
+  
+  glGetProgramiv = (GLGETPROGRAMIVPROC)gala_ogl_get_proc_address("glGetProgramiv");
+  glGetProgramInfoLog = (GLGETPROGRAMINFOLOGPROC)gala_ogl_get_proc_address("glGetProgramInfoLog");
+  
+  glUseProgram = (GLUSEPROGRAMPROC)gala_ogl_get_proc_address("glUseProgram");
+
+  glEnableVertexAttribArray = (GLENABLEVERTEXATTRIBARRAYPROC)gala_ogl_get_proc_address("glEnableVertexAttribArray");
+  glDisableVertexAttribArray = (GLDISABLEVERTEXATTRIBARRAYPROC)gala_ogl_get_proc_address("glDisableVertexAttribArray");
+
+  glVertexAttribPointer = (GLVERTEXATTRIBPOINTERPROC)gala_ogl_get_proc_address("glVertexAttribPointer");
+  glVertexAttribIPointer = (GLVERTEXATTRIBIPOINTERPROC)gala_ogl_get_proc_address("glVertexAttribIPointer");
+  glVertexAttribDivisor = (GLVERTEXATTRIBDIVISORPROC)gala_ogl_get_proc_address("glVertexAttribDivisor");
+
   glBindFramebuffer = (GLBINDFRAMEBUFFERPROC)gala_ogl_get_proc_address("glBindFramebuffer");
 
   glFramebufferTexture1D = (GLFRAMEBUFFERTEXTURE1DPROC)gala_ogl_get_proc_address("glFramebufferTexture1D");
@@ -825,6 +933,9 @@ static void gala_ogl_wrangle(void)
   glClearBufferiv = (GLCLEARBUFFERIVPROC)gala_ogl_get_proc_address("glClearBufferiv");
   glClearBufferuiv = (GLCLEARBUFFERUIVPROC)gala_ogl_get_proc_address("glClearBufferuiv");
   glClearBufferfv = (GLCLEARBUFFERFVPROC)gala_ogl_get_proc_address("glClearBufferfv");
+
+  glDrawArrays = (GLDRAWARRAYSPROC)gala_ogl_get_proc_address("glDrawArrays");
+  glDrawElementsBaseVertex = (GLDRAWELEMENTSBASEVERTEXPROC)gala_ogl_get_proc_address("glDrawElementsBaseVertex");
 
   glBlitFramebuffer = (GLBLITFRAMEBUFFERPROC)gala_ogl_get_proc_address("glBlitFramebuffer");
 
@@ -847,12 +958,22 @@ static void gala_ogl_wrangle(void)
     glObjectLabel    = NULL;
   }
 
+  if (GL_GREMEDY_frame_terminator) {
+    glFrameTerminatorGREMEDY = (GLFRAMETERMINATORGREMEDYPROC)gala_ogl_get_proc_address("glFrameTerminatorGREMEDY");
+  } else {
+    glFrameTerminatorGREMEDY = NULL;
+  }
+
   glClipControl = (GLCLIPCONTROLPROC)gala_ogl_get_proc_address("glClipControl");
 
   if (GL_ARB_buffer_storage) {
     glBufferStorage = (GLBUFFERSTORAGEPROC)gala_ogl_get_proc_address("glBufferStorage");
   } else {
     glBufferStorage = NULL;
+  }
+
+  if (GL_ARB_vertex_attrib_binding) {
+  } else {
   }
 }
 
