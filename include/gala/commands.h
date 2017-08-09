@@ -253,6 +253,20 @@ typedef struct gala_write_to_buffer_command {
   const void *data;
 } gala_write_to_buffer_command_t;
 
+typedef struct gala_read_from_texture_command {
+  gala_command_t command;
+  gala_texture_handle_t texture_handle;
+  gala_texture_slice_t slice;
+  void *out;
+} gala_read_from_texture_command_t;
+
+typedef struct gala_write_to_texture_command {
+  gala_command_t command;
+  gala_texture_handle_t texture_handle;
+  gala_texture_slice_t slice;
+  const void *in;
+} gala_write_to_texture_command_t;
+
 typedef struct gala_present_command {
   gala_command_t command;
   gala_swap_chain_handle_t swap_chain_handle;

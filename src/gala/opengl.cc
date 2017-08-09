@@ -1501,6 +1501,9 @@ static void gala_ogl_buffer_write(
 typedef struct gala_ogl_texture {
 } gala_ogl_texture_t;
 
+typedef struct gala_ogl_sampler {
+} gala_ogl_sampler_t;
+
 // PERF(mtwilliams): Allow preemptive linking of shaders through `gala_warm`.
 // PERF(mtwilliams): Perform shader compilation and linking in a seperate thread.
 
@@ -2363,7 +2366,7 @@ static void gala_ogl_texture_create_3d(
 {
 }
 
-static void gala_ogl_create_texture(
+static void gala_ogl_texture_create(
   gala_ogl_engine_t *engine,
   const gala_create_texture_command_t *cmd)
 {
@@ -2375,9 +2378,21 @@ static void gala_ogl_create_texture(
     gala_ogl_texture_create_3d(engine, cmd);
 }
 
-static void gala_ogl_destroy_texture(
+static void gala_ogl_texture_destroy(
   gala_ogl_engine_t *engine,
   const gala_destroy_texture_command_t *cmd)
+{
+}
+
+static void gala_ogl_sampler_create(
+  gala_ogl_engine_t *engine,
+  const gala_create_sampler_command_t *cmd)
+{
+}
+
+static void gala_ogl_sampler_destroy(
+  gala_ogl_engine_t *engine,
+  const gala_destroy_sampler_command_t *cmd)
 {
 }
 
@@ -2659,23 +2674,20 @@ static void gala_ogl_render_target_view_destroy(
   gala_ogl_engine_t *engine,
   const gala_destroy_render_target_view_command_t *cmd)
 {
-  gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table, cmd->render_target_view_handle);
-  free((void *)resource->internal);
+  gala_resource_t *resource =
+    gala_resource_table_lookup(engine->generic.resource_table,
+                               cmd->render_target_view_handle);
+
+  gala_ogl_render_target_view_t *render_target_view =
+    (gala_ogl_render_target_view_t *)resource->internal;
+
+  free((void *)render_target_view);
+
+  gala_resource_table_free(engine->generic.resource_table,
+                           cmd->render_target_view_handle);
 }
 
-// ...
-
-static void gala_ogl_sampler_create(
-  gala_ogl_engine_t *engine,
-  const gala_create_sampler_command_t *cmd)
-{
-}
-
-static void gala_ogl_sampler_destroy(
-  gala_ogl_engine_t *engine,
-  const gala_destroy_sampler_command_t *cmd)
-{
-}
+// TODO(mtwilliams): Depth-stencil targets.
 
 static void gala_ogl_set_viewport(
   gala_ogl_engine_t *engine,
@@ -2721,7 +2733,8 @@ static void gala_ogl_set_pipeline(
   gala_resource_t *resource = gala_resource_table_lookup(engine->generic.resource_table,
                                                          cmd->pipeline_handle);
 
-  const gala_ogl_pipeline_t *pipeline = (const gala_ogl_pipeline_t *)resource->internal;
+  const gala_ogl_pipeline_t *pipeline =
+    (const gala_ogl_pipeline_t *)resource->internal;
   
   glFrontFace(pipeline->winding);
   
@@ -3332,10 +3345,10 @@ static void gala_ogl_engine_dispatch(
       return gala_ogl_buffer_destroy(engine, (gala_destroy_buffer_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_TEXTURE:
-      return gala_ogl_create_texture(engine, (gala_create_texture_command_t *)cmd);
+      return gala_ogl_texture_create(engine, (gala_create_texture_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_TEXTURE:
-      return gala_ogl_destroy_texture(engine, (gala_destroy_texture_command_t *)cmd);
+      return gala_ogl_texture_destroy(engine, (gala_destroy_texture_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_SAMPLER:
       return gala_ogl_sampler_create(engine, (gala_create_sampler_command_t *)cmd);
