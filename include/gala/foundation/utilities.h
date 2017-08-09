@@ -29,6 +29,16 @@
 #include "gala/foundation/types.h"
 #include "gala/foundation/support.h"
 
+/// \def GALA_MIN
+/// \brief Computes minimum of `a` and `b`.
+#define GALA_MIN(a, b) \
+  (((a) > (b)) ? (b) : (a))
+
+/// \def GALA_MAX
+/// \brief Computes maximum of `a` and `b`.
+#define GALA_MAX(a, b) \
+  (((a) > (b)) ? (a) : (b))
+
 /// \def GALA_BITS_TO_BYTES
 /// \brief Computes the number of bytes required to represent `n` bits.
 #define GALA_BITS_TO_BYTES(n) \
