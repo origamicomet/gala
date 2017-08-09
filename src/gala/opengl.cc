@@ -1791,6 +1791,10 @@ gala_engine_t *gala_ogl_create_and_init_engine(
 
   engine->late_flushes_in_recent_history = 0;
 
+  // Insert a frame terminator to prevent "junk" from showing up in the first frame.
+  if (GL_GREMEDY_frame_terminator)
+    glFrameTerminatorGREMEDY();
+
   return &engine->generic;
 }
 
@@ -1903,6 +1907,9 @@ static void gala_ogl_end_of_frame(
   }
 
   engine->statistics.frame = 0;
+
+  if (GL_GREMEDY_frame_terminator)
+    glFrameTerminatorGREMEDY();
 }
 
 static void gala_ogl_fence_on_submission(
