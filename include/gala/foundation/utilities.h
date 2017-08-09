@@ -52,7 +52,7 @@
 /// \def GALA_ALIGN_TO_BOUNDARY
 /// \brief Aligns `n` to `alignment` bytes boundary.
 #define GALA_ALIGN_TO_BOUNDARY(n, alignment) \
-  (((n) + (alignment) - 1) / (alignment))
+  ((((n) + (alignment) - 1) / (alignment)) * (alignment))
 
 /// Counts number of leading zeros.
 static GALA_INLINE gala_uint32_t gala_clzul(gala_uint32_t n) {
