@@ -46,7 +46,7 @@ typedef enum gala_resource_type {
   /// A buffer.
   GALA_RESOURCE_TYPE_BUFFER = 0x200,
 
-  /// An index Buffer.
+  /// An index buffer.
   GALA_RESOURCE_TYPE_INDEX_BUFFER = GALA_RESOURCE_TYPE_BUFFER | 1,
 
   /// A vertex buffer.
