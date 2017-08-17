@@ -133,7 +133,7 @@ void gala_set_topology(
 void gala_set_render_and_depth_stencil_targets(
   gala_command_buffer_t *command_buffer,
   gala_uint32_t num_render_targets,
-  gala_render_target_view_handle_t *render_targets,
+  const gala_render_target_view_handle_t *render_targets,
   gala_depth_stencil_target_view_handle_t depth_stencil_target)
 {
   gala_assert_debug(command_buffer != NULL);
