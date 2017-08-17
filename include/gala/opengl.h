@@ -37,11 +37,6 @@ extern GALA_PUBLIC
 void gala_ogl_destroy_engine(
   gala_engine_t *engine);
 
-extern GALA_PUBLIC
-void gala_ogl_engine_execute(
-  gala_engine_t *engine,
-  const gala_command_buffer_t *commands);
-
 GALA_END_EXTERN_C
 
 #endif // _GALA_GL_H_

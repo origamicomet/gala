@@ -88,6 +88,10 @@ typedef struct gala_d3d11_engine {
   } state;
 } gala_d3d11_engine_t;
 
+static void gala_d3d11_engine_execute(
+  gala_engine_t *engine,
+  const gala_command_t *command);
+
 gala_engine_t *gala_d3d11_create_and_init_engine(
   const gala_engine_creation_params_t *engine_creation_params)
 {
@@ -675,28 +679,28 @@ static void gala_d3d11_engine_dispatch(
       return;
 
     case GALA_COMMAND_TYPE_LABEL:
-      return gala_d3d11_label(engine, (gala_label_command_t *)cmd);
+      return gala_d3d11_label(engine, (const gala_label_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION:
-      return gala_d3d11_fence_on_submission(engine, (gala_fence_command_t *)cmd);
+      return gala_d3d11_fence_on_submission(engine, (const gala_fence_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_FENCE_ON_COMPLETION:
-      return gala_d3d11_fence_on_completion(engine, (gala_fence_command_t *)cmd);
+      return gala_d3d11_fence_on_completion(engine, (const gala_fence_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_SWAP_CHAIN:
-      return gala_d3d11_swap_chain_create(engine, (gala_create_swap_chain_command_t *)cmd);
+      return gala_d3d11_swap_chain_create(engine, (const gala_create_swap_chain_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_SWAP_CHAIN:
-      return gala_d3d11_swap_chain_destroy(engine, (gala_destroy_swap_chain_command_t *)cmd);
+      return gala_d3d11_swap_chain_destroy(engine, (const gala_destroy_swap_chain_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_RESIZE_SWAP_CHAIN:
-      return gala_d3d11_resize_swap_chain(engine, (gala_resize_swap_chain_command_t *)cmd);
+      return gala_d3d11_resize_swap_chain(engine, (const gala_resize_swap_chain_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_RENDER_TARGET_VIEW:
-      return gala_d3d11_render_target_view_create(engine, (gala_create_render_target_view_command_t *)cmd);
+      return gala_d3d11_render_target_view_create(engine, (const gala_create_render_target_view_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_RENDER_TARGET_VIEW:
-      return gala_d3d11_render_target_view_destroy(engine, (gala_destroy_render_target_view_command_t *)cmd);
+      return gala_d3d11_render_target_view_destroy(engine, (const gala_destroy_render_target_view_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_DEPTH_STENCIL_TARGET_VIEW:
     case GALA_COMMAND_TYPE_DESTROY_DEPTH_STENCIL_TARGET_VIEW:
@@ -704,36 +708,27 @@ static void gala_d3d11_engine_dispatch(
       return;
 
     case GALA_COMMAND_TYPE_SET_RENDER_AND_DEPTH_STENCIL_TARGETS:
-      return gala_d3d11_set_render_and_depth_stencil_targets(engine, (gala_set_render_and_depth_stencil_targets_command_t *)cmd);
+      return gala_d3d11_set_render_and_depth_stencil_targets(engine, (const gala_set_render_and_depth_stencil_targets_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CLEAR_RENDER_TARGETS:
-      return gala_d3d11_clear_render_targets(engine, (gala_clear_render_targets_command_t *)cmd);
+      return gala_d3d11_clear_render_targets(engine, (const gala_clear_render_targets_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CLEAR_DEPTH_STENCIL_TARGET:
-      return gala_d3d11_clear_depth_stencil_target(engine, (gala_clear_depth_stencil_target_command_t *)cmd);
+      return gala_d3d11_clear_depth_stencil_target(engine, (const gala_clear_depth_stencil_target_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_PRESENT:
-      return gala_d3d11_present(engine, (gala_present_command_t *)cmd);
+      return gala_d3d11_present(engine, (const gala_present_command_t *)cmd);
   }
 }
 
 void gala_d3d11_engine_execute(
   gala_engine_t *engine,
-  const gala_command_buffer_t *commands)
+  const gala_command_t *command)
 {
   gala_assert_debug(engine != NULL);
-  gala_assert_debug(commands != NULL);
+  gala_assert_debug(command != NULL);
 
-  gala_assert_debug(engine->meta.backend == GALA_BACKEND_D3D11);
-
-  gala_uintptr_t current = commands->start;
-  const gala_uintptr_t last = commands->current;
-
-  while (current < last) {
-    const gala_command_t *command = (gala_command_t *)current;
-    gala_d3d11_engine_dispatch((gala_d3d11_engine_t *)engine, command);
-    current += command->header.size;
-  }
+  gala_d3d11_engine_dispatch((gala_d3d11_engine_t *)engine, command);
 }
 
 GALA_END_EXTERN_C

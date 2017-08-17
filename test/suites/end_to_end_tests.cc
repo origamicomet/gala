@@ -184,7 +184,7 @@ void run(gala_engine_t *engine) {
     gala_label(&cmds, vertex_buffers[0], "Opaque Geometry");
     gala_label(&cmds, vertex_buffers[1], "Translucent Geometry");
 
-    engine->execute(engine, &cmds);
+    gala_engine_execute(engine, &cmds);
   }
 
   while (!complete) {
@@ -256,7 +256,7 @@ void run(gala_engine_t *engine) {
 
     gala_end_of_frame(&cmds, NULL);
 
-    engine->execute(engine, &cmds);
+    gala_engine_execute(engine, &cmds);
 
     surface->update(&on_surface_event);
   }
@@ -274,7 +274,7 @@ void run(gala_engine_t *engine) {
     gala_render_target_view_destroy(engine, &cmds, render_target_view);
     gala_swap_chain_destroy(engine, &cmds, swap_chain);
     
-    engine->execute(engine, &cmds);
+    gala_engine_execute(engine, &cmds);
   }
 
   surface->destroy();

@@ -1873,6 +1873,10 @@ void gala_ogl_destroy_context(
 #endif
 }
 
+static void gala_ogl_engine_execute(
+  gala_engine_t *engine,
+  const gala_command_t *command);
+
 gala_engine_t *gala_ogl_create_and_init_engine(
   const gala_engine_creation_params_t *engine_creation_params)
 {
@@ -3433,76 +3437,76 @@ static void gala_ogl_engine_dispatch(
       return;
 
     case GALA_COMMAND_TYPE_START_OF_FRAME:
-      return gala_ogl_start_of_frame(engine, (gala_frame_command_t *)cmd);
+      return gala_ogl_start_of_frame(engine, (const gala_frame_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_END_OF_FRAME:
-      return gala_ogl_end_of_frame(engine, (gala_frame_command_t *)cmd);
+      return gala_ogl_end_of_frame(engine, (const gala_frame_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_PUSH_ANNOTATION:
-      return gala_ogl_push_annotation(engine, (gala_push_annotation_command_t *)cmd);
+      return gala_ogl_push_annotation(engine, (const gala_push_annotation_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_POP_ANNOTATION:
-      return gala_ogl_pop_annotation(engine, (gala_pop_annotation_command_t *)cmd);
+      return gala_ogl_pop_annotation(engine, (const gala_pop_annotation_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_LABEL:
-      return gala_ogl_label(engine, (gala_label_command_t *)cmd);
+      return gala_ogl_label(engine, (const gala_label_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_FENCE_ON_SUBMISSION:
-      return gala_ogl_fence_on_submission(engine, (gala_fence_command_t *)cmd);
+      return gala_ogl_fence_on_submission(engine, (const gala_fence_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_FENCE_ON_COMPLETION:
-      return gala_ogl_fence_on_completion(engine, (gala_fence_command_t *)cmd);
+      return gala_ogl_fence_on_completion(engine, (const gala_fence_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_SWAP_CHAIN:
-      return gala_ogl_swap_chain_create(engine, (gala_create_swap_chain_command_t *)cmd);
+      return gala_ogl_swap_chain_create(engine, (const gala_create_swap_chain_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_SWAP_CHAIN:
-      return gala_ogl_swap_chain_destroy(engine, (gala_destroy_swap_chain_command_t *)cmd);
+      return gala_ogl_swap_chain_destroy(engine, (const gala_destroy_swap_chain_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_RESIZE_SWAP_CHAIN:
-      return gala_ogl_resize_swap_chain(engine, (gala_resize_swap_chain_command_t *)cmd);
+      return gala_ogl_resize_swap_chain(engine, (const gala_resize_swap_chain_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_PIPELINE:
-      return gala_ogl_pipeline_create(engine, (gala_create_pipeline_command_t *)cmd);
+      return gala_ogl_pipeline_create(engine, (const gala_create_pipeline_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_PIPELINE:
-      return gala_ogl_pipeline_destroy(engine, (gala_destroy_pipeline_command_t *)cmd);
+      return gala_ogl_pipeline_destroy(engine, (const gala_destroy_pipeline_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_BUFFER:
-      return gala_ogl_buffer_create(engine, (gala_create_buffer_command_t *)cmd);
+      return gala_ogl_buffer_create(engine, (const gala_create_buffer_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_BUFFER:
-      return gala_ogl_buffer_destroy(engine, (gala_destroy_buffer_command_t *)cmd);
+      return gala_ogl_buffer_destroy(engine, (const gala_destroy_buffer_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_TEXTURE:
-      return gala_ogl_texture_create(engine, (gala_create_texture_command_t *)cmd);
+      return gala_ogl_texture_create(engine, (const gala_create_texture_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_TEXTURE:
-      return gala_ogl_texture_destroy(engine, (gala_destroy_texture_command_t *)cmd);
+      return gala_ogl_texture_destroy(engine, (const gala_destroy_texture_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_SAMPLER:
-      return gala_ogl_sampler_create(engine, (gala_create_sampler_command_t *)cmd);
+      return gala_ogl_sampler_create(engine, (const gala_create_sampler_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_SAMPLER:
-      return gala_ogl_sampler_destroy(engine, (gala_destroy_sampler_command_t *)cmd);
+      return gala_ogl_sampler_destroy(engine, (const gala_destroy_sampler_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_SHADER:
-      return gala_ogl_shader_create(engine, (gala_create_shader_command_t *)cmd);
+      return gala_ogl_shader_create(engine, (const gala_create_shader_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_SHADER:
-      return gala_ogl_shader_destroy(engine, (gala_destroy_shader_command_t *)cmd);
+      return gala_ogl_shader_destroy(engine, (const gala_destroy_shader_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_INPUT_LAYOUT:
-      return gala_ogl_input_layout_create(engine, (gala_create_input_layout_command_t *)cmd);
+      return gala_ogl_input_layout_create(engine, (const gala_create_input_layout_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_INPUT_LAYOUT:
-      return gala_ogl_input_layout_destroy(engine, (gala_destroy_input_layout_command_t *)cmd);
+      return gala_ogl_input_layout_destroy(engine, (const gala_destroy_input_layout_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_RENDER_TARGET_VIEW:
-      return gala_ogl_render_target_view_create(engine, (gala_create_render_target_view_command_t *)cmd);
+      return gala_ogl_render_target_view_create(engine, (const gala_create_render_target_view_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DESTROY_RENDER_TARGET_VIEW:
-      return gala_ogl_render_target_view_destroy(engine, (gala_destroy_render_target_view_command_t *)cmd);
+      return gala_ogl_render_target_view_destroy(engine, (const gala_destroy_render_target_view_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CREATE_DEPTH_STENCIL_TARGET_VIEW:
     case GALA_COMMAND_TYPE_DESTROY_DEPTH_STENCIL_TARGET_VIEW:
@@ -3510,69 +3514,60 @@ static void gala_ogl_engine_dispatch(
       return;
 
     case GALA_COMMAND_TYPE_SET_VIEWPORT:
-      return gala_ogl_set_viewport(engine, (gala_set_viewport_command_t *)cmd);
+      return gala_ogl_set_viewport(engine, (const gala_set_viewport_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_SET_SCISSOR:
-      return gala_ogl_set_scissor(engine, (gala_set_scissor_command_t *)cmd);
+      return gala_ogl_set_scissor(engine, (const gala_set_scissor_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_SET_PIPELINE:
-      return gala_ogl_set_pipeline(engine, (gala_set_pipeline_command_t *)cmd);
+      return gala_ogl_set_pipeline(engine, (const gala_set_pipeline_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_SET_INPUT_LAYOUT:
-      return gala_ogl_set_input_layout(engine, (gala_set_input_layout_command_t *)cmd);
+      return gala_ogl_set_input_layout(engine, (const gala_set_input_layout_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_SET_TOPOLOGY:
-      return gala_ogl_set_topology(engine, (gala_set_topology_command_t *)cmd);
+      return gala_ogl_set_topology(engine, (const gala_set_topology_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_SET_SHADERS:
-      return gala_ogl_set_shaders(engine, (gala_set_shaders_command_t *)cmd);
+      return gala_ogl_set_shaders(engine, (const gala_set_shaders_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_SET_RENDER_AND_DEPTH_STENCIL_TARGETS:
-      return gala_ogl_set_render_and_depth_stencil_targets(engine, (gala_set_render_and_depth_stencil_targets_command_t *)cmd);
+      return gala_ogl_set_render_and_depth_stencil_targets(engine, (const gala_set_render_and_depth_stencil_targets_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CLEAR_RENDER_TARGETS:
-      return gala_ogl_clear_render_targets(engine, (gala_clear_render_targets_command_t *)cmd);
+      return gala_ogl_clear_render_targets(engine, (const gala_clear_render_targets_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_CLEAR_DEPTH_STENCIL_TARGET:
-      return gala_ogl_clear_depth_stencil_target(engine, (gala_clear_depth_stencil_target_command_t *)cmd);
+      return gala_ogl_clear_depth_stencil_target(engine, (const gala_clear_depth_stencil_target_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_DRAW:
-      return gala_ogl_draw(engine, (gala_draw_command_t *)cmd);
+      return gala_ogl_draw(engine, (const gala_draw_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_READ_FROM_BUFFER:
-      return gala_ogl_read_from_buffer(engine, (gala_read_from_buffer_command_t *)cmd);
+      return gala_ogl_read_from_buffer(engine, (const gala_read_from_buffer_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_WRITE_TO_BUFFER:
-      return gala_ogl_write_to_buffer(engine, (gala_write_to_buffer_command_t *)cmd);
+      return gala_ogl_write_to_buffer(engine, (const gala_write_to_buffer_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_READ_FROM_TEXTURE:
-      return gala_ogl_read_from_texture(engine, (gala_read_from_texture_command_t *)cmd);
+      return gala_ogl_read_from_texture(engine, (const gala_read_from_texture_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_WRITE_TO_TEXTURE:
-      return gala_ogl_write_to_texture(engine, (gala_write_to_texture_command_t *)cmd);
+      return gala_ogl_write_to_texture(engine, (const gala_write_to_texture_command_t *)cmd);
 
     case GALA_COMMAND_TYPE_PRESENT:
-      return gala_ogl_present(engine, (gala_present_command_t *)cmd);
+      return gala_ogl_present(engine, (const gala_present_command_t *)cmd);
   }
 }
 
 void gala_ogl_engine_execute(
   gala_engine_t *engine,
-  const gala_command_buffer_t *commands)
+  const gala_command_t *command)
 {
   gala_assert_debug(engine != NULL);
-  gala_assert_debug(commands != NULL);
+  gala_assert_debug(command != NULL);
 
-  gala_assert_debug(engine->meta.backend == GALA_BACKEND_OPENGL);
-
-  gala_uintptr_t current = commands->start;
-  const gala_uintptr_t last = commands->current;
-
-  while (current < last) {
-    const gala_command_t *command = (gala_command_t *)current;
-    gala_ogl_engine_dispatch((gala_ogl_engine_t *)engine, command);
-    current += command->header.size;
-  }
+  gala_ogl_engine_dispatch((gala_ogl_engine_t *)engine, command);
 }
 
 GALA_END_EXTERN_C

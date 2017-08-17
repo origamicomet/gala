@@ -70,10 +70,14 @@ typedef struct gala_engine {
   /// \copydoc ::gala_resource_table_t
   struct gala_resource_table *resource_table;
 
-  /// \brief Executes the command buffer.
+  /// \brief Executes the given @command.
   void (*execute)(struct gala_engine *engine,
-                  const struct gala_command_buffer *command_buffer);
+                  const struct gala_command *command);
 } gala_engine_t;
+
+/// \brief Executes all @commands.
+void gala_engine_execute(gala_engine_t *engine,
+                         const gala_command_buffer_t *commands);
 
 GALA_END_EXTERN_C
 

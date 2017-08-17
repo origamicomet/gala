@@ -57,7 +57,7 @@ void run(gala_engine_t *engine) {
     gala_label(&cmds, render_target_views[0], "Render-target View A");
     gala_label(&cmds, render_target_views[1], "Render-target View B");
 
-    engine->execute(engine, &cmds);
+    gala_engine_execute(engine, &cmds);
   }
 
   while (!complete) {
@@ -76,7 +76,7 @@ void run(gala_engine_t *engine) {
     
     gala_end_of_frame(&cmds, NULL);
 
-    engine->execute(engine, &cmds);
+    gala_engine_execute(engine, &cmds);
 
     surfaces[0]->update(&on_surface_event);
     surfaces[1]->update(&on_surface_event);
@@ -91,7 +91,7 @@ void run(gala_engine_t *engine) {
     gala_swap_chain_destroy(engine, &cmds, swap_chains[0]);
     gala_swap_chain_destroy(engine, &cmds, swap_chains[1]);
 
-    engine->execute(engine, &cmds);
+    gala_engine_execute(engine, &cmds);
   }
 
   surfaces[0]->destroy();
